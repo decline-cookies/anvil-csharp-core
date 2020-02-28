@@ -5,7 +5,11 @@ namespace Anvil.CSharp.DelayedExecution
 {
     public class UpdateHandle<T> : AnvilAbstractDisposable where T:AbstractUpdateSource
     {
+        private event Action m_OnUpdate;
+        
         private AbstractUpdateSource m_UpdateSource;
+        private int m_OnUpdateCount;
+        private bool m_IsUpdateSourceHookEnabled;
 
         private AbstractUpdateSource UpdateSource
         {
@@ -20,39 +24,57 @@ namespace Anvil.CSharp.DelayedExecution
                 return m_UpdateSource;
             }
         }
-        
-        
-        private UpdateSourcePipe m_UpdatePipe;
-
-        private UpdateSourcePipe UpdatePipe
-        {
-            get
-            {
-                if (m_UpdatePipe == null)
-                {
-                    m_UpdatePipe = new UpdateSourcePipe(UpdateSource);
-                }
-
-                return m_UpdatePipe;
-            }
-        }
 
         public event Action OnUpdate
         {
-            add => UpdatePipe.OnUpdate += value;
-            remove => UpdatePipe.OnUpdate -= value;
+            add
+            {
+                m_OnUpdate += value;
+                m_OnUpdateCount++;
+                ValidateUpdateSourceHook();
+            }
+            remove
+            {
+                //Don't want multiple unsubscribes to mess with counting
+                if (m_OnUpdateCount <= 0)
+                {
+                    return;
+                }
+                m_OnUpdate -= value;
+                m_OnUpdateCount--;
+                ValidateUpdateSourceHook();
+            }
         }
 
         protected override void DisposeSelf()
         {
-            if (m_UpdatePipe != null)
+            m_OnUpdate = null;
+            if (m_UpdateSource != null)
             {
-                m_UpdatePipe.Dispose();
-                m_UpdatePipe = null;
+                m_UpdateSource.OnUpdate -= HandleOnUpdate;
+                m_UpdateSource = null;
             }
-            m_UpdateSource = null;
             
             base.DisposeSelf();
+        }
+        
+        private void ValidateUpdateSourceHook()
+        {
+            if (m_OnUpdateCount > 0 && !m_IsUpdateSourceHookEnabled)
+            {
+                UpdateSource.OnUpdate += HandleOnUpdate;
+                m_IsUpdateSourceHookEnabled = true;
+            }
+            else if (m_OnUpdateCount <= 0 && m_IsUpdateSourceHookEnabled)
+            {
+                UpdateSource.OnUpdate -= HandleOnUpdate;
+                m_IsUpdateSourceHookEnabled = false;
+            }
+        }
+        
+        private void HandleOnUpdate()
+        {
+            m_OnUpdate?.Invoke();
         }
     }
 }
