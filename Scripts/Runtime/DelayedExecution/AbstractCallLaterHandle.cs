@@ -1,21 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
-    public abstract class AbstractCallLaterHandle : AnvilAbstractDisposable, ICallLaterHandle
+    public abstract class AbstractCallLaterHandle : AnvilAbstractDisposable
     {
-        public event Action<ICallLaterHandle> OnDisposing;
+        public event Action<AbstractCallLaterHandle> OnDisposing;
         
         private Action m_Callback;
-        private readonly IUpdateHandle m_UpdateHandle;
+        private UpdateHandle m_UpdateHandle;
 
         public uint ID { get; internal set; }
 
-        protected AbstractCallLaterHandle(Action callback, IUpdateHandle updateHandle)
+        internal UpdateHandle UpdateHandle
+        {
+            get => m_UpdateHandle;
+            set
+            {
+                m_UpdateHandle = value;
+                ValidateUpdateHandleSourceType(m_UpdateHandle.UpdateSourceType);
+                m_UpdateHandle.OnUpdate += HandleOnUpdate;
+            }
+        }
+
+        protected AbstractCallLaterHandle(Action callback)
         {
             m_Callback = callback;
-            m_UpdateHandle = updateHandle;
         }
 
         protected override void DisposeSelf()
@@ -29,11 +40,6 @@ namespace Anvil.CSharp.DelayedExecution
             base.DisposeSelf();
         }
 
-        internal void Start()
-        {
-            m_UpdateHandle.OnUpdate += HandleOnUpdate;
-        }
-
         public void Cancel()
         {
             Dispose();
@@ -45,7 +51,17 @@ namespace Anvil.CSharp.DelayedExecution
             Dispose();
         }
 
+        private void ValidateUpdateHandleSourceType(Type updateHandleSourceType)
+        {
+            List<Type> validUpdateSourceTypes = GetValidUpdateSourceTypes();
+            if (!validUpdateSourceTypes.Contains(updateHandleSourceType))
+            {
+                throw new Exception($"Trying to do a Call Later with {this} using an Update Handle configured with Update Source {updateHandleSourceType} but it isn't in the valid update source types!");
+            }
+        }
+
         protected abstract void HandleOnUpdate();
+        protected abstract List<Type> GetValidUpdateSourceTypes();
     }
 }
 

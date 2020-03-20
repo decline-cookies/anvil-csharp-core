@@ -4,18 +4,20 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
-    public class UpdateHandle : AnvilAbstractDisposable, IUpdateHandle
+    public class UpdateHandle : AnvilAbstractDisposable
     {
+        private const uint CALL_LATER_HANDLE_INITIAL_ID = 0;
+        
         public static UpdateHandle Create<T>() where T:AbstractUpdateSource
         {
             UpdateHandle updateHandle = new UpdateHandle(typeof(T));
             return updateHandle;
         }
         
-        private const uint CALL_LATER_HANDLE_INITIAL_ID = 0;
-        private uint m_CallLaterHandleCurrentID = CALL_LATER_HANDLE_INITIAL_ID;
         
-        private readonly Dictionary<uint, ICallLaterHandle> m_CallLaterHandles = new Dictionary<uint, ICallLaterHandle>();
+        private uint m_CallLaterHandleCurrentID = CALL_LATER_HANDLE_INITIAL_ID;
+
+        private readonly Dictionary<uint, AbstractCallLaterHandle> m_CallLaterHandles = new Dictionary<uint, AbstractCallLaterHandle>();
         
         private event Action m_OnUpdate;
 
@@ -24,16 +26,13 @@ namespace Anvil.CSharp.DelayedExecution
         private int m_OnUpdateCount;
         private bool m_IsUpdateSourceHookEnabled;
 
+        internal Type UpdateSourceType => m_UpdateSourceType;
+
         private AbstractUpdateSource UpdateSource
         {
             get
             {
-                if (m_UpdateSource == null)
-                {
-                    m_UpdateSource = UpdateHandleSourcesManager.GetOrCreateUpdateSource(m_UpdateSourceType);
-                }
-
-                return m_UpdateSource;
+                return m_UpdateSource ?? (m_UpdateSource = UpdateHandleSourcesManager.GetOrCreateUpdateSource(m_UpdateSourceType));
             }
         }
 
@@ -72,10 +71,12 @@ namespace Anvil.CSharp.DelayedExecution
                 m_UpdateSource = null;
             }
 
-            foreach (ICallLaterHandle callLaterHandle in m_CallLaterHandles.Values)
+            foreach (AbstractCallLaterHandle callLaterHandle in m_CallLaterHandles.Values)
             {
+                callLaterHandle.OnDisposing -= HandleOnCallLaterHandleDisposing;
                 callLaterHandle.Cancel();
             }
+            m_CallLaterHandles.Clear();
             
             base.DisposeSelf();
         }
@@ -106,16 +107,16 @@ namespace Anvil.CSharp.DelayedExecution
             return id;
         }
 
-        public ICallLaterHandle CallLater(ICallLaterHandle callLaterHandle)
+        public AbstractCallLaterHandle CallLater(AbstractCallLaterHandle callLaterHandle)
         {
-            // callLaterHandle.ID = GetNextCallLaterHandleID();
+            callLaterHandle.ID = GetNextCallLaterHandleID();
             callLaterHandle.OnDisposing += HandleOnCallLaterHandleDisposing;
             m_CallLaterHandles.Add(callLaterHandle.ID, callLaterHandle);
-            // callLaterHandle.Start();
+            callLaterHandle.UpdateHandle = this;
             return callLaterHandle;
         }
 
-        private void HandleOnCallLaterHandleDisposing(ICallLaterHandle callLaterHandle)
+        private void HandleOnCallLaterHandleDisposing(AbstractCallLaterHandle callLaterHandle)
         {
             if (!m_CallLaterHandles.ContainsKey(callLaterHandle.ID))
             {

@@ -1,3 +1,15 @@
-﻿{
-	"name": "anvil-csharp-core-runtime"
+{
+    "name": "anvil-csharp-core-runtime",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        ""
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
 }
