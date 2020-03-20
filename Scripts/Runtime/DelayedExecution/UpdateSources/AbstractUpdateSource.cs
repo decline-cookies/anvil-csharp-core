@@ -9,7 +9,7 @@ namespace Anvil.CSharp.DelayedExecution
 
         protected AbstractUpdateSource()
         {
-            
+            Init();
         }
 
         protected override void DisposeSelf()
@@ -17,13 +17,8 @@ namespace Anvil.CSharp.DelayedExecution
             OnUpdate = null;
             base.DisposeSelf();
         }
-
-        public void RegisterUpdateSource()
-        {
-            Initialize();
-            UpdateHandleSystem.RegisterUpdateSource(this);
-        }
-        protected abstract void Initialize();
+        
+        protected abstract void Init();
         
         protected void DispatchOnUpdateEvent()
         {
