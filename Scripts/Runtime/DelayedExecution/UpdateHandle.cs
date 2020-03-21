@@ -4,7 +4,7 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
-    public class UpdateHandle : AnvilAbstractDisposable
+    public class UpdateHandle : AbstractAnvilDisposable
     {
         private const uint CALL_LATER_HANDLE_INITIAL_ID = 0;
         

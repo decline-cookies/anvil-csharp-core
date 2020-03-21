@@ -3,7 +3,7 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Command
 {
-    public abstract class AbstractCommand : AnvilAbstractDisposable
+    public abstract class AbstractCommand : AbstractAnvilDisposable
     {
         public event Action<AbstractCommand> OnComplete;
 

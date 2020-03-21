@@ -4,7 +4,7 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
-    public abstract class AbstractCallLaterHandle : AnvilAbstractDisposable
+    public abstract class AbstractCallLaterHandle : AbstractAnvilDisposable
     {
         public event Action<AbstractCallLaterHandle> OnDisposing;
         

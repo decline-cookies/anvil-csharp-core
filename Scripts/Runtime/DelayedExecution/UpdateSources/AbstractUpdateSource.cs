@@ -3,7 +3,7 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
-    public abstract class AbstractUpdateSource : AnvilAbstractDisposable
+    public abstract class AbstractUpdateSource : AbstractAnvilDisposable
     {
         public event Action OnUpdate;
 
