@@ -3,6 +3,9 @@
 //TODO: Verify that this is actually ok to do...
 namespace System.Reflection
 {
+    /// <summary>
+    /// A set of convenience extensions for <see cref="Type"/>
+    /// </summary>
     public static class TypeExtension
     {
         /// <summary>
