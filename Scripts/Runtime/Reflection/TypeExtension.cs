@@ -17,10 +17,7 @@ namespace System.Reflection
         /// <remarks>Stolen from: https://stackoverflow.com/a/2490274 </remarks>
         public static object CreateDefaultValue(this Type type)
         {
-            if (type.IsValueType)
-                return Activator.CreateInstance(type);
-
-            return null;
+            return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
     }
 }
