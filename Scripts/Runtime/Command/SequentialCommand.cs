@@ -1,28 +1,41 @@
-﻿using System.Collections.Generic;
-
-namespace Anvil.CSharp.Command
+﻿namespace Anvil.CSharp.Command
 {
-    public class SequentialCommand : AbstractCommand
+    public class SequentialCommand : AbstractCollectionCommand
     {
-        private List<AbstractCommand> m_SubCommands = new List<AbstractCommand>();
-        private int m_SubCommandIndex;
-        public SequentialCommand(params AbstractCommand[] commands)
+        
+        private int m_ChildCommandIndex;
+        public SequentialCommand(params AbstractCommand[] commands) : base(commands)
         {
-            foreach (AbstractCommand command in commands)
-            {
-                m_SubCommands.Add(command);
-            }
         }
 
         protected override void DisposeSelf()
         {
+            m_ChildCommandIndex = 0;
             base.DisposeSelf();
         }
 
-        public override void Execute()
+        protected override void ExecuteCommand()
         {
-            
+            m_ChildCommandIndex = 0;
+            ExecuteNextChildCommandInSequence();
+        }
+        
+        private void ExecuteNextChildCommandInSequence()
+        {
+            if (m_ChildCommands.Count <= m_ChildCommandIndex)
+            {
+                CompleteCommand();
+            }
+            AbstractCommand childCommand = m_ChildCommands[m_ChildCommandIndex];
+            childCommand.OnComplete += HandleChildCommandOnComplete;
+            childCommand.Execute();
+        }
+
+        private void HandleChildCommandOnComplete(AbstractCommand command)
+        {
+            command.OnComplete -= HandleChildCommandOnComplete;
+            m_ChildCommandIndex++;
+            ExecuteNextChildCommandInSequence();
         }
     }
 }
-
