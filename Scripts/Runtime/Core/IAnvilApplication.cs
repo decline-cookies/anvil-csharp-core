@@ -7,10 +7,6 @@ namespace Anvil.CSharp.Core
     /// </summary>
     public interface IAnvilApplication : IDisposable 
     {
-        /// <summary>
-        /// The initialize method to setup the application and begin.
-        /// </summary>
-        void Init();
     }
 }
 
