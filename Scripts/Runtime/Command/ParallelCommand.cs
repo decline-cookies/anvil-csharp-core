@@ -11,12 +11,20 @@
         protected override void DisposeSelf()
         {
             m_ChildCommandsLeftToComplete = 0;
+            
             base.DisposeSelf();
         }
 
         protected override void ExecuteCommand()
         {
             m_ChildCommandsLeftToComplete = m_ChildCommands.Count;
+            
+            if (m_ChildCommandsLeftToComplete == 0)
+            {
+                CompleteCommand();
+                return;
+            }
+            
             foreach (AbstractCommand command in m_ChildCommands)
             {
                 command.OnComplete += HandleChildCommandOnComplete;

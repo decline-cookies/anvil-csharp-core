@@ -19,15 +19,33 @@ namespace Anvil.CSharp.Command
         /// The current <see cref="CommandState"/> of the Command.
         /// </summary>
         public CommandState State { get; private set; } = CommandState.Initialized;
+        
+        //TODO: Look into how we might be able to use Generics to strongly type this. See: https://github.com/jkeon/anvil-csharp-core/pull/4#discussion_r407669597
         /// <summary>
         /// Optional Shared Data to store with this Command. Useful when used with <see cref="AbstractCollectionCommand"/>s.
         /// <seealso cref="SetSharedData"/>
         /// </summary>
         public object SharedData { get; private set; }
+
         /// <summary>
-        /// Optional Parent Command to nest Commands as children of each other.
+        /// Optional Parent Collection Command to nest Commands as children of each other.
         /// </summary>
-        public AbstractCommand ParentCommand { get; private set; }
+        public AbstractCollectionCommand ParentCollectionCommand
+        {
+            get => m_ParentCollectionCommand;
+            internal set
+            {
+                if (State != CommandState.Initialized)
+                {
+                    throw new Exception($"Tried to set the ParentCommand on {this} but State was {State} instead of Initialized!");
+                }
+
+                m_ParentCollectionCommand = value;
+            }
+        }
+
+        private AbstractCollectionCommand m_ParentCollectionCommand;
+        
 
         protected AbstractCommand()
         {
@@ -39,10 +57,12 @@ namespace Anvil.CSharp.Command
             {
                 return;
             }
+            
             State = CommandState.Disposed;
-            ParentCommand = null;
+            ParentCollectionCommand = null;
             SharedData = null;
             OnComplete = null;
+            
             base.DisposeSelf();
         }
 
@@ -54,17 +74,7 @@ namespace Anvil.CSharp.Command
             }
 
             SharedData = sharedData;
-            return this;
-        }
-
-        public AbstractCommand SetParentCommand(AbstractCommand parentCommand)
-        {
-            if (State != CommandState.Initialized)
-            {
-                throw new Exception($"Tried to call SetParentCommand on {this} but State was {State} instead of Initialized!");
-            }
-
-            ParentCommand = parentCommand;
+            
             return this;
         }
 

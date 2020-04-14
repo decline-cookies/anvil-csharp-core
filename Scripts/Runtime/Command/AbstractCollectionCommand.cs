@@ -7,11 +7,15 @@ namespace Anvil.CSharp.Command
     {
         protected readonly List<AbstractCommand> m_ChildCommands = new List<AbstractCommand>();
 
-        protected AbstractCollectionCommand(params AbstractCommand[] commands)
+        protected AbstractCollectionCommand(params AbstractCommand[] childCommands):this((IEnumerable<AbstractCommand>)childCommands)
         {
-            foreach (AbstractCommand command in commands)
+        }
+        
+        protected AbstractCollectionCommand(IEnumerable<AbstractCommand> childCommands)
+        {
+            foreach (AbstractCommand childCommand in childCommands)
             {
-                AddChildCommand(command);
+                AddChildCommand(childCommand);
             }
         }
 
@@ -22,19 +26,30 @@ namespace Anvil.CSharp.Command
                 command.Dispose();
             }
             m_ChildCommands.Clear();
+            
             base.DisposeSelf();
         }
         
-        public AbstractCollectionCommand AddChildCommand(AbstractCommand command)
+        public AbstractCollectionCommand AddChildCommand(AbstractCommand childCommand)
         {
             if (State != CommandState.Initialized)
             {
-                throw new Exception($"Tried to add sub command {command} to {this} but State was {State} instead of Initialized!");
+                throw new Exception($"Tried to add child command {childCommand} to {this} but State was {State} instead of Initialized!");
             }
 
-            command.SetParentCommand(this);
+            childCommand.ParentCollectionCommand = this;
+            m_ChildCommands.Add(childCommand);
 
-            m_ChildCommands.Add(command);
+            return this;
+        }
+
+        public AbstractCollectionCommand AddChildCommands(IEnumerable<AbstractCommand> childCommands)
+        {
+            foreach (AbstractCommand childCommand in childCommands)
+            {
+                AddChildCommand(childCommand);
+            }
+
             return this;
         }
     }
