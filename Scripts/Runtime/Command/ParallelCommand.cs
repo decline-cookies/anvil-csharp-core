@@ -1,13 +1,31 @@
-﻿namespace Anvil.CSharp.Command
+﻿using System.Collections.Generic;
+
+namespace Anvil.CSharp.Command
 {
+    /// <summary>
+    /// A <see cref="AbstractCollectionCommand"/> that will execute all children in parallel.
+    /// <see cref="OnComplete"/> will be dispatched once all children have completed.
+    /// </summary>
     public class ParallelCommand : AbstractCollectionCommand
     {
         private int m_ChildCommandsLeftToComplete;
-
-        public ParallelCommand(params AbstractCommand[] commands) : base (commands)
+        
+        /// <summary>
+        /// Constructs a <see cref="ParallelCommand"/> using params for <see cref="AbstractCommand"/>.
+        /// </summary>
+        /// <param name="childCommands">The <see cref="AbstractCommand"/>s to pass in.</param>
+        public ParallelCommand(params AbstractCommand[] childCommands) : base (childCommands)
         {
         }
         
+        /// <summary>
+        /// Constructs a <see cref="ParallelCommand"/> using an <see cref="IEnumerable{AbstractCommand}"/>.
+        /// </summary>
+        /// <param name="childCommands">The <see cref="IEnumerable{AbstractCommand}"/> to pass in.</param>
+        public ParallelCommand(IEnumerable<AbstractCommand> childCommands) : base(childCommands)
+        {
+        }
+
         protected override void DisposeSelf()
         {
             m_ChildCommandsLeftToComplete = 0;

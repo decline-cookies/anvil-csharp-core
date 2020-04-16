@@ -19,33 +19,7 @@ namespace Anvil.CSharp.Command
         /// The current <see cref="CommandState"/> of the Command.
         /// </summary>
         public CommandState State { get; private set; } = CommandState.Initialized;
-        
-        //TODO: Look into how we might be able to use Generics to strongly type this. See: https://github.com/jkeon/anvil-csharp-core/pull/4#discussion_r407669597
-        /// <summary>
-        /// Optional Shared Data to store with this Command. Useful when used with <see cref="AbstractCollectionCommand"/>s.
-        /// <seealso cref="SetSharedData"/>
-        /// </summary>
-        public object SharedData { get; private set; }
 
-        /// <summary>
-        /// Optional Parent Collection Command to nest Commands as children of each other.
-        /// </summary>
-        public AbstractCollectionCommand ParentCollectionCommand
-        {
-            get => m_ParentCollectionCommand;
-            internal set
-            {
-                if (State != CommandState.Initialized)
-                {
-                    throw new Exception($"Tried to set the ParentCommand on {this} but State was {State} instead of Initialized!");
-                }
-
-                m_ParentCollectionCommand = value;
-            }
-        }
-
-        private AbstractCollectionCommand m_ParentCollectionCommand;
-        
 
         protected AbstractCommand()
         {
@@ -59,25 +33,15 @@ namespace Anvil.CSharp.Command
             }
             
             State = CommandState.Disposed;
-            ParentCollectionCommand = null;
-            SharedData = null;
             OnComplete = null;
             
             base.DisposeSelf();
         }
-
-        public AbstractCommand SetSharedData(object sharedData)
-        {
-            if (State != CommandState.Initialized)
-            {
-                throw new Exception($"Tried to call SetSharedData on {this} but State was {State} instead of Initialized!");
-            }
-
-            SharedData = sharedData;
-            
-            return this;
-        }
-
+        
+        /// <summary>
+        /// Begins execution of the command.
+        /// </summary>
+        /// <exception cref="Exception">Occurs when the <see cref="State"/> is not CommandState.Initialized</exception>
         public void Execute()
         {
             if (State != CommandState.Initialized)
@@ -88,9 +52,16 @@ namespace Anvil.CSharp.Command
             State = CommandState.Executing;
             ExecuteCommand();
         }
-
+        
+        /// <summary>
+        /// Called from <see cref="AbstractCommand.Execute"/>. Override and implement to execute the logic of the command.
+        /// </summary>
         protected abstract void ExecuteCommand();
-
+        
+        /// <summary>
+        /// Call when the command is complete. Command will auto dispose after dispatching <see cref="OnComplete"/>
+        /// </summary>
+        /// <exception cref="Exception">Occurs when <see cref="State"/> is not CommandState.Executing</exception>
         protected void CompleteCommand()
         {
             if (State != CommandState.Executing)

@@ -15,7 +15,7 @@ namespace Anvil.CSharp.Command
         {
             foreach (AbstractCommand childCommand in childCommands)
             {
-                AddChildCommand(childCommand);
+                AddChild(childCommand);
             }
         }
 
@@ -30,24 +30,34 @@ namespace Anvil.CSharp.Command
             base.DisposeSelf();
         }
         
-        public AbstractCollectionCommand AddChildCommand(AbstractCommand childCommand)
+        /// <summary>
+        /// Adds a child command to be executed in the collection.
+        /// </summary>
+        /// <param name="childCommand">The <see cref="AbstractCommand"/> to add to the collection.</param>
+        /// <returns>The <see cref="AbstractCollectionCommand"/> the child was added to. Useful for method chaining.</returns>
+        /// <exception cref="Exception">Occurs when the <see cref="State"/> is not CommandState.Initialized</exception>
+        public AbstractCollectionCommand AddChild(AbstractCommand childCommand)
         {
             if (State != CommandState.Initialized)
             {
                 throw new Exception($"Tried to add child command {childCommand} to {this} but State was {State} instead of Initialized!");
             }
-
-            childCommand.ParentCollectionCommand = this;
+            
             m_ChildCommands.Add(childCommand);
 
             return this;
         }
-
-        public AbstractCollectionCommand AddChildCommands(IEnumerable<AbstractCommand> childCommands)
+        
+        /// <summary>
+        /// Adds an <see cref="IEnumerable{AbstractCommand}"/> to be executed in the collection.
+        /// </summary>
+        /// <param name="childCommands">The <see cref="IEnumerable{AbstractCommand}"/> to add to the collection.</param>
+        /// <returns>The <see cref="AbstractCollectionCommand"/> the child was added to. Useful for method chaining.</returns>
+        public AbstractCollectionCommand AddChildren(IEnumerable<AbstractCommand> childCommands)
         {
             foreach (AbstractCommand childCommand in childCommands)
             {
-                AddChildCommand(childCommand);
+                AddChild(childCommand);
             }
 
             return this;
