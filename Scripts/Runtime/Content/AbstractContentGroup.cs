@@ -14,15 +14,15 @@ namespace Anvil.CSharp.Content
         public event Action<AbstractContentController> OnPlayOutComplete;
 
 
-        public readonly string ID;
-        public Transform ContentGroupRoot { get; private set; }
+        public readonly AbstractContentGroupConfigVO ConfigVO;
         
-        public AbstractContentManager<,,> ContentManager { get; private set; }
+        
+        public AbstractContentManager ContentManager { get; private set; }
         
         public AbstractContentController ActiveContentController { get; private set; }
         private AbstractContentController m_PendingContentController;
 
-        private UpdateHandle m_UpdateHandle;
+        // private UpdateHandle m_UpdateHandle;
         
         //TODO: Snippet about the gameObjectRoot. To be cleaned up when docs pass happens on this class.
         // /// <summary>
@@ -31,38 +31,27 @@ namespace Anvil.CSharp.Content
         // /// to the <see cref="ContentManager"/>'s ContentRoot.
         // /// </summary>
 
-        public AbstractContentGroup()
+        protected AbstractContentGroup(AbstractContentManager contentManager, AbstractContentGroupConfigVO configVO)
         {
             ContentManager = contentManager;
-            ID = id;
+            ConfigVO = configVO;
 
-            m_UpdateHandle = UpdateHandle.Create<UnityUpdateSource>();
+            // m_UpdateHandle = UpdateHandle.Create<UnityUpdateSource>();
 
-            InitGameObject(localPosition, gameObjectRoot);
+            
         }
 
         protected override void DisposeSelf()
         {
-            if (m_UpdateHandle != null)
-            {
-                m_UpdateHandle.Dispose();
-                m_UpdateHandle = null;
-            }
+            // if (m_UpdateHandle != null)
+            // {
+            //     m_UpdateHandle.Dispose();
+            //     m_UpdateHandle = null;
+            // }
             base.DisposeSelf();
         }
 
-        private void InitGameObject(Vector3 localPosition, Transform gameObjectRoot)
-        {
-            GameObject groupRootGO = new GameObject($"[CL - {ID}]");
-            ContentGroupRoot = groupRootGO.transform;
-            Transform parent = gameObjectRoot == null
-                ? ContentManager.ContentRoot
-                : gameObjectRoot;
-            ContentGroupRoot.SetParent(parent);
-            ContentGroupRoot.localPosition = localPosition;
-            ContentGroupRoot.localRotation = Quaternion.identity;
-            ContentGroupRoot.localScale = Vector3.one;
-        }
+        
 
         public void Show(AbstractContentController contentController)
         {
@@ -80,6 +69,7 @@ namespace Anvil.CSharp.Content
             }
             else
             {
+                //TODO: Should we wait one frame here via UpdateHandle?
                 //Otherwise we can just show the pending controller
                 ShowPendingContentController();
             }
@@ -112,20 +102,19 @@ namespace Anvil.CSharp.Content
         private void HandleOnLoadComplete()
         {
             ActiveContentController.OnLoadComplete -= HandleOnLoadComplete;
+            HandleOnLoadCompleteHook();
             OnLoadComplete?.Invoke(ActiveContentController);
             
             ActiveContentController.InternalInitAfterLoadComplete();
 
-            AbstractContent content = ActiveContentController.Content;
-            Transform transform = content.transform;
-            transform.SetParent(ContentGroupRoot);
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
-            transform.localScale = Vector3.one;
-
             AttachLifeCycleListeners(ActiveContentController);
             OnPlayInStart?.Invoke(ActiveContentController);
             ActiveContentController.InternalPlayIn();
+        }
+
+        protected virtual void HandleOnLoadCompleteHook()
+        {
+            
         }
 
         private void AttachLifeCycleListeners(AbstractContentController contentController)

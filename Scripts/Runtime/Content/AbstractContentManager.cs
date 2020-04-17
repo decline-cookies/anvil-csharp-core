@@ -4,10 +4,7 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Content
 {
-    public abstract class AbstractContentManager<TContentGroup, TContentController, TContent> : AbstractAnvilDisposable
-    where TContentGroup : AbstractContentGroup 
-    where TContentController : AbstractContentController
-    where TContent : IContent
+    public abstract class AbstractContentManager : AbstractAnvilDisposable
     {
         public event Action<AbstractContentController> OnLoadStart;
         public event Action<AbstractContentController> OnLoadComplete;
@@ -16,7 +13,7 @@ namespace Anvil.CSharp.Content
         public event Action<AbstractContentController> OnPlayOutStart;
         public event Action<AbstractContentController> OnPlayOutComplete;
         
-        private readonly Dictionary<string, TContentGroup> m_ContentGroups = new Dictionary<string, TContentGroup>();
+        private readonly Dictionary<string, AbstractContentGroup> m_ContentGroups = new Dictionary<string, AbstractContentGroup>();
         
         protected AbstractContentManager()
         {
@@ -31,7 +28,7 @@ namespace Anvil.CSharp.Content
             OnPlayOutStart = null;
             OnPlayOutComplete = null;
             
-            foreach (TContentGroup contentGroup in m_ContentGroups.Values)
+            foreach (AbstractContentGroup contentGroup in m_ContentGroups.Values)
             {
                 contentGroup.Dispose();
             }
@@ -40,37 +37,37 @@ namespace Anvil.CSharp.Content
             base.DisposeSelf();
         }
         
-        protected abstract TContentGroup ConstructContentGroup(string id);
+        protected abstract AbstractContentGroup ConstructContentGroup(AbstractContentGroupConfigVO configVO);
         protected abstract void LogWarning(string msg);
         
-        public AbstractContentManager<TContentGroup, TContentController, TContent> CreateContentGroup(string id)
+        public AbstractContentManager CreateContentGroup(AbstractContentGroupConfigVO configVO)
         {
-            if (m_ContentGroups.ContainsKey(id))
+            if (m_ContentGroups.ContainsKey(configVO.ID))
             {
-                throw new ArgumentException($"Content Groups ID of {id} is already registered with the Content Manager!");
+                throw new ArgumentException($"Content Groups ID of {configVO.ID} is already registered with the Content Manager!");
             }
 
-            TContentGroup contentGroup = ConstructContentGroup(id);
-            m_ContentGroups.Add(contentGroup.ID, contentGroup);
+            AbstractContentGroup contentGroup = ConstructContentGroup(configVO);
+            m_ContentGroups.Add(contentGroup.ConfigVO.ID, contentGroup);
 
             AddLifeCycleListeners(contentGroup);
             
             return this;
         }
         
-        public TContentGroup GetContentGroup(string id)
+        public AbstractContentGroup GetContentGroup(string contentGroupID)
         {
-            if (!m_ContentGroups.ContainsKey(id))
+            if (!m_ContentGroups.ContainsKey(contentGroupID))
             {
-                throw new ArgumentException($"Tried to get Content Group with ID {id} but none exists!");
+                throw new ArgumentException($"Tried to get Content Group with ID {contentGroupID} but none exists!");
             }
 
-            return m_ContentGroups[id];
+            return m_ContentGroups[contentGroupID];
         }
         
 
 
-        public void Show(TContentController contentController)
+        public void Show(AbstractContentController contentController)
         {
             string contentGroupID = contentController.ContentGroupID;
 
@@ -79,7 +76,7 @@ namespace Anvil.CSharp.Content
                 throw new Exception($"ContentGroupID of {contentGroupID} does not exist in the Content Manager. Did you add the Content Group?");
             }
 
-            TContentGroup contentGroup = m_ContentGroups[contentGroupID];
+            AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             contentGroup.Show(contentController);
         }
 
@@ -91,12 +88,12 @@ namespace Anvil.CSharp.Content
                 return false;
             }
             
-            TContentGroup contentGroup = m_ContentGroups[contentGroupID];
+            AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             contentGroup.Clear();
             return true;
         }
 
-        private void AddLifeCycleListeners(TContentGroup contentGroup)
+        private void AddLifeCycleListeners(AbstractContentGroup contentGroup)
         {
             contentGroup.OnLoadStart += HandleOnLoadStart;
             contentGroup.OnLoadComplete += HandleOnLoadComplete;
@@ -106,32 +103,32 @@ namespace Anvil.CSharp.Content
             contentGroup.OnPlayOutComplete += HandleOnPlayOutComplete;
         }
 
-        private void HandleOnLoadStart(TContentController contentController)
+        private void HandleOnLoadStart(AbstractContentController contentController)
         {
             OnLoadStart?.Invoke(contentController);
         }
         
-        private void HandleOnLoadComplete(TContentController contentController)
+        private void HandleOnLoadComplete(AbstractContentController contentController)
         {
             OnLoadComplete?.Invoke(contentController);
         }
         
-        private void HandleOnPlayInStart(TContentController contentController)
+        private void HandleOnPlayInStart(AbstractContentController contentController)
         {
             OnPlayInStart?.Invoke(contentController);
         }
         
-        private void HandleOnPlayInComplete(TContentController contentController)
+        private void HandleOnPlayInComplete(AbstractContentController contentController)
         {
             OnPlayInComplete?.Invoke(contentController);
         }
         
-        private void HandleOnPlayOutStart(TContentController contentController)
+        private void HandleOnPlayOutStart(AbstractContentController contentController)
         {
             OnPlayOutStart?.Invoke(contentController);
         }
         
-        private void HandleOnPlayOutComplete(TContentController contentController)
+        private void HandleOnPlayOutComplete(AbstractContentController contentController)
         {
             OnPlayOutComplete?.Invoke(contentController);
         }

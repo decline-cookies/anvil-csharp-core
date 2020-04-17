@@ -1,5 +1,4 @@
 ﻿using System;
-using Anvil.CSharp.Content;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Content
@@ -24,7 +23,7 @@ namespace Anvil.CSharp.Content
         public readonly string ContentGroupID;
         public readonly string ContentLoadingID;
 
-        public IContent Content { get; private set; }
+        public IContent Content { get; protected set; }
         public AbstractContentGroup ContentGroup { get; internal set; }
         public bool IsContentControllerDisposing { get; private set; }
 
@@ -61,6 +60,11 @@ namespace Anvil.CSharp.Content
         public virtual void Load()
         {
             
+        }
+
+        protected virtual void LoadComplete()
+        {
+            OnLoadComplete?.Invoke();
         }
 
         
