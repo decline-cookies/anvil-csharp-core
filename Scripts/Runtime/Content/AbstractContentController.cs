@@ -3,13 +3,13 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Content
 {
-    public abstract class AbstractContentController<T> : AbstractContentController where T : IContent
-    {
-        public new T Content => (T)base.Content;
-
-        protected AbstractContentController(string contentGroupID, string contentLoadingID)
-            : base(contentGroupID, contentLoadingID) { }
-    }
+    // public abstract class AbstractContentController<T> : AbstractContentController where T : AbstractContent
+    // {
+    //     public new T Content => (T)base.Content;
+    //
+    //     protected AbstractContentController(string contentGroupID, string contentLoadingID)
+    //         : base(contentGroupID, contentLoadingID) { }
+    // }
 
     public abstract class AbstractContentController : AbstractAnvilDisposable
     {
@@ -23,9 +23,24 @@ namespace Anvil.CSharp.Content
         public readonly string ContentGroupID;
         public readonly string ContentLoadingID;
 
-        public IContent Content { get; protected set; }
+        public IContent Content
+        {
+            get => m_Content;
+            protected set
+            {
+                if (m_Content != null)
+                {
+                    m_Content.OnContentDisposing -= HandleOnContentDisposing;
+                }
+
+                m_Content = value;
+                m_Content.OnContentDisposing += HandleOnContentDisposing;
+            }
+        }
         public AbstractContentGroup ContentGroup { get; internal set; }
         public bool IsContentControllerDisposing { get; private set; }
+
+        private IContent m_Content;
 
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
         {
@@ -48,7 +63,7 @@ namespace Anvil.CSharp.Content
             OnLoadComplete = null;
             OnClear = null;
 
-            if (Content != null && !Content.IsContentDisposing)
+            if (Content != null)
             {
                 Content.Dispose();
                 Content = null;
@@ -110,6 +125,12 @@ namespace Anvil.CSharp.Content
         public void Clear()
         {
             OnClear?.Invoke();
+        }
+
+
+        private void HandleOnContentDisposing()
+        {
+            Dispose();
         }
         
 

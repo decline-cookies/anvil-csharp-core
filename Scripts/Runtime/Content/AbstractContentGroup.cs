@@ -4,7 +4,7 @@ using Anvil.CSharp.DelayedExecution;
 
 namespace Anvil.CSharp.Content
 {
-    public abstract class AbstractContentGroup : AbstractAnvilDisposable
+    public abstract class AbstractContentGroup: AbstractAnvilDisposable
     {
         public event Action<AbstractContentController> OnLoadStart;
         public event Action<AbstractContentController> OnLoadComplete;

@@ -4,8 +4,7 @@ namespace Anvil.CSharp.Content
 {
     public interface IContent : IDisposable
     {
-        AbstractContentController Controller { get; set;}
-        bool IsContentDisposing { get; }
+        event Action OnContentDisposing;
     }
 }
 
