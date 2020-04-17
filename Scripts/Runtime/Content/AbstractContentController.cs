@@ -3,25 +3,30 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Content
 {
-    // public abstract class AbstractContentController<T> : AbstractContentController where T : AbstractContent
-    // {
-    //     public new T Content => (T)base.Content;
-    //
-    //     protected AbstractContentController(string contentGroupID, string contentLoadingID)
-    //         : base(contentGroupID, contentLoadingID) { }
-    // }
+    public abstract class AbstractContentController<TContent> : AbstractContentController
+        where TContent : class, IContent
+    {
+        public new TContent Content
+        {
+            get => (TContent)base.Content;
+            set => base.Content = value;
+        }
+        
+        protected AbstractContentController(string contentGroupID, string contentLoadingID) 
+            : base(contentGroupID, contentLoadingID)
+        {
+        }
+    }
 
     public abstract class AbstractContentController : AbstractAnvilDisposable
     {
-        public event Action OnPlayInComplete;
-        public event Action OnPlayOutComplete;
-        public event Action OnLoadComplete;
-
-        public event Action OnClear;
-
-
-        public readonly string ContentGroupID;
-        public readonly string ContentLoadingID;
+        public event Action<AbstractContentController> OnLoadStart;
+        public event Action<AbstractContentController> OnLoadComplete;
+        public event Action<AbstractContentController> OnPlayInStart;
+        public event Action<AbstractContentController> OnPlayInComplete;
+        public event Action<AbstractContentController> OnPlayOutStart;
+        public event Action<AbstractContentController> OnPlayOutComplete;
+        public event Action<AbstractContentController> OnClear;
 
         public IContent Content
         {
@@ -34,33 +39,44 @@ namespace Anvil.CSharp.Content
                 }
 
                 m_Content = value;
-                m_Content.OnContentDisposing += HandleOnContentDisposing;
+                
+                if (m_Content != null)
+                {
+                    m_Content.OnContentDisposing += HandleOnContentDisposing;
+                }
             }
         }
         public AbstractContentGroup ContentGroup { get; internal set; }
-        public bool IsContentControllerDisposing { get; private set; }
-
+        
+        
+        public readonly string ContentGroupID;
+        
+        protected readonly string m_ContentLoadingID;
+        
         private IContent m_Content;
+        private bool m_IsContentControllerDisposing;
 
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
         {
             ContentGroupID = contentGroupID;
-            ContentLoadingID = contentLoadingID;
+            m_ContentLoadingID = contentLoadingID;
             //TODO: Handle overrides for additional loading dependency settings.
         }
 
         protected override void DisposeSelf()
         {
-            if (IsContentControllerDisposing)
+            if (m_IsContentControllerDisposing)
             {
                 return;
             }
-            IsContentControllerDisposing = true;
-            
-            
-            OnPlayInComplete = null;
-            OnPlayOutComplete = null;
+            m_IsContentControllerDisposing = true;
+
+            OnLoadStart = null;
             OnLoadComplete = null;
+            OnPlayInStart = null;
+            OnPlayInComplete = null;
+            OnPlayOutStart = null;
+            OnPlayOutComplete = null;
             OnClear = null;
 
             if (Content != null)
@@ -72,17 +88,21 @@ namespace Anvil.CSharp.Content
             base.DisposeSelf();
         }
 
-        public virtual void Load()
+        internal void InternalLoad()
         {
-            
+            OnLoadStart?.Invoke(this);
+            Load();
+        }
+
+        protected virtual void Load()
+        {
+            LoadComplete();
         }
 
         protected virtual void LoadComplete()
         {
-            OnLoadComplete?.Invoke();
+            OnLoadComplete?.Invoke(this);
         }
-
-        
 
         internal void InternalInitAfterLoadComplete()
         {
@@ -93,14 +113,18 @@ namespace Anvil.CSharp.Content
 
         internal void InternalPlayIn()
         {
+            OnPlayInStart?.Invoke(this);
             PlayIn();
         }
 
-        protected abstract void PlayIn();
+        protected virtual void PlayIn()
+        {
+            PlayInComplete();
+        }
         
         protected virtual void PlayInComplete()
         {
-            OnPlayInComplete?.Invoke();
+            OnPlayInComplete?.Invoke(this);
         }
 
         internal void InternalInitAfterPlayInComplete()
@@ -112,28 +136,29 @@ namespace Anvil.CSharp.Content
 
         internal void InternalPlayOut()
         {
+            OnPlayOutStart?.Invoke(this);
             PlayOut();
         }
-        
-        protected abstract void PlayOut();
+
+        protected virtual void PlayOut()
+        {
+            PlayOutComplete();
+        }
 
         protected virtual void PlayOutComplete()
         {
-            OnPlayOutComplete?.Invoke();
+            OnPlayOutComplete?.Invoke(this);
         }
 
         public void Clear()
         {
-            OnClear?.Invoke();
+            OnClear?.Invoke(this);
         }
-
-
+        
         private void HandleOnContentDisposing()
         {
             Dispose();
         }
-        
-
     }
 }
 

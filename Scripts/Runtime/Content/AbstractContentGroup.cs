@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using Anvil.CSharp.Core;
-using Anvil.CSharp.DelayedExecution;
 
 namespace Anvil.CSharp.Content
 {
@@ -59,12 +59,13 @@ namespace Anvil.CSharp.Content
             // - Showing the same instance that is already showing or about to be shown
             // - Might have a pending controller in the process of loading
             
+            RemoveLifeCycleListeners(m_PendingContentController);
             m_PendingContentController = contentController;
+            AttachLifeCycleListeners(m_PendingContentController);
 
             //If there's an Active Controller currently being shown, we need to clear it.
             if (ActiveContentController != null)
             {
-                OnPlayOutStart?.Invoke(ActiveContentController);
                 ActiveContentController.InternalPlayOut();
             }
             else
@@ -93,54 +94,60 @@ namespace Anvil.CSharp.Content
             ActiveContentController = m_PendingContentController;
             m_PendingContentController = null;
             ActiveContentController.ContentGroup = this;
-
+            
+            ActiveContentController.InternalLoad();
+        }
+        
+        private void HandleOnLoadStart(AbstractContentController contentController)
+        {
+            Debug.Assert(contentController == ActiveContentController,
+                "TODO");
+            
             OnLoadStart?.Invoke(ActiveContentController);
-            ActiveContentController.OnLoadComplete += HandleOnLoadComplete;
-            ActiveContentController.Load();
         }
 
-        private void HandleOnLoadComplete()
+        private void HandleOnLoadComplete(AbstractContentController contentController)
         {
-            ActiveContentController.OnLoadComplete -= HandleOnLoadComplete;
-            HandleOnLoadCompleteHook();
+            Debug.Assert(contentController == ActiveContentController,
+                "TODO");
+
             OnLoadComplete?.Invoke(ActiveContentController);
             
             ActiveContentController.InternalInitAfterLoadComplete();
-
-            AttachLifeCycleListeners(ActiveContentController);
-            OnPlayInStart?.Invoke(ActiveContentController);
             ActiveContentController.InternalPlayIn();
         }
 
-        protected virtual void HandleOnLoadCompleteHook()
+        private void HandleOnPlayInStart(AbstractContentController contentController)
         {
+            Debug.Assert(contentController == ActiveContentController,
+                "TODO");
             
-        }
-
-        private void AttachLifeCycleListeners(AbstractContentController contentController)
-        {
-            contentController.OnPlayInComplete += HandleOnPlayInComplete;
-            contentController.OnPlayOutComplete += HandleOnPlayOutComplete;
-            contentController.OnClear += HandleOnClear;
+            OnPlayInStart?.Invoke(ActiveContentController);
         }
         
-        private void RemoveLifeCycleListeners(AbstractContentController contentController)
+        private void HandleOnPlayInComplete(AbstractContentController contentController)
         {
-            contentController.OnPlayInComplete -= HandleOnPlayInComplete;
-            contentController.OnPlayOutComplete -= HandleOnPlayOutComplete;
-            contentController.OnClear -= HandleOnClear;
-        }
-
-        private void HandleOnPlayInComplete()
-        {
-            ActiveContentController.OnPlayInComplete -= HandleOnPlayInComplete;
+            Debug.Assert(contentController == ActiveContentController,
+                "TODO");
+            
             OnPlayInComplete?.Invoke(ActiveContentController);
 
             ActiveContentController.InternalInitAfterPlayInComplete();
         }
 
-        private void HandleOnPlayOutComplete()
+        private void HandleOnPlayOutStart(AbstractContentController contentController)
         {
+            Debug.Assert(contentController == ActiveContentController,
+                "TODO");
+            
+            OnPlayOutStart?.Invoke(ActiveContentController);
+        }
+        
+        private void HandleOnPlayOutComplete(AbstractContentController contentController)
+        {
+            Debug.Assert(contentController == ActiveContentController,
+                "TODO");
+            
             if (ActiveContentController != null)
             {
                 OnPlayOutComplete?.Invoke(ActiveContentController);
@@ -152,8 +159,43 @@ namespace Anvil.CSharp.Content
             ShowPendingContentController();
         }
 
-        private void HandleOnClear()
+        private void AttachLifeCycleListeners(AbstractContentController contentController)
         {
+            if (contentController == null)
+            {
+                return;
+            }
+            
+            contentController.OnLoadStart += HandleOnLoadStart;
+            contentController.OnLoadComplete += HandleOnLoadComplete;
+            contentController.OnPlayInStart += HandleOnPlayInStart;
+            contentController.OnPlayInComplete += HandleOnPlayInComplete;
+            contentController.OnPlayOutStart += HandleOnPlayOutStart;
+            contentController.OnPlayOutComplete += HandleOnPlayOutComplete;
+            contentController.OnClear += HandleOnClear;
+        }
+        
+        private void RemoveLifeCycleListeners(AbstractContentController contentController)
+        {
+            if (contentController == null)
+            {
+                return;
+            }
+            
+            contentController.OnLoadStart -= HandleOnLoadStart;
+            contentController.OnLoadComplete -= HandleOnLoadComplete;
+            contentController.OnPlayInStart -= HandleOnPlayInStart;
+            contentController.OnPlayInComplete -= HandleOnPlayInComplete;
+            contentController.OnPlayOutStart -= HandleOnPlayOutStart;
+            contentController.OnPlayOutComplete -= HandleOnPlayOutComplete;
+            contentController.OnClear -= HandleOnClear;
+        }
+
+        private void HandleOnClear(AbstractContentController contentController)
+        {
+            Debug.Assert(contentController == ActiveContentController,
+                "TODO");
+            
             Clear();
         }
 
