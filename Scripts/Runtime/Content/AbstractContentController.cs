@@ -6,7 +6,7 @@ namespace Anvil.CSharp.Content
     public abstract class AbstractContentController<TContent> : AbstractContentController
         where TContent : class, IContent
     {
-        public new TContent Content
+        protected new TContent Content
         {
             get => (TContent)base.Content;
             set => base.Content = value;
