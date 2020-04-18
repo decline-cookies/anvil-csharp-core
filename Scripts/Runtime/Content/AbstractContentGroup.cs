@@ -4,61 +4,73 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Content
 {
+    /// <summary>
+    /// A logical group of <see cref="AbstractContentController"/>/<see cref="IContent"/> pairs to be shown.
+    /// Many <see cref="AbstractContentGroup"/> can be added to the controlling <see cref="AbstractContentManager"/>.
+    /// </summary>
     public abstract class AbstractContentGroup: AbstractAnvilDisposable
     {
+        /// <summary>
+        /// <inheritdoc cref="AbstractContentController.OnLoadStart"/>
+        /// </summary>
         public event Action<AbstractContentController> OnLoadStart;
+        /// <summary>
+        /// <inheritdoc cref="AbstractContentController.OnLoadComplete"/>
+        /// </summary>
         public event Action<AbstractContentController> OnLoadComplete;
+        /// <summary>
+        /// <inheritdoc cref="AbstractContentController.OnPlayInStart"/>
+        /// </summary>
         public event Action<AbstractContentController> OnPlayInStart;
+        /// <summary>
+        /// <inheritdoc cref="AbstractContentController.OnPlayInComplete"/>
+        /// </summary>
         public event Action<AbstractContentController> OnPlayInComplete;
+        /// <summary>
+        /// <inheritdoc cref="AbstractContentController.OnPlayOutStart"/>
+        /// </summary>
         public event Action<AbstractContentController> OnPlayOutStart;
+        /// <summary>
+        /// <inheritdoc cref="AbstractContentController.OnPlayOutComplete"/>
+        /// </summary>
         public event Action<AbstractContentController> OnPlayOutComplete;
 
+        /// <summary>
+        /// The <see cref="ContentGroupConfigVO"/> for configuring the <see cref="AbstractContentGroup"/>
+        /// </summary>
+        public readonly ContentGroupConfigVO ConfigVO;
 
-        public readonly AbstractContentGroupConfigVO ConfigVO;
+        /// <summary>
+        /// The controlling <see cref="AbstractContentManager"/>
+        /// </summary>
+        public readonly AbstractContentManager ContentManager;
         
-        
-        public AbstractContentManager ContentManager { get; private set; }
-        
+        /// <summary>
+        /// The active <see cref="AbstractContentController"/> currently being shown.
+        /// </summary>
         public AbstractContentController ActiveContentController { get; private set; }
+        
         private AbstractContentController m_PendingContentController;
 
-        // private UpdateHandle m_UpdateHandle;
-        
-        //TODO: Snippet about the gameObjectRoot. To be cleaned up when docs pass happens on this class.
-        // /// <summary>
-        // /// A custom user supplied <see cref="GameObject"/> <see cref="Transform"/> to parent this
-        // /// <see cref="ContentGroup"/> to. If left null (the default), the <see cref="ContentGroup"/> will be parented
-        // /// to the <see cref="ContentManager"/>'s ContentRoot.
-        // /// </summary>
-
-        protected AbstractContentGroup(AbstractContentManager contentManager, AbstractContentGroupConfigVO configVO)
+        protected AbstractContentGroup(AbstractContentManager contentManager, ContentGroupConfigVO configVO)
         {
             ContentManager = contentManager;
             ConfigVO = configVO;
-
-            // m_UpdateHandle = UpdateHandle.Create<UnityUpdateSource>();
-
-            
         }
 
         protected override void DisposeSelf()
         {
-            // if (m_UpdateHandle != null)
-            // {
-            //     m_UpdateHandle.Dispose();
-            //     m_UpdateHandle = null;
-            // }
             base.DisposeSelf();
         }
-
         
-
+        /// <summary>
+        /// Shows an <see cref="AbstractContentController"/> in this group.
+        /// </summary>
+        /// <param name="contentController">The instance of <see cref="AbstractContentController"/> to be shown.</param>
         public void Show(AbstractContentController contentController)
         {
-            //TODO: Validate the passed in controller to ensure we avoid weird cases such as:
-            // - Showing the same instance that is already showing or about to be shown
-            // - Might have a pending controller in the process of loading
-            
+            //TODO: Validate the passed in controller to ensure we avoid weird cases - https://app.clubhouse.io/scratchgames/story/29/validate-on-show
+
             RemoveLifeCycleListeners(m_PendingContentController);
             m_PendingContentController = contentController;
             AttachLifeCycleListeners(m_PendingContentController);
@@ -70,12 +82,15 @@ namespace Anvil.CSharp.Content
             }
             else
             {
-                //TODO: Should we wait one frame here via UpdateHandle?
+                //TODO: Should we wait one frame here via UpdateHandle? - https://app.clubhouse.io/scratchgames/story/111/think-about-waiting-one-frame-to-display-new-content-in-the-abstractcontentgroup-if-there-is-no-content-to-transition-out
                 //Otherwise we can just show the pending controller
                 ShowPendingContentController();
             }
         }
 
+        /// <summary>
+        /// Clears this group so that no <see cref="AbstractContentController"/>/<see cref="IContent"/> pair is being shown.
+        /// </summary>
         public void Clear()
         {
             Show(null);
@@ -83,13 +98,14 @@ namespace Anvil.CSharp.Content
 
         private void ShowPendingContentController()
         {
+            //If there's nothing to show, early return. Will occur on a Clear.
             if (m_PendingContentController == null)
             {
                 return;
             }
             //We can't show the pending controller right away because we may not have the necessary assets loaded. 
             //So we need to construct a Sequential Command and populate with the required commands to load the assets needed. 
-            
+            //TODO: Handle loading - https://app.clubhouse.io/scratchgames/story/37/support-loading-dependent-assets
             
             ActiveContentController = m_PendingContentController;
             m_PendingContentController = null;
@@ -101,7 +117,7 @@ namespace Anvil.CSharp.Content
         private void HandleOnLoadStart(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
-                "TODO");
+                $"Controller {contentController} dispatched OnLoadStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
             
             OnLoadStart?.Invoke(ActiveContentController);
         }
@@ -109,7 +125,8 @@ namespace Anvil.CSharp.Content
         private void HandleOnLoadComplete(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
-                "TODO");
+                $"Controller {contentController} dispatched OnLoadComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
+
 
             OnLoadComplete?.Invoke(ActiveContentController);
             
@@ -120,7 +137,8 @@ namespace Anvil.CSharp.Content
         private void HandleOnPlayInStart(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
-                "TODO");
+                $"Controller {contentController} dispatched OnPlayInStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
+
             
             OnPlayInStart?.Invoke(ActiveContentController);
         }
@@ -128,7 +146,8 @@ namespace Anvil.CSharp.Content
         private void HandleOnPlayInComplete(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
-                "TODO");
+                $"Controller {contentController} dispatched OnPlayInComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
+
             
             OnPlayInComplete?.Invoke(ActiveContentController);
 
@@ -138,7 +157,8 @@ namespace Anvil.CSharp.Content
         private void HandleOnPlayOutStart(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
-                "TODO");
+                $"Controller {contentController} dispatched OnPlayOutStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
+
             
             OnPlayOutStart?.Invoke(ActiveContentController);
         }
@@ -146,7 +166,8 @@ namespace Anvil.CSharp.Content
         private void HandleOnPlayOutComplete(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
-                "TODO");
+                $"Controller {contentController} dispatched OnPlayOutComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
+
             
             if (ActiveContentController != null)
             {
@@ -194,7 +215,8 @@ namespace Anvil.CSharp.Content
         private void HandleOnClear(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
-                "TODO");
+                $"Controller {contentController} dispatched OnClear but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
+
             
             Clear();
         }
