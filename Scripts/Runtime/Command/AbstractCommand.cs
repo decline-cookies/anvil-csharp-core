@@ -27,12 +27,6 @@ namespace Anvil.CSharp.Command
 
         protected override void DisposeSelf()
         {
-            if (State == CommandState.Disposed)
-            {
-                return;
-            }
-            
-            State = CommandState.Disposed;
             OnComplete = null;
             
             base.DisposeSelf();

@@ -16,10 +16,6 @@
         /// <summary>
         /// Indicates the <see cref="AbstractCommand"/> has been completed.
         /// </summary>
-        Completed,
-        /// <summary>
-        /// Indicates the <see cref="AbstractCommand"/> has been disposed.
-        /// </summary>
-        Disposed
+        Completed
     }
 }

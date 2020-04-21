@@ -82,6 +82,7 @@ namespace Anvil.CSharp.Command
                 CompleteCommand();
                 return;
             }
+            
             AbstractCommand childCommand = m_ChildCommands[m_ChildCommandIndex];
             childCommand.OnComplete += HandleChildCommandOnComplete;
             childCommand.Execute();
