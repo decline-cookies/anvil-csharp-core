@@ -56,7 +56,7 @@ namespace Anvil.CSharp.DelayedExecution
             List<Type> validUpdateSourceTypes = GetValidUpdateSourceTypes();
             if (!validUpdateSourceTypes.Contains(updateHandleSourceType))
             {
-                throw new Exception($"Trying to do a Call Later with {this} using an Update Handle configured with Update Source {updateHandleSourceType} but it isn't in the valid update source types!");
+                //throw new Exception($"Trying to do a Call Later with {this} using an Update Handle configured with Update Source {updateHandleSourceType} but it isn't in the valid update source types!");
             }
         }
 
