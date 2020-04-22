@@ -64,7 +64,7 @@ namespace Anvil.CSharp.Content
         /// </summary>
         /// <param name="configVO">The configuration data structure to aid in construction. <see cref="ContentGroupConfigVO"/>"/></param>
         /// <returns>The created <see cref="AbstractContentGroup"/></returns>
-        protected abstract AbstractContentGroup ConstructContentGroup(ContentGroupConfigVO configVO);
+        protected abstract AbstractContentGroup CreateGroup(ContentGroupConfigVO configVO);
         /// <summary>
         /// Implement this function to allow a warning to be displayed to whatever is appropriate for the application.
         /// </summary>
@@ -78,17 +78,38 @@ namespace Anvil.CSharp.Content
         /// <param name="configVO">The configuration data structure to aid in construction. <see cref="ContentGroupConfigVO"/>"/></param>
         /// <returns>The <see cref="AbstractContentManager"/> that the Content Group was created for.</returns>
         /// <exception cref="ArgumentException">Occurs when a <see cref="AbstractContentGroup"/> with the same ID is already part of this Content Manager.</exception>
-        public AbstractContentManager CreateContentGroup(ContentGroupConfigVO configVO)
+        public AbstractContentManager AddGroup(ContentGroupConfigVO configVO)
         {
             if (m_ContentGroups.ContainsKey(configVO.ID))
             {
                 throw new ArgumentException($"Content Groups ID of {configVO.ID} is already registered with the Content Manager!");
             }
 
-            AbstractContentGroup contentGroup = ConstructContentGroup(configVO);
+            AbstractContentGroup contentGroup = CreateGroup(configVO);
             m_ContentGroups.Add(contentGroup.ConfigVO.ID, contentGroup);
 
             AddLifeCycleListeners(contentGroup);
+            
+            return this;
+        }
+        
+        /// <summary>
+        /// Removes a <see cref="AbstractContentGroup"/> from the Content Manager based on its ID
+        /// Will dispose the Content Group after removal
+        /// </summary>
+        /// <param name="contentGroupID">The ID to identify the <see cref="AbstractContentGroup"/>. <see cref="ContentGroupConfigVO.ID"/></param>
+        /// <returns>The <see cref="AbstractContentManager"/> that the Content Group was removed from.</returns>
+        /// <exception cref="ArgumentException">Occurs when the passed in ID is not found. <see cref="HasGroup"/> to check beforehand.</exception>
+        public AbstractContentManager RemoveGroup(string contentGroupID)
+        {
+            if (!m_ContentGroups.ContainsKey(contentGroupID))
+            {
+                throw new ArgumentException($"Tried to remove Content Group with ID {contentGroupID} but none exists!");
+            }
+
+            AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
+            m_ContentGroups.Remove(contentGroupID);
+            contentGroup.Dispose();
             
             return this;
         }
@@ -98,8 +119,8 @@ namespace Anvil.CSharp.Content
         /// </summary>
         /// <param name="contentGroupID">The ID to identify the <see cref="AbstractContentGroup"/>. <see cref="ContentGroupConfigVO.ID"/></param>
         /// <returns>The <see cref="AbstractContentGroup"/> corresponding to the ID</returns>
-        /// <exception cref="ArgumentException">Occurs when the passed in ID is not found. <see cref="HasContentGroup"/> to check beforehand.</exception>
-        public AbstractContentGroup GetContentGroup(string contentGroupID)
+        /// <exception cref="ArgumentException">Occurs when the passed in ID is not found. <see cref="HasGroup"/> to check beforehand.</exception>
+        public AbstractContentGroup GetGroup(string contentGroupID)
         {
             if (!m_ContentGroups.ContainsKey(contentGroupID))
             {
@@ -114,7 +135,7 @@ namespace Anvil.CSharp.Content
         /// </summary>
         /// <param name="contentGroupID">The ID to check. <see cref="ContentGroupConfigVO.ID"/></param>
         /// <returns>true if found, false if not.</returns>
-        public bool HasContentGroup(string contentGroupID)
+        public bool HasGroup(string contentGroupID)
         {
             return m_ContentGroups.ContainsKey(contentGroupID);
         }
@@ -143,7 +164,7 @@ namespace Anvil.CSharp.Content
         /// </summary>
         /// <param name="contentGroupID">The ID lookup the <see cref="AbstractContentGroup"/></param>
         /// <returns>true if found and cleared, false if not found. A warning will be issued via <see cref="LogWarning"/></returns>
-        public bool ClearContentGroup(string contentGroupID)
+        public bool ClearGroup(string contentGroupID)
         {
             if (!m_ContentGroups.ContainsKey(contentGroupID))
             {
@@ -153,6 +174,7 @@ namespace Anvil.CSharp.Content
             
             AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             contentGroup.Clear();
+            
             return true;
         }
 
