@@ -16,10 +16,10 @@ namespace Anvil.CSharp.Content
         /// <summary>
         /// Gets/Sets the corresponding Content as strongly typed version of <see cref="IContent"/>
         /// </summary>
-        protected new TContent Content
+        public new TContent Content
         {
             get => (TContent)base.Content;
-            set => base.Content = value;
+            protected set => base.Content = value;
         }
         
         //TODO: Look at replacing the contentGroupID with Enums - https://app.clubhouse.io/scratchgames/story/110/look-at-using-c-7-features-to-constrain-via-enums

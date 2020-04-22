@@ -11,7 +11,7 @@ namespace Anvil.CSharp.Content
         /// <summary>
         /// Gets/Sets the <see cref="AbstractContentController"/> to correspond to this content. 
         /// </summary>
-        AbstractContentController ContentController { get; }
+        AbstractContentController Controller { get; }
     }
 }
 
