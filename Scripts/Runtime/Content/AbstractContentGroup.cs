@@ -180,15 +180,11 @@ namespace Anvil.CSharp.Content
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayOutComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
-
             
-            if (ActiveContentController != null)
-            {
-                OnPlayOutComplete?.Invoke(ActiveContentController);
-                RemoveLifeCycleListeners(ActiveContentController);
-                ActiveContentController.Dispose();
-                ActiveContentController = null;
-            }
+            OnPlayOutComplete?.Invoke(ActiveContentController);
+            RemoveLifeCycleListeners(ActiveContentController);
+            ActiveContentController?.Dispose();
+            ActiveContentController = null;
 
             ShowPendingContentController();
         }
