@@ -60,6 +60,19 @@ namespace Anvil.CSharp.Content
 
         protected override void DisposeSelf()
         {
+            OnLoadStart = null;
+            OnLoadComplete = null;
+            OnPlayInStart = null;
+            OnPlayInComplete = null;
+            OnPlayOutStart = null;
+            OnPlayOutComplete = null;
+
+            ActiveContentController?.Dispose();
+            ActiveContentController = null;
+            
+            m_PendingContentController?.Dispose();
+            m_PendingContentController = null;
+            
             base.DisposeSelf();
         }
         
@@ -73,6 +86,7 @@ namespace Anvil.CSharp.Content
 
             RemoveLifeCycleListeners(m_PendingContentController);
             m_PendingContentController = contentController;
+            m_PendingContentController.ContentGroup = this;
             AttachLifeCycleListeners(m_PendingContentController);
 
             //If there's an Active Controller currently being shown, we need to clear it.
@@ -109,8 +123,7 @@ namespace Anvil.CSharp.Content
             
             ActiveContentController = m_PendingContentController;
             m_PendingContentController = null;
-            ActiveContentController.ContentGroup = this;
-            
+
             ActiveContentController.InternalLoad();
         }
         
@@ -167,15 +180,11 @@ namespace Anvil.CSharp.Content
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayOutComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
-
             
-            if (ActiveContentController != null)
-            {
-                OnPlayOutComplete?.Invoke(ActiveContentController);
-                RemoveLifeCycleListeners(ActiveContentController);
-                ActiveContentController.Dispose();
-                ActiveContentController = null;
-            }
+            OnPlayOutComplete?.Invoke(ActiveContentController);
+            RemoveLifeCycleListeners(ActiveContentController);
+            ActiveContentController?.Dispose();
+            ActiveContentController = null;
 
             ShowPendingContentController();
         }
@@ -193,7 +202,6 @@ namespace Anvil.CSharp.Content
             contentController.OnPlayInComplete += HandleOnPlayInComplete;
             contentController.OnPlayOutStart += HandleOnPlayOutStart;
             contentController.OnPlayOutComplete += HandleOnPlayOutComplete;
-            contentController.OnClear += HandleOnClear;
         }
         
         private void RemoveLifeCycleListeners(AbstractContentController contentController)
@@ -209,21 +217,7 @@ namespace Anvil.CSharp.Content
             contentController.OnPlayInComplete -= HandleOnPlayInComplete;
             contentController.OnPlayOutStart -= HandleOnPlayOutStart;
             contentController.OnPlayOutComplete -= HandleOnPlayOutComplete;
-            contentController.OnClear -= HandleOnClear;
         }
-
-        private void HandleOnClear(AbstractContentController contentController)
-        {
-            Debug.Assert(contentController == ActiveContentController,
-                $"Controller {contentController} dispatched OnClear but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
-
-            
-            Clear();
-        }
-
-        
-        
-        
     }
 }
 
