@@ -24,6 +24,17 @@ namespace Anvil.CSharp.DelayedExecution
             return s_UpdateSources[sourceType];
         }
         
+        /// <summary>
+        /// Removes an <see cref="AbstractUpdateSource"/> from the lookup. This should only happen if an Update Source
+        /// is disposed. See <see cref="AbstractUpdateSource.Dispose"/>
+        /// </summary>
+        /// <param name="updateSource">The instance of the <see cref="AbstractUpdateSource"/></param>
+        public static void RemoveUpdateSource(AbstractUpdateSource updateSource)
+        {
+            Type sourceType = updateSource.GetType();
+            s_UpdateSources.Remove(sourceType);
+        }
+        
         private static readonly Dictionary<Type, AbstractUpdateSource> s_UpdateSources = new Dictionary<Type, AbstractUpdateSource>();
     }
 }

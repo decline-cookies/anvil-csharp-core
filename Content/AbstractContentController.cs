@@ -77,8 +77,6 @@ namespace Anvil.CSharp.Content
         
         protected readonly string m_ContentLoadingID;
 
-        private bool m_IsContentControllerDisposing;
-
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
         {
             ContentGroupID = contentGroupID;
@@ -88,12 +86,6 @@ namespace Anvil.CSharp.Content
 
         protected override void DisposeSelf()
         {
-            if (m_IsContentControllerDisposing)
-            {
-                return;
-            }
-            m_IsContentControllerDisposing = true;
-
             OnLoadStart = null;
             OnLoadComplete = null;
             OnPlayInStart = null;
@@ -214,11 +206,6 @@ namespace Anvil.CSharp.Content
                 $"ContentGroup is null!");
 
             ContentGroup.Clear();
-        }
-        
-        private void HandleOnContentDisposing()
-        {
-            Dispose();
         }
     }
 }
