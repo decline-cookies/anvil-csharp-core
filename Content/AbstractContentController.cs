@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Content
@@ -14,13 +15,11 @@ namespace Anvil.CSharp.Content
     {
         /// <summary>
         /// Gets/Sets the corresponding Content as strongly typed version of <see cref="IContent"/>
-        /// <remarks>new keyword hides the implementation in <see cref="AbstractContentController"/> which only operates
-        /// on the <see cref="IContent"/></remarks>
         /// </summary>
-        protected new TContent Content
+        public new TContent Content
         {
             get => (TContent)base.Content;
-            set => base.Content = value;
+            protected set => base.Content = value;
         }
         
         //TODO: Look at replacing the contentGroupID with Enums - https://app.clubhouse.io/scratchgames/story/110/look-at-using-c-7-features-to-constrain-via-enums
@@ -60,33 +59,12 @@ namespace Anvil.CSharp.Content
         /// Dispatched when animation of the Content out completes.
         /// </summary>
         public event Action<AbstractContentController> OnPlayOutComplete;
-        /// <summary>
-        /// Dispatched when a Controller requests to be cleared to its <see cref="AbstractContentGroup"/>
-        /// </summary>
-        public event Action<AbstractContentController> OnClear;
 
         /// <summary>
         /// Gets/Sets the <see cref="IContent"/> to correspond to this controller.
         /// </summary>
-        public IContent Content
-        {
-            get => m_Content;
-            protected set
-            {
-                if (m_Content != null)
-                {
-                    m_Content.OnContentDisposing -= HandleOnContentDisposing;
-                }
+        public IContent Content { get; protected set; }
 
-                m_Content = value;
-                
-                if (m_Content != null)
-                {
-                    m_Content.OnContentDisposing += HandleOnContentDisposing;
-                }
-            }
-        }
-        
         /// <summary>
         /// Gets/Sets the <see cref="AbstractContentGroup"/> that controls the lifecycle of this Controller.
         /// </summary>
@@ -98,8 +76,7 @@ namespace Anvil.CSharp.Content
         public readonly string ContentGroupID;
         
         protected readonly string m_ContentLoadingID;
-        
-        private IContent m_Content;
+
         private bool m_IsContentControllerDisposing;
 
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
@@ -123,14 +100,10 @@ namespace Anvil.CSharp.Content
             OnPlayInComplete = null;
             OnPlayOutStart = null;
             OnPlayOutComplete = null;
-            OnClear = null;
-
-            if (Content != null)
-            {
-                Content.Dispose();
-                Content = null;
-            }
             
+            Content?.Dispose();
+            Content = null;
+
             base.DisposeSelf();
         }
 
@@ -237,7 +210,10 @@ namespace Anvil.CSharp.Content
         /// </summary>
         public void Clear()
         {
-            OnClear?.Invoke(this);
+            Debug.Assert(ContentGroup != null,
+                $"ContentGroup is null!");
+
+            ContentGroup.Clear();
         }
         
         private void HandleOnContentDisposing()

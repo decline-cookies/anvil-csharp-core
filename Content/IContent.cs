@@ -9,10 +9,9 @@ namespace Anvil.CSharp.Content
     public interface IContent : IDisposable
     {
         /// <summary>
-        /// Dispatched when the Content is disposing so that corresponding <see cref="AbstractContentController"/>s can
-        /// dispose themselves nicely as well.
+        /// Gets/Sets the <see cref="AbstractContentController"/> to correspond to this content. 
         /// </summary>
-        event Action OnContentDisposing;
+        AbstractContentController Controller { get; }
     }
 }
 
