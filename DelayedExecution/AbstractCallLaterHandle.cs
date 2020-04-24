@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
@@ -15,24 +14,11 @@ namespace Anvil.CSharp.DelayedExecution
         public event Action<AbstractCallLaterHandle> OnDisposing;
         
         private Action m_Callback;
-        private UpdateHandle m_UpdateHandle;
-        
+
         /// <summary>
         /// An ID to represent the Call Later Handle.
-        /// Used with <see cref="UpdateHandle.Cancel"/> to cancel before a Call Later Handle has fired.
         /// </summary>
         public uint ID { get; internal set; }
-        
-        internal UpdateHandle UpdateHandle
-        {
-            get => m_UpdateHandle;
-            set
-            {
-                m_UpdateHandle = value;
-                ValidateUpdateHandleSourceType(m_UpdateHandle.UpdateSourceType);
-                m_UpdateHandle.OnUpdate += HandleOnUpdate;
-            }
-        }
 
         protected AbstractCallLaterHandle(Action callback)
         {
@@ -41,7 +27,6 @@ namespace Anvil.CSharp.DelayedExecution
 
         protected override void DisposeSelf()
         {
-            m_UpdateHandle.OnUpdate -= HandleOnUpdate;
             m_Callback = null;
             
             OnDisposing?.Invoke(this);
@@ -60,27 +45,12 @@ namespace Anvil.CSharp.DelayedExecution
             Dispose();
         }
 
-        private void ValidateUpdateHandleSourceType(Type updateHandleSourceType)
+        internal void Update()
         {
-            List<Type> validUpdateSourceTypes = GetValidUpdateSourceTypes();
-            if (!validUpdateSourceTypes.Contains(updateHandleSourceType))
-            {
-                //throw new Exception($"Trying to do a Call Later with {this} using an Update Handle configured with Update Source {updateHandleSourceType} but it isn't in the valid update source types!");
-            }
+            HandleOnUpdate();
         }
-        
-        /// <summary>
-        /// Override to implement specific logic for how the Call Later Handle should respond to
-        /// an <see cref="UpdateHandle.OnUpdate"/> event.
-        /// </summary>
+
         protected abstract void HandleOnUpdate();
-        
-        /// <summary>
-        /// Override to provide a list of valid <see cref="AbstractUpdateSource"/> types that this Call Later Handle
-        /// can use.
-        /// </summary>
-        /// <returns></returns>
-        protected abstract List<Type> GetValidUpdateSourceTypes();
     }
 }
 

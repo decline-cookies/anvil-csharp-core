@@ -28,12 +28,13 @@ namespace Anvil.CSharp.DelayedExecution
         private uint m_CallLaterHandleCurrentID = CALL_LATER_HANDLE_INITIAL_ID;
 
         private readonly Dictionary<uint, AbstractCallLaterHandle> m_CallLaterHandles = new Dictionary<uint, AbstractCallLaterHandle>();
+        private readonly List<Action> m_UpdateListeners = new List<Action>();
         
         private event Action m_OnUpdate;
 
         private readonly Type m_UpdateSourceType;
         private AbstractUpdateSource m_UpdateSource;
-        private int m_OnUpdateCount;
+
         private bool m_IsUpdateSourceHookEnabled;
 
         internal Type UpdateSourceType => m_UpdateSourceType;
@@ -55,18 +56,13 @@ namespace Anvil.CSharp.DelayedExecution
             add
             {
                 m_OnUpdate += value;
-                m_OnUpdateCount++;
+                m_UpdateListeners.Add(value);
                 ValidateUpdateSourceHook();
             }
             remove
             {
-                //Don't want multiple unsubscribes to mess with counting
-                if (m_OnUpdateCount <= 0)
-                {
-                    return;
-                }
+                m_UpdateListeners.Remove(value);
                 m_OnUpdate -= value;
-                m_OnUpdateCount--;
                 ValidateUpdateSourceHook();
             }
         }
@@ -91,18 +87,19 @@ namespace Anvil.CSharp.DelayedExecution
                 callLaterHandle.Dispose();
             }
             m_CallLaterHandles.Clear();
+            m_UpdateListeners.Clear();
             
             base.DisposeSelf();
         }
         
         private void ValidateUpdateSourceHook()
         {
-            if (m_OnUpdateCount > 0 && !m_IsUpdateSourceHookEnabled)
+            if (!m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count > 0 || m_CallLaterHandles.Count > 0))
             {
                 UpdateSource.OnUpdate += HandleOnUpdate;
                 m_IsUpdateSourceHookEnabled = true;
             }
-            else if (m_OnUpdateCount <= 0 && m_IsUpdateSourceHookEnabled)
+            else if (m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count == 0 && m_CallLaterHandles.Count == 0))
             {
                 UpdateSource.OnUpdate -= HandleOnUpdate;
                 m_IsUpdateSourceHookEnabled = false;
@@ -111,6 +108,10 @@ namespace Anvil.CSharp.DelayedExecution
         
         private void HandleOnUpdate()
         {
+            foreach (AbstractCallLaterHandle callLaterHandle in m_CallLaterHandles.Values)
+            {
+                callLaterHandle.Update();
+            }
             m_OnUpdate?.Invoke();
         }
         
@@ -118,6 +119,7 @@ namespace Anvil.CSharp.DelayedExecution
         {
             uint id = m_CallLaterHandleCurrentID;
             m_CallLaterHandleCurrentID++;
+            
             return id;
         }
         
@@ -132,7 +134,8 @@ namespace Anvil.CSharp.DelayedExecution
             callLaterHandle.ID = GetNextCallLaterHandleID();
             callLaterHandle.OnDisposing += HandleOnCallLaterHandleDisposing;
             m_CallLaterHandles.Add(callLaterHandle.ID, callLaterHandle);
-            callLaterHandle.UpdateHandle = this;
+            ValidateUpdateSourceHook();
+            
             return callLaterHandle;
         }
 
@@ -144,6 +147,7 @@ namespace Anvil.CSharp.DelayedExecution
             }
 
             m_CallLaterHandles.Remove(callLaterHandle.ID);
+            ValidateUpdateSourceHook();
         }
         
     }
