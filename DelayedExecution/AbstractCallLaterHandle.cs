@@ -49,16 +49,7 @@ namespace Anvil.CSharp.DelayedExecution
             
             base.DisposeSelf();
         }
-        
-        /// <summary>
-        /// Cancels the Call Later Handle and will not fire the callback.
-        /// Convenience method for calling Dispose
-        /// </summary>
-        public void Cancel()
-        {
-            Dispose();
-        }
-        
+
         /// <summary>
         /// Completes the Call Later Handle immediately and fires the callback.
         /// Call Later Handle is disposed immediately after firing the callback.

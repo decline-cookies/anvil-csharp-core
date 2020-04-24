@@ -88,7 +88,7 @@ namespace Anvil.CSharp.DelayedExecution
             foreach (AbstractCallLaterHandle callLaterHandle in m_CallLaterHandles.Values)
             {
                 callLaterHandle.OnDisposing -= HandleOnCallLaterHandleDisposing;
-                callLaterHandle.Cancel();
+                callLaterHandle.Dispose();
             }
             m_CallLaterHandles.Clear();
             
