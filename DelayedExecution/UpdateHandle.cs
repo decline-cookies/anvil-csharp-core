@@ -4,10 +4,20 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
+    /// <summary>
+    /// An object that encapsulates logic to allow for code to execute over time. Provides a simple event to hook into
+    /// for an "Update Loop" and allows the calling of specific functions later on in the future via
+    /// <see cref="CallLater"/>
+    /// </summary>
     public class UpdateHandle : AbstractAnvilDisposable
     {
         private const uint CALL_LATER_HANDLE_INITIAL_ID = 0;
         
+        /// <summary>
+        /// Convenience method for creation of an UpdateHandle
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="AbstractUpdateSource"/> to use.</typeparam>
+        /// <returns>The instance of the Update Handle</returns>
         public static UpdateHandle Create<T>() where T:AbstractUpdateSource
         {
             UpdateHandle updateHandle = new UpdateHandle(typeof(T));
@@ -36,6 +46,10 @@ namespace Anvil.CSharp.DelayedExecution
             }
         }
 
+        /// <summary>
+        /// Dispatches whenever the <see cref="AbstractUpdateSource"/> provides an Update event. This is dependent on
+        /// the <see cref="AbstractUpdateSource"/>
+        /// </summary>
         public event Action OnUpdate
         {
             add
@@ -106,7 +120,13 @@ namespace Anvil.CSharp.DelayedExecution
             m_CallLaterHandleCurrentID++;
             return id;
         }
-
+        
+        /// <summary>
+        /// Calls a specific function later on in the future. Depends on the passed in <see cref="AbstractCallLaterHandle"/>
+        /// Call Later Handles are managed by the Update Handle and will be disposed if the Update Handle is disposed.
+        /// </summary>
+        /// <param name="callLaterHandle">The <see cref="AbstractCallLaterHandle"/> to use.</param>
+        /// <returns>A reference to the <see cref="AbstractCallLaterHandle"/> to store for use later (Cancel, Complete).</returns>
         public AbstractCallLaterHandle CallLater(AbstractCallLaterHandle callLaterHandle)
         {
             callLaterHandle.ID = GetNextCallLaterHandleID();
