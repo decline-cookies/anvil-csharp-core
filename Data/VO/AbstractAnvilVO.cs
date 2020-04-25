@@ -8,7 +8,11 @@ namespace Anvil.CSharp.Data
     /// </summary>
     public abstract class AbstractAnvilVO : AbstractAnvilDisposable
     {
-        private const EncodeOptions DEFAULT_ENCODE_OPTIONS = EncodeOptions.PrettyPrint;
+        /// <summary>
+        /// Default <see cref="EncodeOptions"/> set to <see cref="EncodeOptions.PrettyPrint"/>
+        /// This allows for easy human reading and seeing changes in a diff nicely.
+        /// </summary>
+        public const EncodeOptions DEFAULT_ENCODE_OPTIONS = EncodeOptions.PrettyPrint;
         
         /// <summary>
         /// Converts the VO to a JSON string representation.
