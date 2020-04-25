@@ -1,5 +1,4 @@
-﻿//TODO: Verify that this is actually ok to do...
-namespace System.Reflection
+﻿namespace System.Reflection
 {
     /// <summary>
     /// A set of convenience extensions for <see cref="Type"/>
