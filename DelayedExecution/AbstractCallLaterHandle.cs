@@ -52,7 +52,7 @@ namespace Anvil.CSharp.DelayedExecution
         
         /// <summary>
         /// Cancels the Call Later Handle and will not fire the callback.
-        /// Convenience method for calling Dispose
+        /// Convenience method for calling <see cref="UpdateHandle.Dispose"/>
         /// </summary>
         public void Cancel()
         {
