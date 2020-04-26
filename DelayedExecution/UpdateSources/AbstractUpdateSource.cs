@@ -19,6 +19,7 @@ namespace Anvil.CSharp.DelayedExecution
 
         protected override void DisposeSelf()
         {
+            UpdateHandleSourcesManager.RemoveUpdateSource(this);
             OnUpdate = null;
             base.DisposeSelf();
         }

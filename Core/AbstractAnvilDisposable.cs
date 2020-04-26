@@ -9,24 +9,34 @@ namespace Anvil.CSharp.Core
     public abstract class AbstractAnvilDisposable : IDisposable
     {
         /// <summary>
-        /// Allows an instance to be queried to know if <see cref="Dispose"/> has been called yet or not.
+        /// Allows an instance to be queried to know if <see cref="Dispose"/> has been called yet or not and if
+        /// the instance has been completely disposed. All <see cref="DisposeSelf"/> functions down the inheritance
+        /// chain have been called.
         /// </summary>
         public bool IsDisposed { get; private set; }
         
         /// <summary>
+        /// Allows an instance to be queried to know if <see cref="Dispose"/> has been called yet or not and if
+        /// the instance is currently disposing.
+        /// </summary>
+        public bool IsDisposing { get; private set; }
+        
+        /// <summary>
         /// <inheritdoc cref="IDisposable.Dispose"/>
-        /// Will early return if <see cref="IsDisposed"/> is true.
+        /// Will early return if <see cref="IsDisposed"/> or <see cref="IsDisposing"/> is true.
         /// Calls the virtual method <see cref="DisposeSelf"/> for inherited classes to override.
         /// </summary>
         public void Dispose()
         {
-            if (IsDisposed)
+            if (IsDisposing || IsDisposed)
             {
                 return;
             }
 
-            IsDisposed = true;
+            IsDisposing = true;
             DisposeSelf();
+            IsDisposing = false;
+            IsDisposed = true;
         }
         
         /// <summary>
