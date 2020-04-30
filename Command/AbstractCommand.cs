@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Runtime.InteropServices;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Command
@@ -40,7 +41,7 @@ namespace Anvil.CSharp.Command
         {
             if (State != CommandState.Initialized)
             {
-                throw new Exception($"Tired to call Execute on {this} but State was {State} instead of Initialized!");
+                throw new Exception($"Tired to call {nameof(Execute)} on {this} but State was {State} instead of {CommandState.Initialized}!");
             }
 
             State = CommandState.Executing;
@@ -60,7 +61,7 @@ namespace Anvil.CSharp.Command
         {
             if (State != CommandState.Executing)
             {
-                throw new Exception($"Tried to call CompleteCommand on {this} but State was {State} instead of Executing!");
+                throw new Exception($"Tried to call {nameof(CompleteCommand)} on {this} but State was {State} instead of {CommandState.Executing}!");
             }
             State = CommandState.Completed;
             OnComplete?.Invoke(this);
