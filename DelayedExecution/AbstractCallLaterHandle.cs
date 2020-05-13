@@ -14,21 +14,19 @@ namespace Anvil.CSharp.DelayedExecution
         public event Action<AbstractCallLaterHandle> OnDisposing;
         
         private Action m_Callback;
+        
+        internal uint ID { get; }
 
-        /// <summary>
-        /// An ID to represent the Call Later Handle.
-        /// </summary>
-        public uint ID { get; internal set; }
-
-        protected AbstractCallLaterHandle(Action callback)
+        protected AbstractCallLaterHandle(uint id, Action callback)
         {
+            ID = id;
             m_Callback = callback;
         }
 
         protected override void DisposeSelf()
         {
             m_Callback = null;
-            
+
             OnDisposing?.Invoke(this);
             OnDisposing = null;
             
@@ -45,12 +43,7 @@ namespace Anvil.CSharp.DelayedExecution
             Dispose();
         }
 
-        internal void Update()
-        {
-            HandleOnUpdate();
-        }
-
-        protected abstract void HandleOnUpdate();
+        internal abstract void Update();
     }
 }
 

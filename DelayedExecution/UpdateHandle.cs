@@ -12,7 +12,7 @@ namespace Anvil.CSharp.DelayedExecution
     public class UpdateHandle : AbstractAnvilDisposable
     {
         private const uint CALL_LATER_HANDLE_INITIAL_ID = 0;
-        
+
         /// <summary>
         /// Convenience method for creation of an UpdateHandle
         /// </summary>
@@ -23,21 +23,19 @@ namespace Anvil.CSharp.DelayedExecution
             UpdateHandle updateHandle = new UpdateHandle(typeof(T));
             return updateHandle;
         }
-        
-        
+
+
         private uint m_CallLaterHandleCurrentID = CALL_LATER_HANDLE_INITIAL_ID;
 
         private readonly Dictionary<uint, AbstractCallLaterHandle> m_CallLaterHandles = new Dictionary<uint, AbstractCallLaterHandle>();
         private readonly List<Action> m_UpdateListeners = new List<Action>();
-        
+
         private event Action m_OnUpdate;
 
         private readonly Type m_UpdateSourceType;
         private AbstractUpdateSource m_UpdateSource;
 
         private bool m_IsUpdateSourceHookEnabled;
-
-        internal Type UpdateSourceType => m_UpdateSourceType;
 
         private AbstractUpdateSource UpdateSource
         {
@@ -86,12 +84,13 @@ namespace Anvil.CSharp.DelayedExecution
                 callLaterHandle.OnDisposing -= HandleOnCallLaterHandleDisposing;
                 callLaterHandle.Dispose();
             }
+
             m_CallLaterHandles.Clear();
             m_UpdateListeners.Clear();
-            
+
             base.DisposeSelf();
         }
-        
+
         private void ValidateUpdateSourceHook()
         {
             if (!m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count > 0 || m_CallLaterHandles.Count > 0))
@@ -105,7 +104,7 @@ namespace Anvil.CSharp.DelayedExecution
                 m_IsUpdateSourceHookEnabled = false;
             }
         }
-        
+
         private void HandleOnUpdate()
         {
             foreach (AbstractCallLaterHandle callLaterHandle in m_CallLaterHandles.Values)
@@ -114,29 +113,50 @@ namespace Anvil.CSharp.DelayedExecution
             }
             m_OnUpdate?.Invoke();
         }
-        
+
         private uint GetNextCallLaterHandleID()
         {
             uint id = m_CallLaterHandleCurrentID;
             m_CallLaterHandleCurrentID++;
-            
+
             return id;
         }
-        
+
         /// <summary>
         /// Calls a specific function later on in the future. Depends on the passed in <see cref="AbstractCallLaterHandle"/>
         /// Call Later Handles are managed by the Update Handle and will be disposed if the Update Handle is disposed.
         /// </summary>
         /// <param name="callLaterHandle">The <see cref="AbstractCallLaterHandle"/> to use.</param>
         /// <returns>A reference to the <see cref="AbstractCallLaterHandle"/> to store for use later (Cancel, Complete).</returns>
-        public AbstractCallLaterHandle CallLater(AbstractCallLaterHandle callLaterHandle)
+        public CallLaterTimeHandle CallAfter(float targetTime, Action callback, DeltaTimeProvider deltaTimeProvider)
         {
-            callLaterHandle.ID = GetNextCallLaterHandleID();
+            CallLaterTimeHandle callLaterHandle = new CallLaterTimeHandle(GetNextCallLaterHandleID(),
+                callback,
+                targetTime,
+                deltaTimeProvider);
+
+            FinalizeCallLaterHandle(callLaterHandle);
+
+            return callLaterHandle;
+        }
+
+        public CallLaterFramesHandle CallAfter(int targetFrames, Action callback, DeltaFramesProvider deltaFramesProvider)
+        {
+            CallLaterFramesHandle callLaterHandle = new CallLaterFramesHandle(GetNextCallLaterHandleID(),
+                callback,
+                targetFrames,
+                deltaFramesProvider);
+
+            FinalizeCallLaterHandle(callLaterHandle);
+
+            return callLaterHandle;
+        }
+
+        private void FinalizeCallLaterHandle(AbstractCallLaterHandle callLaterHandle)
+        {
             callLaterHandle.OnDisposing += HandleOnCallLaterHandleDisposing;
             m_CallLaterHandles.Add(callLaterHandle.ID, callLaterHandle);
             ValidateUpdateSourceHook();
-            
-            return callLaterHandle;
         }
 
         private void HandleOnCallLaterHandleDisposing(AbstractCallLaterHandle callLaterHandle)
@@ -149,7 +169,7 @@ namespace Anvil.CSharp.DelayedExecution
             m_CallLaterHandles.Remove(callLaterHandle.ID);
             ValidateUpdateSourceHook();
         }
-        
+
     }
 }
 
