@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Anvil.CSharp.DelayedExecution
 {
@@ -8,6 +9,8 @@ namespace Anvil.CSharp.DelayedExecution
     /// </summary>
     public static class UpdateHandleSourcesManager
     {
+        private static readonly Dictionary<Type, AbstractUpdateSource> s_UpdateSources = new Dictionary<Type, AbstractUpdateSource>();
+        
         /// <summary>
         /// Allows for the retrieval of/or the creation of a singular app wide <see cref="AbstractUpdateSource"/>
         /// </summary>
@@ -24,7 +27,17 @@ namespace Anvil.CSharp.DelayedExecution
             return s_UpdateSources[sourceType];
         }
         
-        private static readonly Dictionary<Type, AbstractUpdateSource> s_UpdateSources = new Dictionary<Type, AbstractUpdateSource>();
+        /// <summary>
+        /// Removes an <see cref="AbstractUpdateSource"/> from the lookup. This should only happen if an Update Source
+        /// is disposed. See <see cref="AbstractUpdateSource.Dispose"/>
+        /// </summary>
+        /// <param name="updateSource">The instance of the <see cref="AbstractUpdateSource"/></param>
+        public static void RemoveUpdateSource(AbstractUpdateSource updateSource)
+        {
+            Type sourceType = updateSource.GetType();
+            Debug.Assert(s_UpdateSources.ContainsKey(sourceType), $"Trying to remove update source {updateSource} with Type {sourceType} but it doesn't exist in the Manager. Check to see if {nameof(UpdateHandleSourcesManager)}.{nameof(GetOrCreateUpdateSource)} was called for this type.");
+            s_UpdateSources.Remove(sourceType);
+        }
     }
 }
 
