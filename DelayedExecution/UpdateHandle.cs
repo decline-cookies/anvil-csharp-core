@@ -11,7 +11,12 @@ namespace Anvil.CSharp.DelayedExecution
     /// </summary>
     public class UpdateHandle : AbstractAnvilDisposable
     {
-        private const uint CALL_LATER_HANDLE_INITIAL_ID = 0;
+        public const int CALL_AFTER_INFINITE_REPEAT_LIMIT = 0;
+        public const int CALL_AFTER_DEFAULT_REPEAT_LIMIT = 1;
+
+        private const uint CALL_AFTER_HANDLE_INITIAL_ID = 0;
+
+
 
         /// <summary>
         /// Convenience method for creation of an UpdateHandle
@@ -25,9 +30,9 @@ namespace Anvil.CSharp.DelayedExecution
         }
 
 
-        private uint m_CallLaterHandleCurrentID = CALL_LATER_HANDLE_INITIAL_ID;
+        private uint m_CallAfterHandleCurrentID = CALL_AFTER_HANDLE_INITIAL_ID;
 
-        private readonly Dictionary<uint, AbstractCallLaterHandle> m_CallLaterHandles = new Dictionary<uint, AbstractCallLaterHandle>();
+        private readonly Dictionary<uint, CallAfterHandle> m_CallAfterHandles = new Dictionary<uint, CallAfterHandle>();
         private readonly List<Action> m_UpdateListeners = new List<Action>();
 
         private event Action m_OnUpdate;
@@ -79,13 +84,13 @@ namespace Anvil.CSharp.DelayedExecution
                 m_UpdateSource = null;
             }
 
-            foreach (AbstractCallLaterHandle callLaterHandle in m_CallLaterHandles.Values)
+            foreach (CallAfterHandle callAfterHandle in m_CallAfterHandles.Values)
             {
-                callLaterHandle.OnDisposing -= HandleOnCallLaterHandleDisposing;
-                callLaterHandle.Dispose();
+                callAfterHandle.OnDisposing -= HandleOnCallAfterHandleDisposing;
+                callAfterHandle.Dispose();
             }
 
-            m_CallLaterHandles.Clear();
+            m_CallAfterHandles.Clear();
             m_UpdateListeners.Clear();
 
             base.DisposeSelf();
@@ -93,12 +98,12 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void ValidateUpdateSourceHook()
         {
-            if (!m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count > 0 || m_CallLaterHandles.Count > 0))
+            if (!m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count > 0 || m_CallAfterHandles.Count > 0))
             {
                 UpdateSource.OnUpdate += HandleOnUpdate;
                 m_IsUpdateSourceHookEnabled = true;
             }
-            else if (m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count == 0 && m_CallLaterHandles.Count == 0))
+            else if (m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count == 0 && m_CallAfterHandles.Count == 0))
             {
                 UpdateSource.OnUpdate -= HandleOnUpdate;
                 m_IsUpdateSourceHookEnabled = false;
@@ -107,17 +112,17 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void HandleOnUpdate()
         {
-            foreach (AbstractCallLaterHandle callLaterHandle in m_CallLaterHandles.Values)
+            foreach (CallAfterHandle callAfterHandle in m_CallAfterHandles.Values)
             {
-                callLaterHandle.Update();
+                callAfterHandle.Update();
             }
             m_OnUpdate?.Invoke();
         }
 
-        private uint GetNextCallLaterHandleID()
+        private uint GetNextCallAfterHandleID()
         {
-            uint id = m_CallLaterHandleCurrentID;
-            m_CallLaterHandleCurrentID++;
+            uint id = m_CallAfterHandleCurrentID;
+            m_CallAfterHandleCurrentID++;
 
             return id;
         }
@@ -128,45 +133,39 @@ namespace Anvil.CSharp.DelayedExecution
         /// </summary>
         /// <param name="callLaterHandle">The <see cref="AbstractCallLaterHandle"/> to use.</param>
         /// <returns>A reference to the <see cref="AbstractCallLaterHandle"/> to store for use later (Cancel, Complete).</returns>
-        public CallLaterTimeHandle CallAfter(float targetTime, Action callback, DeltaTimeProvider deltaTimeProvider)
+        public CallAfterHandle CallAfter(float targetTime, Action callback, DeltaProvider deltaTimeProvider, int repeatCount = CALL_AFTER_DEFAULT_REPEAT_LIMIT)
         {
-            CallLaterTimeHandle callLaterHandle = new CallLaterTimeHandle(GetNextCallLaterHandleID(),
+            CallAfterHandle callAfterHandle = new CallAfterHandle(GetNextCallAfterHandleID(),
                 callback,
                 targetTime,
-                deltaTimeProvider);
+                deltaTimeProvider,
+                repeatCount);
 
-            FinalizeCallLaterHandle(callLaterHandle);
+            FinalizeCallAfterHandle(callAfterHandle);
 
-            return callLaterHandle;
+            return callAfterHandle;
         }
 
-        public CallLaterFramesHandle CallAfter(int targetFrames, Action callback, DeltaFramesProvider deltaFramesProvider)
+        public CallAfterHandle CallAfter(int targetFrames, Action callback, DeltaProvider deltaFramesProvider, int repeatCount = CALL_AFTER_DEFAULT_REPEAT_LIMIT)
         {
-            CallLaterFramesHandle callLaterHandle = new CallLaterFramesHandle(GetNextCallLaterHandleID(),
-                callback,
-                targetFrames,
-                deltaFramesProvider);
-
-            FinalizeCallLaterHandle(callLaterHandle);
-
-            return callLaterHandle;
+            return CallAfter((float)targetFrames, callback, deltaFramesProvider, repeatCount);
         }
 
-        private void FinalizeCallLaterHandle(AbstractCallLaterHandle callLaterHandle)
+        private void FinalizeCallAfterHandle(CallAfterHandle callAfterHandle)
         {
-            callLaterHandle.OnDisposing += HandleOnCallLaterHandleDisposing;
-            m_CallLaterHandles.Add(callLaterHandle.ID, callLaterHandle);
+            callAfterHandle.OnDisposing += HandleOnCallAfterHandleDisposing;
+            m_CallAfterHandles.Add(callAfterHandle.ID, callAfterHandle);
             ValidateUpdateSourceHook();
         }
 
-        private void HandleOnCallLaterHandleDisposing(AbstractCallLaterHandle callLaterHandle)
+        private void HandleOnCallAfterHandleDisposing(CallAfterHandle callAfterHandle)
         {
-            if (!m_CallLaterHandles.ContainsKey(callLaterHandle.ID))
+            if (!m_CallAfterHandles.ContainsKey(callAfterHandle.ID))
             {
-                throw new Exception($"Tried to remove Call Later Handle with ID {callLaterHandle.ID} but it didn't exist in the lookup!");
+                throw new Exception($"Tried to remove Call After Handle with ID {callAfterHandle.ID} but it didn't exist in the lookup!");
             }
 
-            m_CallLaterHandles.Remove(callLaterHandle.ID);
+            m_CallAfterHandles.Remove(callAfterHandle.ID);
             ValidateUpdateSourceHook();
         }
 
