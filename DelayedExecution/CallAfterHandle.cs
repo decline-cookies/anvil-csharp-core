@@ -4,6 +4,10 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
+    /// <summary>
+    /// Encapsulates a function that will be called later at some point in the future.
+    /// <see cref="UpdateHandle.CallAfter"/> for usage.
+    /// </summary>
     public class CallAfterHandle : AbstractAnvilDisposable
     {
         /// <summary>
@@ -24,7 +28,7 @@ namespace Anvil.CSharp.DelayedExecution
         private Action m_Callback;
 
 
-        public CallAfterHandle(
+        internal CallAfterHandle(
             uint id,
             Action callback,
             float target,
@@ -51,6 +55,14 @@ namespace Anvil.CSharp.DelayedExecution
             base.DisposeSelf();
         }
 
+        /// <summary>
+        /// Immediately completes the <see cref="CallAfterHandle"/> and invokes the callback function.
+        /// If the CallAfterHandle should repeat, it will continue to do so. Complete only completes the current
+        /// iteration.
+        /// </summary>
+        /// <param name="shouldAlsoDispose">If true, the <see cref="CallAfterHandle"/> will be disposed after
+        /// invoking the callback function. This will happen regardless if this CallAfterHandle should not
+        /// repeat or if at the end of the amount of times it should repeat.</param>
         public void Complete(bool shouldAlsoDispose = false)
         {
             m_RepeatCount++;
@@ -58,8 +70,17 @@ namespace Anvil.CSharp.DelayedExecution
 
             if (m_RepeatCount < m_RepeatTarget && !shouldAlsoDispose)
             {
-                //Reset elapsed again accounting for any overages that might have happened.
-                m_Elapsed -= m_Target;
+                if (m_Elapsed >= m_Target)
+                {
+                    //Reset elapsed again accounting for any overages that might have happened.
+                    m_Elapsed -= m_Target;
+                }
+                else
+                {
+                    //Special case where Complete was manually called before we actually got to that point in time.
+                    //In this case if we subtracted the m_Target again we would have to wait longer than expected.
+                    m_Elapsed = 0.0f;
+                }
             }
             else
             {

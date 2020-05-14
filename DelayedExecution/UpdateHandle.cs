@@ -6,12 +6,18 @@ namespace Anvil.CSharp.DelayedExecution
 {
     /// <summary>
     /// An object that encapsulates logic to allow for code to execute over time. Provides a simple event to hook into
-    /// for an "Update Loop" and allows the calling of specific functions later on in the future via
-    /// <see cref="CallLater"/>
+    /// for an "Update Loop" and allows the calling of specific functions later on in the future
+    /// via <see cref="CallAfterHandle"/>
     /// </summary>
     public class UpdateHandle : AbstractAnvilDisposable
     {
+        /// <summary>
+        /// Use with <see cref="UpdateHandle.CallAfter"/> to allow a CallAfterHandle to repeat indefinitely.
+        /// </summary>
         public const int CALL_AFTER_INFINITE_REPEAT_LIMIT = 0;
+        /// <summary>
+        /// Use with <see cref="UpdateHandle.CallAfter"/> to have a CallAfterHandle fire it's callback just once.
+        /// </summary>
         public const int CALL_AFTER_DEFAULT_REPEAT_LIMIT = 1;
 
         private const uint CALL_AFTER_HANDLE_INITIAL_ID = 0;
@@ -128,11 +134,17 @@ namespace Anvil.CSharp.DelayedExecution
         }
 
         /// <summary>
-        /// Calls a specific function later on in the future. Depends on the passed in <see cref="AbstractCallLaterHandle"/>
-        /// Call Later Handles are managed by the Update Handle and will be disposed if the Update Handle is disposed.
+        /// Calls a specific function later on in the future via <see cref="CallAfterHandle"/>.
+        /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
         /// </summary>
-        /// <param name="callLaterHandle">The <see cref="AbstractCallLaterHandle"/> to use.</param>
-        /// <returns>A reference to the <see cref="AbstractCallLaterHandle"/> to store for use later (Cancel, Complete).</returns>
+        /// <param name="targetTime">The amount of time to wait until firing the callback function.</param>
+        /// <param name="callback">The callback function to fire</param>
+        /// <param name="deltaTimeProvider">A <see cref="DeltaProvider"/> function to allow the
+        /// <see cref="CallAfterHandle"/></param> to calculate the amount of time that has passed each time this
+        /// <see cref="UpdateHandle"/>'s Update event fires.
+        /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
+        /// <see cref="UpdateHandle.CALL_AFTER_DEFAULT_REPEAT_LIMIT"/></param>
+        /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
         public CallAfterHandle CallAfter(float targetTime, Action callback, DeltaProvider deltaTimeProvider, int repeatCount = CALL_AFTER_DEFAULT_REPEAT_LIMIT)
         {
             CallAfterHandle callAfterHandle = new CallAfterHandle(GetNextCallAfterHandleID(),
@@ -146,6 +158,18 @@ namespace Anvil.CSharp.DelayedExecution
             return callAfterHandle;
         }
 
+        /// <summary>
+        /// Calls a specific function later on in the future via <see cref="CallAfterHandle"/>.
+        /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
+        /// </summary>
+        /// <param name="targetFrames">The number of frames to wait until firing the callback function.</param>
+        /// <param name="callback">The callback function to fire</param>
+        /// <param name="deltaFramesProvider">A <see cref="DeltaProvider"/> function to allow the
+        /// <see cref="CallAfterHandle"/></param> to calculate the frames that have passed each time this
+        /// <see cref="UpdateHandle"/>'s Update event fires.
+        /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
+        /// <see cref="UpdateHandle.CALL_AFTER_DEFAULT_REPEAT_LIMIT"/></param>
+        /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
         public CallAfterHandle CallAfter(int targetFrames, Action callback, DeltaProvider deltaFramesProvider, int repeatCount = CALL_AFTER_DEFAULT_REPEAT_LIMIT)
         {
             return CallAfter((float)targetFrames, callback, deltaFramesProvider, repeatCount);
