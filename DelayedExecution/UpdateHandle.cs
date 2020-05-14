@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
@@ -14,11 +15,11 @@ namespace Anvil.CSharp.DelayedExecution
         /// <summary>
         /// Use with <see cref="UpdateHandle.CallAfter"/> to allow a CallAfterHandle to repeat indefinitely.
         /// </summary>
-        public const int CALL_AFTER_INFINITE_REPEAT_LIMIT = 0;
+        public const uint CALL_AFTER_INFINITE_CALL_LIMIT = 0;
         /// <summary>
         /// Use with <see cref="UpdateHandle.CallAfter"/> to have a CallAfterHandle fire it's callback just once.
         /// </summary>
-        public const int CALL_AFTER_DEFAULT_REPEAT_LIMIT = 1;
+        public const uint CALL_AFTER_DEFAULT_CALL_LIMIT = 1;
 
         private const uint CALL_AFTER_HANDLE_INITIAL_ID = 0;
 
@@ -137,15 +138,20 @@ namespace Anvil.CSharp.DelayedExecution
         /// Calls a specific function later on in the future via <see cref="CallAfterHandle"/>.
         /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
         /// </summary>
+        /// <remarks>
+        /// CallAfterHandles operate on floats but can easily be used to call after a certain amount of "frames".
+        /// Simply pass in whole numbers (1.0f, 2.0f, etc) and use a <see cref="DeltaProvider"/> function that returns
+        /// whole numbers to represent "frames".
+        /// </remarks>
         /// <param name="targetTime">The amount of time to wait until firing the callback function.</param>
         /// <param name="callback">The callback function to fire</param>
         /// <param name="deltaTimeProvider">A <see cref="DeltaProvider"/> function to allow the
         /// <see cref="CallAfterHandle"/></param> to calculate the amount of time that has passed each time this
         /// <see cref="UpdateHandle"/>'s Update event fires.
         /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
-        /// <see cref="UpdateHandle.CALL_AFTER_DEFAULT_REPEAT_LIMIT"/></param>
+        /// <see cref="CALL_AFTER_DEFAULT_CALL_LIMIT"/></param>
         /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
-        public CallAfterHandle CallAfter(float targetTime, Action callback, DeltaProvider deltaTimeProvider, int repeatCount = CALL_AFTER_DEFAULT_REPEAT_LIMIT)
+        public CallAfterHandle CallAfter(float targetTime, Action callback, DeltaProvider deltaTimeProvider, uint repeatCount = CALL_AFTER_DEFAULT_CALL_LIMIT)
         {
             CallAfterHandle callAfterHandle = new CallAfterHandle(GetNextCallAfterHandleID(),
                 callback,
@@ -153,29 +159,12 @@ namespace Anvil.CSharp.DelayedExecution
                 deltaTimeProvider,
                 repeatCount);
 
-            FinalizeCallAfterHandle(callAfterHandle);
+            FinalizeHandle(callAfterHandle);
 
             return callAfterHandle;
         }
 
-        /// <summary>
-        /// Calls a specific function later on in the future via <see cref="CallAfterHandle"/>.
-        /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
-        /// </summary>
-        /// <param name="targetFrames">The number of frames to wait until firing the callback function.</param>
-        /// <param name="callback">The callback function to fire</param>
-        /// <param name="deltaFramesProvider">A <see cref="DeltaProvider"/> function to allow the
-        /// <see cref="CallAfterHandle"/></param> to calculate the frames that have passed each time this
-        /// <see cref="UpdateHandle"/>'s Update event fires.
-        /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
-        /// <see cref="UpdateHandle.CALL_AFTER_DEFAULT_REPEAT_LIMIT"/></param>
-        /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
-        public CallAfterHandle CallAfter(int targetFrames, Action callback, DeltaProvider deltaFramesProvider, int repeatCount = CALL_AFTER_DEFAULT_REPEAT_LIMIT)
-        {
-            return CallAfter((float)targetFrames, callback, deltaFramesProvider, repeatCount);
-        }
-
-        private void FinalizeCallAfterHandle(CallAfterHandle callAfterHandle)
+        private void FinalizeHandle(CallAfterHandle callAfterHandle)
         {
             callAfterHandle.OnDisposing += HandleOnCallAfterHandleDisposing;
             m_CallAfterHandles.Add(callAfterHandle.ID, callAfterHandle);
@@ -184,10 +173,7 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void HandleOnCallAfterHandleDisposing(CallAfterHandle callAfterHandle)
         {
-            if (!m_CallAfterHandles.ContainsKey(callAfterHandle.ID))
-            {
-                throw new Exception($"Tried to remove Call After Handle with ID {callAfterHandle.ID} but it didn't exist in the lookup!");
-            }
+            Debug.Assert(!m_CallAfterHandles.ContainsKey(callAfterHandle.ID), $"Tried to remove Call After Handle with ID {callAfterHandle.ID} but it didn't exist in the lookup!");
 
             m_CallAfterHandles.Remove(callAfterHandle.ID);
             ValidateUpdateSourceHook();

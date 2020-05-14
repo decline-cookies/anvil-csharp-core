@@ -19,10 +19,10 @@ namespace Anvil.CSharp.DelayedExecution
         internal readonly uint ID;
 
         private readonly float m_Target;
-        private readonly int m_RepeatTarget;
+        private readonly uint m_RepeatTarget;
 
         private float m_Elapsed;
-        private int m_RepeatCount;
+        private uint m_RepeatCount;
 
         private DeltaProvider m_DeltaProvider;
         private Action m_Callback;
@@ -33,7 +33,7 @@ namespace Anvil.CSharp.DelayedExecution
             Action callback,
             float target,
             DeltaProvider deltaProvider,
-            int repeatTarget = UpdateHandle.CALL_AFTER_DEFAULT_REPEAT_LIMIT)
+            uint repeatTarget = UpdateHandle.CALL_AFTER_DEFAULT_CALL_LIMIT)
         {
             ID = id;
             m_Callback = callback;
@@ -60,27 +60,21 @@ namespace Anvil.CSharp.DelayedExecution
         /// If the CallAfterHandle should repeat, it will continue to do so. Complete only completes the current
         /// iteration.
         /// </summary>
-        /// <param name="shouldAlsoDispose">If true, the <see cref="CallAfterHandle"/> will be disposed after
-        /// invoking the callback function. This will happen regardless if this CallAfterHandle should not
-        /// repeat or if at the end of the amount of times it should repeat.</param>
-        public void Complete(bool shouldAlsoDispose = false)
+        public void ForceComplete()
+        {
+            m_Elapsed = m_Target;
+            Complete();
+        }
+
+        private void Complete()
         {
             m_RepeatCount++;
             m_Callback?.Invoke();
 
-            if (m_RepeatCount < m_RepeatTarget && !shouldAlsoDispose)
+            if (m_RepeatCount < m_RepeatTarget)
             {
-                if (m_Elapsed >= m_Target)
-                {
-                    //Reset elapsed again accounting for any overages that might have happened.
-                    m_Elapsed -= m_Target;
-                }
-                else
-                {
-                    //Special case where Complete was manually called before we actually got to that point in time.
-                    //In this case if we subtracted the m_Target again we would have to wait longer than expected.
-                    m_Elapsed = 0.0f;
-                }
+                //Reset elapsed again accounting for any overages that might have happened.
+                m_Elapsed -= m_Target;
             }
             else
             {
