@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Anvil.CSharp.Command
 {
@@ -11,17 +11,17 @@ namespace Anvil.CSharp.Command
         private int m_ChildCommandsLeftToComplete;
 
         /// <summary>
-        /// Constructs a <see cref="ParallelCommand"/> using params for <see cref="AbstractCommand"/>.
+        /// Constructs a <see cref="ParallelCommand"/> using params for <see cref="ICommand"/>.
         /// </summary>
-        /// <param name="childCommands">The <see cref="AbstractCommand"/>s to pass in.</param>
+        /// <param name="childCommands">The <see cref="ICommand"/>s to pass in.</param>
         public ParallelCommand(params ICommand[] childCommands) : base (childCommands)
         {
         }
 
         /// <summary>
-        /// Constructs a <see cref="ParallelCommand"/> using an <see cref="IEnumerable{AbstractCommand}"/>.
+        /// Constructs a <see cref="ParallelCommand"/> using an <see cref="IEnumerable{ICommand}"/>.
         /// </summary>
-        /// <param name="childCommands">The <see cref="IEnumerable{AbstractCommand}"/> to pass in.</param>
+        /// <param name="childCommands">The <see cref="IEnumerable{ICommand}"/> to pass in.</param>
         public ParallelCommand(IEnumerable<ICommand> childCommands) : base(childCommands)
         {
         }
@@ -43,7 +43,7 @@ namespace Anvil.CSharp.Command
                 return;
             }
 
-            foreach (AbstractCommand command in m_ChildCommands)
+            foreach (ICommand command in m_ChildCommands)
             {
                 command.OnComplete += HandleChildCommandOnComplete;
                 command.Execute();

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Anvil.CSharp.Command
@@ -12,17 +12,17 @@ namespace Anvil.CSharp.Command
         private int m_ChildCommandIndex;
 
         /// <summary>
-        /// Constructs a <see cref="SequentialCommand"/> using params for <see cref="AbstractCommand"/>.
+        /// Constructs a <see cref="SequentialCommand"/> using params for <see cref="ICommand"/>.
         /// </summary>
-        /// <param name="childCommands">The <see cref="AbstractCommand"/>s to pass in.</param>
+        /// <param name="childCommands">The <see cref="ICommand"/>s to pass in.</param>
         public SequentialCommand(params ICommand[] childCommands) : base (childCommands)
         {
         }
 
         /// <summary>
-        /// Constructs a <see cref="SequentialCommand"/> using an <see cref="IEnumerable{AbstractCommand}"/>.
+        /// Constructs a <see cref="SequentialCommand"/> using an <see cref="IEnumerable{ICommand}"/>.
         /// </summary>
-        /// <param name="childCommands">The <see cref="IEnumerable{AbstractCommand}"/> to pass in.</param>
+        /// <param name="childCommands">The <see cref="IEnumerable{ICommand}"/> to pass in.</param>
         public SequentialCommand(IEnumerable<ICommand> childCommands) : base(childCommands)
         {
         }
@@ -38,10 +38,10 @@ namespace Anvil.CSharp.Command
         /// Inserts a child command to be executed in the collection.
         /// </summary>
         /// <param name="index">The index for when the command should be executed.</param>
-        /// <param name="childCommand">The <see cref="AbstractCommand"/> to insert into the collection.</param>
+        /// <param name="childCommand">The <see cref="ICommand"/> to insert into the collection.</param>
         /// <returns>The <see cref="AbstractCollectionCommand"/> the child was inserted into. Useful for method chaining.</returns>
         /// <exception cref="Exception">Occurs when the <see cref="State"/> is not CommandState.Initialized</exception>
-        public SequentialCommand InsertChild(int index, AbstractCommand childCommand)
+        public SequentialCommand InsertChild(int index, ICommand childCommand)
         {
             if (State != CommandState.Initialized)
             {
@@ -54,14 +54,14 @@ namespace Anvil.CSharp.Command
         }
 
         /// <summary>
-        /// Inserts an <see cref="IEnumerable{AbstractCommand}"/> to be executed in the collection.
+        /// Inserts an <see cref="IEnumerable{ICommand}"/> to be executed in the collection.
         /// </summary>
         /// <param name="index">The index for when the beginning of the childCommands should be executed.</param>
-        /// <param name="childCommands">The <see cref="IEnumerable{AbstractCommand}"/> to insert into the collection.</param>
+        /// <param name="childCommands">The <see cref="IEnumerable{ICommand}"/> to insert into the collection.</param>
         /// <returns>The <see cref="AbstractCollectionCommand"/> the child was inserted into. Useful for method chaining.</returns>
-        public SequentialCommand InsertChildren(int index, IEnumerable<AbstractCommand> childCommands)
+        public SequentialCommand InsertChildren(int index, IEnumerable<ICommand> childCommands)
         {
-            foreach (AbstractCommand childCommand in childCommands)
+            foreach (ICommand childCommand in childCommands)
             {
                 InsertChild(index, childCommand);
                 index++;
