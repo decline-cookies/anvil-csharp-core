@@ -7,8 +7,8 @@ namespace Anvil.CSharp.Command
     /// Concrete implementation of <see cref="ICommand{T}"/>
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICommand"/> to use.</typeparam>
-    public abstract class AbstractCommand<T> : AbstractCommand, ICommand<T>
-        where T : class, ICommand
+    public abstract class AbstractCommand<T> : AbstractCommand, ICommand
+        where T : AbstractCommand<T>
     {
         /// <summary>
         /// <inheritdoc cref="ICommand{T}.OnComplete"/>
@@ -27,14 +27,14 @@ namespace Anvil.CSharp.Command
             base.DisposeSelf();
         }
 
-        protected override void DispatchOnComplete()
+        protected override sealed void DispatchOnComplete()
         {
-            OnComplete?.Invoke(this as T);
+            OnComplete?.Invoke((T)this);
         }
 
-        protected override void DispatchOnDisposing()
+        protected override sealed void DispatchOnDisposing()
         {
-            OnDisposing?.Invoke(this as T);
+            OnDisposing?.Invoke((T)this);
         }
     }
 

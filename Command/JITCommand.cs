@@ -1,4 +1,6 @@
-﻿namespace Anvil.CSharp.Command
+using System;
+
+namespace Anvil.CSharp.Command
 {
     /// <summary>
     /// A specialized Command that will construct the passed in generic type of <see cref="ICommand"/>
@@ -12,18 +14,15 @@
     /// sequence or parallel. Some of those commands will output data that subsequent commands require.
     /// </remarks>
     /// <typeparam name="T">The type of <see cref="ICommand"/> to construct.</typeparam>
-    public class JITCommand<T> : AbstractCommand<T>
-        where T: class, ICommand
+    public class JITCommand<T> : AbstractCommand<JITCommand<T>>
+        where T : ICommand
     {
         /// <summary>
-        /// <inheritdoc cref="ICommand.State"/>
-        /// This method bypasses the State for the <see cref="JITCommand{T}"/> and instead returns
-        /// the <see cref="CommandState"/> of the generic type <see cref="ICommand"/>
+        /// Gets the JIT created <see cref="{T}"/>
         /// </summary>
-        public new CommandState State => m_Command != null ? m_Command.State : CommandState.None;
+        public T Command { get; private set; }
 
         private ConstructCommandJIT<T> m_ConstructCommandJITFunction;
-        private T m_Command;
 
         /// <summary>
         /// Constructs a new <see cref="JITCommand{T}"/>
@@ -33,26 +32,33 @@
         /// </param>
         public JITCommand(ConstructCommandJIT<T> constructCommandJITFunction)
         {
+            if(constructCommandJITFunction == null)
+            {
+                throw new ArgumentException($"{nameof(constructCommandJITFunction)} cannot be null!");
+            }
+
             m_ConstructCommandJITFunction = constructCommandJITFunction;
         }
 
         protected override void DisposeSelf()
         {
             m_ConstructCommandJITFunction = null;
-            m_Command?.Dispose();
-            m_Command = null;
+            Command?.Dispose();
+            
             base.DisposeSelf();
         }
 
         protected override void ExecuteCommand()
         {
-            m_Command = m_ConstructCommandJITFunction?.Invoke();
-            m_Command.OnComplete += HandleOnComplete;
+            Command = m_ConstructCommandJITFunction();
+            Command.OnComplete += HandleOnComplete;
+
+            Command.Execute();
         }
 
         private void HandleOnComplete(ICommand command)
         {
-            m_Command.OnComplete -= HandleOnComplete;
+            Command.OnComplete -= HandleOnComplete;
             CompleteCommand();
         }
     }

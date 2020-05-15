@@ -1,4 +1,4 @@
-﻿namespace Anvil.CSharp.Command
+namespace Anvil.CSharp.Command
 {
     /// <summary>
     /// Delegate for a function that returns an instance of an <see cref="ICommand"/>.
@@ -6,5 +6,5 @@
     /// data that may only be available at the time of construction.
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICommand"/> to construct.</typeparam>
-    public delegate T ConstructCommandJIT<out T>() where T : ICommand;
+    public delegate T ConstructCommandJIT<T>() where T : ICommand;
 }

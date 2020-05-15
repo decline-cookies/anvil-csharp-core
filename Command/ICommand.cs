@@ -1,27 +1,7 @@
-﻿using System;
+using System;
 
 namespace Anvil.CSharp.Command
 {
-    /// <summary>
-    /// A specialized version of <see cref="ICommand"/> to allow for strong typing of the Command
-    /// returned in events.
-    /// </summary>
-    /// <typeparam name="T">The type of <see cref="ICommand"/> to use.</typeparam>
-    public interface ICommand<out T> : ICommand
-        where T:ICommand
-    {
-        /// <summary>
-        /// <inheritdoc cref="ICommand.OnComplete"/>
-        /// This enhances the event to be strong typed.
-        /// </summary>
-        new event Action<T> OnComplete;
-
-        /// <summary>
-        /// <inheritdoc cref="ICommand.OnDisposing"/>
-        /// This enhances the event to be strong typed.
-        /// </summary>
-        new event Action<T> OnDisposing;
-    }
 
     /// <summary>
     /// Interface for the concept of a Command in the Anvil Framework.
