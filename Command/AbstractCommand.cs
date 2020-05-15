@@ -8,7 +8,7 @@ namespace Anvil.CSharp.Command
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICommand"/> to use.</typeparam>
     public abstract class AbstractCommand<T> : AbstractCommand, ICommand<T>
-        where T:ICommand
+        where T : class, ICommand
     {
         /// <summary>
         /// <inheritdoc cref="ICommand{T}.OnComplete"/>
@@ -19,6 +19,23 @@ namespace Anvil.CSharp.Command
         /// <inheritdoc cref="ICommand{T}.OnDisposing"/>
         /// </summary>
         public new event Action<T> OnDisposing;
+
+        protected override void DisposeSelf()
+        {
+            OnComplete = null;
+            OnDisposing = null;
+            base.DisposeSelf();
+        }
+
+        protected override void DispatchOnComplete()
+        {
+            OnComplete?.Invoke(this as T);
+        }
+
+        protected override void DispatchOnDisposing()
+        {
+            OnDisposing?.Invoke(this as T);
+        }
     }
 
     /// <summary>
@@ -48,7 +65,7 @@ namespace Anvil.CSharp.Command
         protected override void DisposeSelf()
         {
             OnComplete = null;
-            OnDisposing?.Invoke(this);
+            DispatchOnDisposing();
 
             base.DisposeSelf();
         }
@@ -84,8 +101,18 @@ namespace Anvil.CSharp.Command
                 throw new Exception($"Tried to call {nameof(CompleteCommand)} on {this} but State was {State} instead of {CommandState.Executing}!");
             }
             State = CommandState.Completed;
-            OnComplete?.Invoke(this);
+            DispatchOnComplete();
             Dispose();
+        }
+
+        protected virtual void DispatchOnComplete()
+        {
+            OnComplete?.Invoke(this);
+        }
+
+        protected virtual void DispatchOnDisposing()
+        {
+            OnDisposing?.Invoke(this);
         }
     }
 }
