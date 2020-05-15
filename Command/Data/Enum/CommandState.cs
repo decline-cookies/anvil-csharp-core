@@ -6,11 +6,6 @@
     public enum CommandState
     {
         /// <summary>
-        /// Indicates the <see cref="ICommand"/> has not yet been constructed.
-        /// See <see cref="JITCommand{T}"/> for how this is possible.
-        /// </summary>
-        None,
-        /// <summary>
         /// Indicates the <see cref="ICommand"/> has been constructed but not yet executed.
         /// </summary>
         Initialized,

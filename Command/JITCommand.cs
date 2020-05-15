@@ -18,7 +18,7 @@ namespace Anvil.CSharp.Command
         where T : ICommand
     {
         /// <summary>
-        /// Gets the JIT created <see cref="{T}"/>
+        /// Gets the JIT command that was created <see cref="{T}"/>
         /// </summary>
         public T Command { get; private set; }
 
@@ -44,7 +44,7 @@ namespace Anvil.CSharp.Command
         {
             m_ConstructCommandJITFunction = null;
             Command?.Dispose();
-            
+
             base.DisposeSelf();
         }
 

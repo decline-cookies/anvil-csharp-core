@@ -4,19 +4,21 @@ using Anvil.CSharp.Core;
 namespace Anvil.CSharp.Command
 {
     /// <summary>
-    /// Concrete implementation of <see cref="ICommand{T}"/>
+    /// Extension of <see cref="AbstractCommand>"> to allow for strong typing <see cref="ICommand"> events.
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICommand"/> to use.</typeparam>
     public abstract class AbstractCommand<T> : AbstractCommand, ICommand
         where T : AbstractCommand<T>
     {
         /// <summary>
-        /// <inheritdoc cref="ICommand{T}.OnComplete"/>
+        /// <inheritdoc cref="ICommand.OnComplete"/>
+        /// Strongly typed Command
         /// </summary>
         public new event Action<T> OnComplete;
 
         /// <summary>
-        /// <inheritdoc cref="ICommand{T}.OnDisposing"/>
+        /// <inheritdoc cref="ICommand.OnDisposing"/>
+        /// Strongly typed Command
         /// </summary>
         public new event Action<T> OnDisposing;
 
@@ -24,15 +26,16 @@ namespace Anvil.CSharp.Command
         {
             OnComplete = null;
             OnDisposing = null;
+
             base.DisposeSelf();
         }
 
-        protected override sealed void DispatchOnComplete()
+        protected sealed override void DispatchOnComplete()
         {
             OnComplete?.Invoke((T)this);
         }
 
-        protected override sealed void DispatchOnDisposing()
+        protected sealed override void DispatchOnDisposing()
         {
             OnDisposing?.Invoke((T)this);
         }
