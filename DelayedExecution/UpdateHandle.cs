@@ -41,6 +41,7 @@ namespace Anvil.CSharp.DelayedExecution
 
         private readonly Dictionary<uint, CallAfterHandle> m_CallAfterHandles = new Dictionary<uint, CallAfterHandle>();
         private readonly List<Action> m_UpdateListeners = new List<Action>();
+        private readonly List<CallAfterHandle> m_UpdateIterator = new List<CallAfterHandle>();
 
         private event Action m_OnUpdate;
 
@@ -119,10 +120,18 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void HandleOnUpdate()
         {
-            foreach (CallAfterHandle callAfterHandle in m_CallAfterHandles.Values)
+            if (m_CallAfterHandles.Count > 0)
             {
-                callAfterHandle.Update();
+                //Take a snapshot of CallAfterHandles valid for this frame to iterate through since m_CallAfterHandles
+                //could have new CallAfterHandles added or existing ones removed as part of the stack from their Update.
+                m_UpdateIterator.AddRange(m_CallAfterHandles.Values);
+                foreach (CallAfterHandle callAfterHandle in m_UpdateIterator)
+                {
+                    callAfterHandle.Update();
+                }
+                m_UpdateIterator.Clear();
             }
+
             m_OnUpdate?.Invoke();
         }
 
