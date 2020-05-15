@@ -3,17 +3,18 @@ using System.Collections.Generic;
 
 namespace Anvil.CSharp.Command
 {
-    public abstract class AbstractCollectionCommand : AbstractCommand
+    public abstract class AbstractCollectionCommand<T> : AbstractCommand<T>
+        where T:AbstractCollectionCommand<T>
     {
-        protected readonly List<AbstractCommand> m_ChildCommands = new List<AbstractCommand>();
+        protected readonly List<ICommand> m_ChildCommands = new List<ICommand>();
 
-        protected AbstractCollectionCommand(params AbstractCommand[] childCommands):this((IEnumerable<AbstractCommand>)childCommands)
+        protected AbstractCollectionCommand(params ICommand[] childCommands):this((IEnumerable<ICommand>)childCommands)
         {
         }
-        
-        protected AbstractCollectionCommand(IEnumerable<AbstractCommand> childCommands)
+
+        protected AbstractCollectionCommand(IEnumerable<ICommand> childCommands)
         {
-            foreach (AbstractCommand childCommand in childCommands)
+            foreach (ICommand childCommand in childCommands)
             {
                 AddChild(childCommand);
             }
@@ -21,46 +22,46 @@ namespace Anvil.CSharp.Command
 
         protected override void DisposeSelf()
         {
-            foreach (AbstractCommand command in m_ChildCommands)
+            foreach (ICommand command in m_ChildCommands)
             {
                 command.Dispose();
             }
             m_ChildCommands.Clear();
-            
+
             base.DisposeSelf();
         }
-        
+
         /// <summary>
         /// Adds a child command to be executed in the collection.
         /// </summary>
-        /// <param name="childCommand">The <see cref="AbstractCommand"/> to add to the collection.</param>
-        /// <returns>The <see cref="AbstractCollectionCommand"/> the child was added to. Useful for method chaining.</returns>
+        /// <param name="childCommand">The <see cref="ICommand"/> to add to the collection.</param>
+        /// <returns>The <see cref="AbstractCollectionCommand{T}"/> the child was added to. Useful for method chaining.</returns>
         /// <exception cref="Exception">Occurs when the <see cref="State"/> is not CommandState.Initialized</exception>
-        public AbstractCollectionCommand AddChild(AbstractCommand childCommand)
+        public T AddChild(ICommand childCommand)
         {
             if (State != CommandState.Initialized)
             {
                 throw new Exception($"Tried to add child command {childCommand} to {this} but State was {State} instead of Initialized!");
             }
-            
+
             m_ChildCommands.Add(childCommand);
 
-            return this;
+            return (T)this;
         }
-        
+
         /// <summary>
-        /// Adds an <see cref="IEnumerable{AbstractCommand}"/> to be executed in the collection.
+        /// Adds an <see cref="IEnumerable{ICommand}"/> to be executed in the collection.
         /// </summary>
-        /// <param name="childCommands">The <see cref="IEnumerable{AbstractCommand}"/> to add to the collection.</param>
-        /// <returns>The <see cref="AbstractCollectionCommand"/> the child was added to. Useful for method chaining.</returns>
-        public AbstractCollectionCommand AddChildren(IEnumerable<AbstractCommand> childCommands)
+        /// <param name="childCommands">The <see cref="IEnumerable{ICommand}"/> to add to the collection.</param>
+        /// <returns>The <see cref="AbstractCollectionCommand{T}"/> the child was added to. Useful for method chaining.</returns>
+        public T AddChildren(IEnumerable<ICommand> childCommands)
         {
-            foreach (AbstractCommand childCommand in childCommands)
+            foreach (ICommand childCommand in childCommands)
             {
                 AddChild(childCommand);
             }
 
-            return this;
+            return (T)this;
         }
     }
 }
