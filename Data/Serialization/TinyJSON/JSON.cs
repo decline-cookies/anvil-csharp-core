@@ -4,12 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 
-
-#if ENABLE_IL2CPP
-using UnityEngine.Scripting;
-#endif
-
-
 namespace TinyJSON
 {
 	/// <summary>
@@ -92,19 +86,17 @@ namespace TinyJSON
 			: base( message, innerException ) {}
 	}
 
-
-#if ENABLE_IL2CPP
-	[Preserve]
-#endif
 	// ReSharper disable once InconsistentNaming
-	public static class JSON
-	{
-		static readonly Type includeAttrType = typeof(Include);
-		static readonly Type excludeAttrType = typeof(Exclude);
-		static readonly Type decodeAliasAttrType = typeof(DecodeAlias);
+	public class TinyJSONWorker
+    {
+        public virtual int Priority { get; } = 0;
+
+		protected readonly Type includeAttrType = typeof(Include);
+        protected readonly Type excludeAttrType = typeof(Exclude);
+        protected readonly Type decodeAliasAttrType = typeof(DecodeAlias);
 
 
-		public static Variant Load( string json )
+		public Variant Load( string json )
 		{
 			if (json == null)
 			{
@@ -115,13 +107,13 @@ namespace TinyJSON
 		}
 
 
-		public static string Dump( object data )
+		public string Dump( object data )
 		{
 			return Dump( data, EncodeOptions.None );
 		}
 
 
-		public static string Dump( object data, EncodeOptions options )
+		public string Dump( object data, EncodeOptions options )
 		{
 			// Invoke methods tagged with [BeforeEncode] attribute.
 			if (data != null)
@@ -146,15 +138,15 @@ namespace TinyJSON
 		}
 
 
-		public static void MakeInto<T>( Variant data, out T item )
+		public void MakeInto<T>( Variant data, out T item )
 		{
 			item = DecodeType<T>( data );
 		}
 
 
-		static readonly Dictionary<string, Type> typeCache = new Dictionary<string, Type>();
+		protected readonly Dictionary<string, Type> typeCache = new Dictionary<string, Type>();
 
-		static Type FindType( string fullName )
+		protected Type FindType( string fullName )
 		{
 			if (fullName == null)
 			{
@@ -181,10 +173,8 @@ namespace TinyJSON
 		}
 
 
-#if ENABLE_IL2CPP
-		[Preserve]
-#endif
-		static T DecodeType<T>( Variant data )
+
+		protected virtual T DecodeType<T>( Variant data )
 		{
 			if (data == null)
 			{
@@ -410,12 +400,8 @@ namespace TinyJSON
 			return instance;
 		}
 
-
-#if ENABLE_IL2CPP
-		[Preserve]
-#endif
 		// ReSharper disable once UnusedMethodReturnValue.Local
-		static List<T> DecodeList<T>( Variant data )
+		protected virtual List<T> DecodeList<T>( Variant data )
 		{
 			var list = new List<T>();
 
@@ -433,12 +419,8 @@ namespace TinyJSON
 			return list;
 		}
 
-
-#if ENABLE_IL2CPP
-		[Preserve]
-#endif
 		// ReSharper disable once UnusedMethodReturnValue.Local
-		static Dictionary<TKey, TValue> DecodeDictionary<TKey, TValue>( Variant data )
+		protected virtual Dictionary<TKey, TValue> DecodeDictionary<TKey, TValue>( Variant data )
 		{
 			var dict = new Dictionary<TKey, TValue>();
 			var type = typeof(TKey);
@@ -459,12 +441,8 @@ namespace TinyJSON
 			return dict;
 		}
 
-
-#if ENABLE_IL2CPP
-		[Preserve]
-#endif
 		// ReSharper disable once UnusedMethodReturnValue.Local
-		static T[] DecodeArray<T>( Variant data )
+		protected virtual T[] DecodeArray<T>( Variant data )
 		{
 			var arrayData = data as ProxyArray;
 			if (arrayData == null)
@@ -484,12 +462,8 @@ namespace TinyJSON
 			return array;
 		}
 
-
-#if ENABLE_IL2CPP
-		[Preserve]
-#endif
 		// ReSharper disable once UnusedMember.Local
-		static void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
+		protected virtual void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
 		{
 			var count = arrayData.Count;
 			for (var i = 0; i < count; i++)
@@ -507,20 +481,16 @@ namespace TinyJSON
 		}
 
 
-		const BindingFlags instanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-		const BindingFlags staticBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-		static readonly MethodInfo decodeTypeMethod = typeof(JSON).GetMethod( "DecodeType", staticBindingFlags );
-		static readonly MethodInfo decodeListMethod = typeof(JSON).GetMethod( "DecodeList", staticBindingFlags );
-		static readonly MethodInfo decodeDictionaryMethod = typeof(JSON).GetMethod( "DecodeDictionary", staticBindingFlags );
-		static readonly MethodInfo decodeArrayMethod = typeof(JSON).GetMethod( "DecodeArray", staticBindingFlags );
-		static readonly MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
+		protected const BindingFlags instanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        protected readonly MethodInfo decodeTypeMethod = typeof(TinyJSONWorker).GetMethod( "DecodeType", instanceBindingFlags );
+        protected readonly MethodInfo decodeListMethod = typeof(TinyJSONWorker).GetMethod( "DecodeList", instanceBindingFlags );
+        protected readonly MethodInfo decodeDictionaryMethod = typeof(TinyJSONWorker).GetMethod( "DecodeDictionary", instanceBindingFlags );
+        protected readonly MethodInfo decodeArrayMethod = typeof(TinyJSONWorker).GetMethod( "DecodeArray", instanceBindingFlags );
+        protected readonly MethodInfo decodeMultiRankArrayMethod = typeof(TinyJSONWorker).GetMethod( "DecodeMultiRankArray", instanceBindingFlags );
 
 
-#if ENABLE_IL2CPP
-		[Preserve]
-#endif
 		// ReSharper disable once InconsistentNaming
-		public static void SupportTypeForAOT<T>()
+		public virtual void SupportTypeForAOT<T>()
 		{
 			DecodeType<T>( null );
 			DecodeList<T>( null );
@@ -538,13 +508,9 @@ namespace TinyJSON
 			DecodeDictionary<String, T>( null );
 		}
 
-
-#if ENABLE_IL2CPP
-		[Preserve]
-#endif
 		// ReSharper disable once InconsistentNaming
 		// ReSharper disable once UnusedMember.Local
-		static void SupportValueTypesForAOT()
+		public virtual void SupportValueTypesForAOT()
 		{
 			SupportTypeForAOT<Int16>();
 			SupportTypeForAOT<UInt16>();
