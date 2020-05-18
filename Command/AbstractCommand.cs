@@ -7,7 +7,7 @@ namespace Anvil.CSharp.Command
     /// Extension of <see cref="AbstractCommand"> to allow for strong typing <see cref="ICommand"> events.
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICommand"/> to use.</typeparam>
-    public abstract class AbstractCommand<T> : AbstractCommand, ICommand
+    public abstract class AbstractCommand<T> : AbstractCommand
         where T : AbstractCommand<T>
     {
         /// <summary>
@@ -32,12 +32,22 @@ namespace Anvil.CSharp.Command
 
         protected sealed override void DispatchOnComplete()
         {
+            //The OnComplete{T} event in this class is a separate event to the OnComplete{ICommand}
+            //in the base class. Anyone listening to ICommand.OnComplete would not be listening to
+            //this OnComplete{T} and vice-versa. Therefore we need to ensure we dispatch both events
+            //so that all listeners get notified properly.
             OnComplete?.Invoke((T)this);
+            base.DispatchOnComplete();
         }
 
         protected sealed override void DispatchOnDisposing()
         {
+            //The OnDisposing{T} event in this class is a separate event to the OnDisposing{ICommand}
+            //in the base class. Anyone listening to ICommand.OnDisposing would not be listening to
+            //this OnDisposing{T} and vice-versa. Therefore we need to ensure we dispatch both events
+            //so that all listeners get notified properly.
             OnDisposing?.Invoke((T)this);
+            base.DispatchOnDisposing();
         }
     }
 
