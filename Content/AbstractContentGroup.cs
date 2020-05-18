@@ -44,12 +44,12 @@ namespace Anvil.CSharp.Content
         /// The controlling <see cref="AbstractContentManager"/>
         /// </summary>
         public readonly AbstractContentManager ContentManager;
-        
+
         /// <summary>
         /// The active <see cref="AbstractContentController"/> currently being shown.
         /// </summary>
         public AbstractContentController ActiveContentController { get; private set; }
-        
+
         private AbstractContentController m_PendingContentController;
 
         protected AbstractContentGroup(AbstractContentManager contentManager, ContentGroupConfigVO configVO)
@@ -69,20 +69,20 @@ namespace Anvil.CSharp.Content
 
             ActiveContentController?.Dispose();
             ActiveContentController = null;
-            
+
             m_PendingContentController?.Dispose();
             m_PendingContentController = null;
-            
+
             base.DisposeSelf();
         }
-        
+
         /// <summary>
         /// Shows an <see cref="AbstractContentController"/> in this group.
         /// </summary>
         /// <param name="contentController">The instance of <see cref="AbstractContentController"/> to be shown.</param>
         public void Show(AbstractContentController contentController)
         {
-            //TODO: Validate the passed in controller to ensure we avoid weird cases - https://app.clubhouse.io/scratchgames/story/29/validate-on-show
+            //TODO: Validate the passed in controller to ensure we avoid weird cases - https://github.com/scratch-games/anvil-unity-core/issues/3
 
             RemoveLifeCycleListeners(m_PendingContentController);
             m_PendingContentController = contentController;
@@ -96,7 +96,7 @@ namespace Anvil.CSharp.Content
             }
             else
             {
-                //TODO: Should we wait one frame here via UpdateHandle? - https://app.clubhouse.io/scratchgames/story/111/think-about-waiting-one-frame-to-display-new-content-in-the-abstractcontentgroup-if-there-is-no-content-to-transition-out
+                //TODO: Should we wait one frame here via UpdateHandle? - https://github.com/scratch-games/anvil-csharp-core/issues/20
                 //Otherwise we can just show the pending controller
                 ShowPendingContentController();
             }
@@ -117,70 +117,70 @@ namespace Anvil.CSharp.Content
             {
                 return;
             }
-            //We can't show the pending controller right away because we may not have the necessary assets loaded. 
-            //So we need to construct a Sequential Command and populate with the required commands to load the assets needed. 
-            //TODO: Handle loading - https://app.clubhouse.io/scratchgames/story/37/support-loading-dependent-assets
-            
+            //We can't show the pending controller right away because we may not have the necessary assets loaded.
+            //So we need to construct a Sequential Command and populate with the required commands to load the assets needed.
+            //TODO: Handle loading - https://github.com/scratch-games/anvil-unity-core/issues/2
+
             ActiveContentController = m_PendingContentController;
             m_PendingContentController = null;
 
             ActiveContentController.InternalLoad();
         }
-        
-        private void HandleOnLoadStart(AbstractContentController contentController)
+
+        private void ContentController_OnLoadStart(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnLoadStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
-            
+
             OnLoadStart?.Invoke(ActiveContentController);
         }
 
-        private void HandleOnLoadComplete(AbstractContentController contentController)
+        private void ContentController_OnLoadComplete(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnLoadComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
 
             OnLoadComplete?.Invoke(ActiveContentController);
-            
+
             ActiveContentController.InternalInitAfterLoadComplete();
             ActiveContentController.InternalPlayIn();
         }
 
-        private void HandleOnPlayInStart(AbstractContentController contentController)
+        private void ContentController_OnPlayInStart(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayInStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
-            
+
             OnPlayInStart?.Invoke(ActiveContentController);
         }
-        
-        private void HandleOnPlayInComplete(AbstractContentController contentController)
+
+        private void ContentController_OnPlayInComplete(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayInComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
-            
+
             OnPlayInComplete?.Invoke(ActiveContentController);
 
             ActiveContentController.InternalInitAfterPlayInComplete();
         }
 
-        private void HandleOnPlayOutStart(AbstractContentController contentController)
+        private void ContentController_OnPlayOutStart(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayOutStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
-            
+
             OnPlayOutStart?.Invoke(ActiveContentController);
         }
-        
-        private void HandleOnPlayOutComplete(AbstractContentController contentController)
+
+        private void ContentController_OnPlayOutComplete(AbstractContentController contentController)
         {
             Debug.Assert(contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayOutComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
-            
+
             OnPlayOutComplete?.Invoke(ActiveContentController);
             RemoveLifeCycleListeners(ActiveContentController);
             ActiveContentController?.Dispose();
@@ -195,28 +195,28 @@ namespace Anvil.CSharp.Content
             {
                 return;
             }
-            
-            contentController.OnLoadStart += HandleOnLoadStart;
-            contentController.OnLoadComplete += HandleOnLoadComplete;
-            contentController.OnPlayInStart += HandleOnPlayInStart;
-            contentController.OnPlayInComplete += HandleOnPlayInComplete;
-            contentController.OnPlayOutStart += HandleOnPlayOutStart;
-            contentController.OnPlayOutComplete += HandleOnPlayOutComplete;
+
+            contentController.OnLoadStart += ContentController_OnLoadStart;
+            contentController.OnLoadComplete += ContentController_OnLoadComplete;
+            contentController.OnPlayInStart += ContentController_OnPlayInStart;
+            contentController.OnPlayInComplete += ContentController_OnPlayInComplete;
+            contentController.OnPlayOutStart += ContentController_OnPlayOutStart;
+            contentController.OnPlayOutComplete += ContentController_OnPlayOutComplete;
         }
-        
+
         private void RemoveLifeCycleListeners(AbstractContentController contentController)
         {
             if (contentController == null)
             {
                 return;
             }
-            
-            contentController.OnLoadStart -= HandleOnLoadStart;
-            contentController.OnLoadComplete -= HandleOnLoadComplete;
-            contentController.OnPlayInStart -= HandleOnPlayInStart;
-            contentController.OnPlayInComplete -= HandleOnPlayInComplete;
-            contentController.OnPlayOutStart -= HandleOnPlayOutStart;
-            contentController.OnPlayOutComplete -= HandleOnPlayOutComplete;
+
+            contentController.OnLoadStart -= ContentController_OnLoadStart;
+            contentController.OnLoadComplete -= ContentController_OnLoadComplete;
+            contentController.OnPlayInStart -= ContentController_OnPlayInStart;
+            contentController.OnPlayInComplete -= ContentController_OnPlayInComplete;
+            contentController.OnPlayOutStart -= ContentController_OnPlayOutStart;
+            contentController.OnPlayOutComplete -= ContentController_OnPlayOutComplete;
         }
     }
 }

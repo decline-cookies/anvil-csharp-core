@@ -43,16 +43,16 @@ namespace Anvil.CSharp.Command
                 return;
             }
 
-            foreach (ICommand command in m_ChildCommands)
+            foreach (ICommand childCommand in m_ChildCommands)
             {
-                command.OnComplete += HandleChildCommandOnComplete;
-                command.Execute();
+                childCommand.OnComplete += ChildCommand_OnComplete;
+                childCommand.Execute();
             }
         }
 
-        private void HandleChildCommandOnComplete(ICommand command)
+        private void ChildCommand_OnComplete(ICommand childCommand)
         {
-            command.OnComplete -= HandleChildCommandOnComplete;
+            childCommand.OnComplete -= ChildCommand_OnComplete;
             m_ChildCommandsLeftToComplete--;
             if (m_ChildCommandsLeftToComplete == 0)
             {

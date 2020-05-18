@@ -84,14 +84,14 @@ namespace Anvil.CSharp.Command
                 return;
             }
 
-            ICommand nextChildCommand = m_ChildCommands[m_ChildCommandIndex];
-            nextChildCommand.OnComplete += HandleChildCommandOnComplete;
-            nextChildCommand.Execute();
+            ICommand childCommand = m_ChildCommands[m_ChildCommandIndex];
+            childCommand.OnComplete += ChildCommand_OnComplete;
+            childCommand.Execute();
         }
 
-        private void HandleChildCommandOnComplete(ICommand command)
+        private void ChildCommand_OnComplete(ICommand childCommand)
         {
-            command.OnComplete -= HandleChildCommandOnComplete;
+            childCommand.OnComplete -= ChildCommand_OnComplete;
             m_ChildCommandIndex++;
 
             ExecuteNextChildCommandInSequence();
