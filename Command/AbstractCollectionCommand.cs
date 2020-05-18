@@ -14,10 +14,7 @@ namespace Anvil.CSharp.Command
 
         protected AbstractCollectionCommand(IEnumerable<ICommand> childCommands)
         {
-            foreach (ICommand childCommand in childCommands)
-            {
-                AddChild(childCommand);
-            }
+            AddChildren(childCommands);
         }
 
         protected override void DisposeSelf()
