@@ -88,13 +88,13 @@ namespace Anvil.CSharp.DelayedExecution
             m_OnUpdate = null;
             if (m_UpdateSource != null)
             {
-                m_UpdateSource.OnUpdate -= HandleOnUpdate;
+                m_UpdateSource.OnUpdate -= UpdateSource_OnUpdate;
                 m_UpdateSource = null;
             }
 
             foreach (CallAfterHandle callAfterHandle in m_CallAfterHandles.Values)
             {
-                callAfterHandle.OnDisposing -= HandleOnCallAfterHandleDisposing;
+                callAfterHandle.OnDisposing -= CallAfterHandle_OnDisposing;
                 callAfterHandle.Dispose();
             }
 
@@ -108,17 +108,17 @@ namespace Anvil.CSharp.DelayedExecution
         {
             if (!m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count > 0 || m_CallAfterHandles.Count > 0))
             {
-                UpdateSource.OnUpdate += HandleOnUpdate;
+                UpdateSource.OnUpdate += UpdateSource_OnUpdate;
                 m_IsUpdateSourceHookEnabled = true;
             }
             else if (m_IsUpdateSourceHookEnabled && (m_UpdateListeners.Count == 0 && m_CallAfterHandles.Count == 0))
             {
-                UpdateSource.OnUpdate -= HandleOnUpdate;
+                UpdateSource.OnUpdate -= UpdateSource_OnUpdate;
                 m_IsUpdateSourceHookEnabled = false;
             }
         }
 
-        private void HandleOnUpdate()
+        private void UpdateSource_OnUpdate()
         {
             if (m_CallAfterHandles.Count > 0)
             {
@@ -175,12 +175,12 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void FinalizeHandle(CallAfterHandle callAfterHandle)
         {
-            callAfterHandle.OnDisposing += HandleOnCallAfterHandleDisposing;
+            callAfterHandle.OnDisposing += CallAfterHandle_OnDisposing;
             m_CallAfterHandles.Add(callAfterHandle.ID, callAfterHandle);
             ValidateUpdateSourceHook();
         }
 
-        private void HandleOnCallAfterHandleDisposing(CallAfterHandle callAfterHandle)
+        private void CallAfterHandle_OnDisposing(CallAfterHandle callAfterHandle)
         {
             Debug.Assert(!m_CallAfterHandles.ContainsKey(callAfterHandle.ID), $"Tried to remove Call After Handle with ID {callAfterHandle.ID} but it didn't exist in the lookup!");
 

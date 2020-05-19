@@ -51,14 +51,14 @@ namespace Anvil.CSharp.Command
         protected override void ExecuteCommand()
         {
             Command = m_ConstructCommandJITFunction();
-            Command.OnComplete += HandleOnComplete;
+            Command.OnComplete += Command_OnComplete;
 
             Command.Execute();
         }
 
-        private void HandleOnComplete(ICommand command)
+        private void Command_OnComplete(ICommand command)
         {
-            Command.OnComplete -= HandleOnComplete;
+            Command.OnComplete -= Command_OnComplete;
             CompleteCommand();
         }
     }
