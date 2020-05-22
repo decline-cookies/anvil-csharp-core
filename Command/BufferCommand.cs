@@ -54,7 +54,7 @@ namespace Anvil.CSharp.Command
         /// <param name="childCommands">A set of <see cref="IEnumerable{ICommand}"/>s to populate with.</param>
         public BufferCommand(IEnumerable<ICommand> childCommands)
         {
-            AddChildren(childCommands);
+            m_ChildCommands = new Queue<ICommand>(childCommands);
         }
 
         protected override void DisposeSelf()
