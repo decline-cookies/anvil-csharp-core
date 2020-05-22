@@ -12,13 +12,12 @@ namespace Anvil.CSharp.Command
     public class BufferCommand : AbstractCommand<BufferCommand>
     {
         /// <summary>
-        /// Dispatches when the buffer of commands is empty. The <see cref="BufferCommand"/> will be in an idle state
-        /// and able to accept more commands at any time.
+        /// Dispatches when the <see cref="BufferCommand"/> is idle and not executing any commands and has none left in
+        /// the buffer. It is able to accept more commands at any time.
         /// </summary>
-        public event Action<BufferCommand> OnBufferEmpty;
+        public event Action<BufferCommand> OnBufferIdle;
 
         private readonly Queue<ICommand> m_ChildCommands = new Queue<ICommand>();
-        private ICommand m_ActiveCommand;
 
         /// <summary>
         /// <see cref="BufferCommand"/> will throw an <see cref="NotSupportedException"/> if the
@@ -61,10 +60,7 @@ namespace Anvil.CSharp.Command
         protected override void DisposeSelf()
         {
             Clear();
-            OnBufferEmpty = null;
-
-            m_ActiveCommand?.Dispose();
-            m_ActiveCommand = null;
+            OnBufferIdle = null;
 
             base.DisposeSelf();
         }
@@ -78,8 +74,8 @@ namespace Anvil.CSharp.Command
         {
             m_ChildCommands.Enqueue(childCommand);
 
-            //If the Buffer has been started and we're not currently executing anything, we should kick off the next command
-            if (State == CommandState.Executing && m_ActiveCommand == null)
+            //If the Buffer has been started and this is the first command in the buffer, we should kick it off.
+            if (State == CommandState.Executing && m_ChildCommands.Count == 1)
             {
                 ExecuteNextChildCommandInBuffer();
             }
@@ -103,68 +99,49 @@ namespace Anvil.CSharp.Command
         }
 
         /// <summary>
-        /// Clears all queued commands in the <see cref="BufferCommand"/> and disposes them.
-        /// Will dispatch <see cref="BufferCommand.OnBufferEmpty"/> so long as the <see cref="BufferCommand"/> is
-        /// not Disposing or Disposed.
-        ///
-        /// This function will do no work and will not dispatch <see cref="BufferCommand.OnBufferEmpty"/> if the buffer
-        /// is already empty.
-        ///
-        /// The active command currently being executed will not be affected by this function.
+        /// Clears all commands in the <see cref="BufferCommand"/> and disposes them.
+        /// Will not dispatch <see cref="OnBufferIdle"/>.
         /// </summary>
         public void Clear()
         {
-            //Early return to prevent duplicate firing of OnBufferEmpty
-            if (m_ChildCommands.Count == 0)
-            {
-                return;
-            }
-
             foreach (ICommand childCommand in m_ChildCommands)
             {
                 childCommand.Dispose();
             }
             m_ChildCommands.Clear();
-
-            if (!IsDisposing && !IsDisposed)
-            {
-                OnBufferEmpty?.Invoke(this);
-            }
         }
 
         protected override void ExecuteCommand()
         {
+            //Check in case Execute was called after creation with no additions. AddChild handles the check for the only
+            //other way ExecuteNextChildCommandInBuffer can be called with no commands in the queue.
+            if (m_ChildCommands.Count == 0)
+            {
+                return;
+            }
             ExecuteNextChildCommandInBuffer();
         }
 
         private void ExecuteNextChildCommandInBuffer()
         {
-            //Early return if the buffer is empty and we want to idle.
-            if (m_ChildCommands.Count == 0)
-            {
-                return;
-            }
-
-            //Kick off the next command in the buffer
-            ICommand childCommand = m_ChildCommands.Dequeue();
-
-            m_ActiveCommand = childCommand;
-            m_ActiveCommand.OnComplete += ChildCommand_OnComplete;
-            m_ActiveCommand.Execute();
-
-            //Second check to see if that was the last command in the buffer to alert that the buffer is empty
-            if (m_ChildCommands.Count == 0)
-            {
-                OnBufferEmpty?.Invoke(this);
-            }
+            ICommand childCommand = m_ChildCommands.Peek();
+            childCommand.OnComplete += ChildCommand_OnComplete;
+            childCommand.Execute();
         }
 
         private void ChildCommand_OnComplete(ICommand childCommand)
         {
             childCommand.OnComplete -= ChildCommand_OnComplete;
-            m_ActiveCommand = null;
+            m_ChildCommands.Dequeue();
 
-            ExecuteNextChildCommandInBuffer();
+            if (m_ChildCommands.Count > 0)
+            {
+                ExecuteNextChildCommandInBuffer();
+            }
+            else
+            {
+                OnBufferIdle?.Invoke(this);
+            }
         }
     }
 }
