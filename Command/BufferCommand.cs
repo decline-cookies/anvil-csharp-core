@@ -144,27 +144,13 @@ namespace Anvil.CSharp.Command
         {
             CurrentChild = m_ChildCommands.Peek();
 
-            //Since we can access the CurrentChild, someone could dispose it, leaving the BufferCommand in
-            //a limbo state. We'll listen for the dispose as well so we can gracefully recover.
             CurrentChild.OnComplete += ChildCommand_OnComplete;
-            CurrentChild.OnDisposing += ChildCommand_OnDisposing;
             CurrentChild.Execute();
-        }
-
-        private void ChildCommand_OnDisposing(ICommand childCommand)
-        {
-            CleanupChild(childCommand);
         }
 
         private void ChildCommand_OnComplete(ICommand childCommand)
         {
-            CleanupChild(childCommand);
-        }
-
-        private void CleanupChild(ICommand childCommand)
-        {
             childCommand.OnComplete -= ChildCommand_OnComplete;
-            childCommand.OnDisposing -= ChildCommand_OnDisposing;
 
             m_ChildCommands.Dequeue();
             CurrentChild = null;

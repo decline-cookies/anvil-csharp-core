@@ -59,29 +59,15 @@ namespace Anvil.CSharp.Command
 
             foreach (T childCommand in m_ChildCommands)
             {
-                //Since we can access the CurrentChildren, someone could dispose one of them,
-                //leaving the Parallel in a limbo state. We'll listen for the dispose as well
-                //so we can gracefully recover.
                 childCommand.OnComplete += ChildCommand_OnComplete;
-                childCommand.OnDisposing += ChildCommand_OnDisposing;
                 childCommand.Execute();
             }
         }
 
         private void ChildCommand_OnComplete(ICommand childCommand)
         {
-            CleanupChild(childCommand);
-        }
-
-        private void ChildCommand_OnDisposing(ICommand childCommand)
-        {
-            CleanupChild(childCommand);
-        }
-
-        private void CleanupChild(ICommand childCommand)
-        {
             childCommand.OnComplete -= ChildCommand_OnComplete;
-            childCommand.OnDisposing -= ChildCommand_OnDisposing;
+
             m_ChildCommandsLeftToComplete--;
             if (m_ChildCommandsLeftToComplete == 0)
             {

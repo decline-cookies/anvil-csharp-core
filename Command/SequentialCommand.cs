@@ -104,26 +104,13 @@ namespace Anvil.CSharp.Command
 
             CurrentChild = m_ChildCommands[m_ChildCommandIndex];
 
-            //Since we can access the CurrentCommand, someone could dispose it, leaving the SequentialCommand
-            //in a limbo state. We'll listen for the dispose as well so we can gracefully recover.
             CurrentChild.OnComplete += ChildCommand_OnComplete;
-            CurrentChild.OnDisposing += ChildCommand_OnDisposing;
             CurrentChild.Execute();
         }
 
         private void ChildCommand_OnComplete(ICommand childCommand)
         {
-            CleanupChild(childCommand);
-        }
-        private void ChildCommand_OnDisposing(ICommand childCommand)
-        {
-            CleanupChild(childCommand);
-        }
-
-        private void CleanupChild(ICommand childCommand)
-        {
             childCommand.OnComplete -= ChildCommand_OnComplete;
-            childCommand.OnDisposing -= ChildCommand_OnDisposing;
 
             CurrentChild = null;
             m_ChildCommandIndex++;
