@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Pooling
@@ -6,27 +7,15 @@ namespace Anvil.CSharp.Pooling
     public class Pool<T> : AbstractAnvilDisposable
     {
         private readonly PoolSettings m_Settings;
-        private readonly IItemStore<T> m_ItemStore;
-        private readonly Func<T> m_CreateInstanceFunc;
+        private readonly Stack<T> m_Stack = new Stack<T>();
+        private readonly InstanceCreator<T> m_InstanceCreator;
 
         private int m_InstanceCount;
 
-        public Pool(Func<T> createInstanceFunc, PoolSettings settings = null)
+        public Pool(InstanceCreator<T> instanceCreator, PoolSettings settings = null)
         {
-            m_CreateInstanceFunc = createInstanceFunc;
-            m_Settings = settings ?? new PoolSettings();
-
-            switch(m_Settings.ItemStoreType)
-            {
-                case ItemStoreType.Queue:
-                    m_ItemStore = new QueueItemStore<T>();
-                    break;
-                case ItemStoreType.Stack:
-                    m_ItemStore = new StackItemStore<T>();
-                    break;
-                default:
-                    throw new NotImplementedException($"{m_Settings.ItemStoreType} item store is not implemented");
-            }
+            m_InstanceCreator = instanceCreator;
+            m_Settings = settings ?? PoolSettings.DEFAULT;
 
             for (int i = 0; i < m_Settings.InitialCount; i++)
             {
@@ -36,60 +25,54 @@ namespace Anvil.CSharp.Pooling
 
         public T Acquire()
         {
-            if (m_ItemStore.Count == 0)
+            if (m_Stack.Count == 0)
             {
-                int growthStep = Math.Max(1, m_Settings.GrowthOperator.CalculateGrowthStep(m_InstanceCount));
-
-                if (m_Settings.MaxCount.HasValue)
-                {
-                    growthStep = Math.Min(growthStep, m_Settings.MaxCount.Value - m_InstanceCount);
-
-                    if (growthStep <= 0)
-                    {
-                        return default;
-                    }
-                }
-
-                for (int i = 0; i < growthStep; i++)
-                {
-                    CreateInstance();
-                }
+                Grow();
             }
 
-            T instance = m_ItemStore.Remove();
-
-            if (instance is IPoolable poolable)
-            {
-                poolable.OnAcquired();
-            }
-
-            return instance;
+            return m_Stack.Pop();
         }
 
         public void Release(T instance)
         {
-            // Track the maximum instance count, in case of released instances that were not created by the pool
-            m_InstanceCount = Math.Max(m_InstanceCount, m_ItemStore.Count);
+            m_Stack.Push(instance);
 
-            if (instance is IPoolable poolable)
+            // Track the maximum instance count, in case of released instances that were not created by the pool
+            m_InstanceCount = Math.Max(m_InstanceCount, m_Stack.Count);
+        }
+
+        private void Grow()
+        {
+            int growthStep = Math.Max(1, m_Settings.GrowthOperator.CalculateGrowthStep(m_InstanceCount));
+
+            if (m_Settings.MaxCount.HasValue)
             {
-                poolable.OnReleased();
+                growthStep = Math.Min(growthStep, m_Settings.MaxCount.Value - m_InstanceCount);
+
+                if (growthStep <= 0)
+                {
+                    throw new Exception(
+                        $"Failed to increase pool size, max instances ({m_Settings.MaxCount}) already exist!");
+                }
             }
 
-            m_ItemStore.Add(instance);
+            for (int i = 0; i < growthStep; i++)
+            {
+                CreateInstance();
+            }
         }
 
         private void CreateInstance()
         {
             m_InstanceCount++;
-            m_ItemStore.Add(m_CreateInstanceFunc());
+            m_Stack.Push(m_InstanceCreator.Invoke());
         }
 
         protected override void DisposeSelf()
         {
             if (typeof(IDisposable).IsAssignableFrom(typeof(T)))
             {
-                foreach (T instance in m_ItemStore)
+                foreach (T instance in m_Stack)
                 {
                     ((IDisposable)instance).Dispose();
                 }

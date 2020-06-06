@@ -4,16 +4,21 @@ namespace Anvil.CSharp.Pooling
 {
     public class PoolSettings
     {
+        public static readonly PoolSettings DEFAULT = new PoolSettings();
+
+        public int InitialCount { get; }
+        public int? MaxCount { get; }
+
+        public IGrowthOperator GrowthOperator { get; }
+
         public PoolSettings(
             int initialCount = 0,
-            ItemStoreType itemStoreType = ItemStoreType.Queue,
-            IGrowthOperator growthOperator = null,
-            int? maxCount = null)
+            int? maxCount = null,
+            IGrowthOperator growthOperator = null)
         {
             InitialCount = Math.Max(0, initialCount);
-            ItemStoreType = itemStoreType;
-            GrowthOperator = growthOperator ?? new MultiplicativeGrowth(2);
             MaxCount = maxCount;
+            GrowthOperator = growthOperator ?? new MultiplicativeGrowth(2);
 
             if (MaxCount.HasValue)
             {
@@ -21,12 +26,5 @@ namespace Anvil.CSharp.Pooling
                 InitialCount = Math.Min(MaxCount.Value, InitialCount);
             }
         }
-
-        public int InitialCount { get; }
-        public ItemStoreType ItemStoreType { get; }
-
-        public IGrowthOperator GrowthOperator { get; }
-
-        public int? MaxCount { get; }
     }
 }

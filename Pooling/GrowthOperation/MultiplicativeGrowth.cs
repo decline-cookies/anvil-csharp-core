@@ -4,7 +4,16 @@ namespace Anvil.CSharp.Pooling
 {
     public class MultiplicativeGrowth : IGrowthOperator
     {
-        public MultiplicativeGrowth(float multiplier) => GrowthMultiplier = multiplier;
+        public MultiplicativeGrowth(float multiplier)
+        {
+            if (multiplier < 1)
+            {
+                Console.Error.WriteLine($"Multiplier must not be less than one: {multiplier}");
+                multiplier = 1;
+            }
+
+            GrowthMultiplier = multiplier;
+        }
 
         public float GrowthMultiplier { get; }
 

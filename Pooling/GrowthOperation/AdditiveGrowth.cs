@@ -1,8 +1,18 @@
-﻿namespace Anvil.CSharp.Pooling
+﻿using System;
+
+namespace Anvil.CSharp.Pooling
 {
     public class AdditiveGrowth : IGrowthOperator
     {
-        public AdditiveGrowth(int step) => GrowthStep = step;
+        public AdditiveGrowth(int step)
+        {
+            if (step <= 0)
+            {
+                Console.Error.WriteLine($"Step must be greater than zero: {step}");
+                step = 1;
+            }
+            GrowthStep = step;
+        }
 
         public int GrowthStep { get; }
 
