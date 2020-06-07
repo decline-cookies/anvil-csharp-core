@@ -21,9 +21,9 @@ namespace Anvil.CSharp.Content
             get => (TContent)base.Content;
             protected set => base.Content = value;
         }
-        
-        //TODO: Look at replacing the contentGroupID with Enums - https://app.clubhouse.io/scratchgames/story/110/look-at-using-c-7-features-to-constrain-via-enums
-        protected AbstractContentController(string contentGroupID, string contentLoadingID) 
+
+        //TODO: Look at replacing the contentGroupID with Enums - https://github.com/scratch-games/anvil-csharp-core/issues/19
+        protected AbstractContentController(string contentGroupID, string contentLoadingID)
             : base(contentGroupID, contentLoadingID)
         {
         }
@@ -69,19 +69,19 @@ namespace Anvil.CSharp.Content
         /// Gets/Sets the <see cref="AbstractContentGroup"/> that controls the lifecycle of this Controller.
         /// </summary>
         public AbstractContentGroup ContentGroup { get; internal set; }
-        
+
         /// <summary>
         /// The ID for the <see cref="AbstractContentGroup"/> that this Controller should be shown on.
         /// </summary>
         public readonly string ContentGroupID;
-        
+
         protected readonly string m_ContentLoadingID;
 
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
         {
             ContentGroupID = contentGroupID;
             m_ContentLoadingID = contentLoadingID;
-            //TODO: Handle overrides for additional loading dependency settings - https://app.clubhouse.io/scratchgames/story/37/support-loading-dependent-assets
+            //TODO: Handle overrides for additional loading dependency settings - https://github.com/scratch-games/anvil-unity-core/issues/2
         }
 
         protected override void DisposeSelf()
@@ -92,7 +92,7 @@ namespace Anvil.CSharp.Content
             OnPlayInComplete = null;
             OnPlayOutStart = null;
             OnPlayOutComplete = null;
-            
+
             Content?.Dispose();
             Content = null;
 
@@ -113,7 +113,7 @@ namespace Anvil.CSharp.Content
         {
             LoadComplete();
         }
-        
+
         /// <summary>
         /// Call this function when loading is complete and the <see cref="AbstractContentGroup"/> should move onto the
         /// next step.
@@ -140,7 +140,7 @@ namespace Anvil.CSharp.Content
             OnPlayInStart?.Invoke(this);
             PlayIn();
         }
-        
+
         /// <summary>
         /// Override to customize animation for how the Controller/Content should play in.
         /// Call <see cref="PlayInComplete"/> when animation is complete.
@@ -149,7 +149,7 @@ namespace Anvil.CSharp.Content
         {
             PlayInComplete();
         }
-        
+
         /// <summary>
         /// Call this function when playing in is complete and the <see cref="AbstractContentGroup"/> should move onto the
         /// next step.
@@ -159,7 +159,7 @@ namespace Anvil.CSharp.Content
         {
             OnPlayInComplete?.Invoke(this);
         }
-        
+
         internal void InternalInitAfterPlayInComplete()
         {
             InitAfterPlayInComplete();
@@ -176,7 +176,7 @@ namespace Anvil.CSharp.Content
             OnPlayOutStart?.Invoke(this);
             PlayOut();
         }
-        
+
         /// <summary>
         /// Override to customize animation for how the Controller/Content should play out.
         /// Call <see cref="PlayOutComplete"/> when animation is complete.
@@ -185,7 +185,7 @@ namespace Anvil.CSharp.Content
         {
             PlayOutComplete();
         }
-        
+
         /// <summary>
         /// Call this function when playing out is complete and the <see cref="AbstractContentGroup"/> should move onto the
         /// next step.
@@ -195,7 +195,7 @@ namespace Anvil.CSharp.Content
         {
             OnPlayOutComplete?.Invoke(this);
         }
-        
+
         /// <summary>
         /// Lets the <see cref="AbstractContentGroup"/> know that this Controller/Content should be played out and
         /// nothing shown in its place.

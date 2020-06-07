@@ -34,13 +34,13 @@ namespace Anvil.CSharp.Content
         /// <inheritdoc cref="AbstractContentController.OnPlayOutComplete"/>
         /// </summary>
         public event Action<AbstractContentController> OnPlayOutComplete;
-        
+
         private readonly Dictionary<string, AbstractContentGroup> m_ContentGroups = new Dictionary<string, AbstractContentGroup>();
-        
+
         protected AbstractContentManager()
         {
         }
-        
+
         protected override void DisposeSelf()
         {
             OnLoadStart = null;
@@ -49,7 +49,7 @@ namespace Anvil.CSharp.Content
             OnPlayInComplete = null;
             OnPlayOutStart = null;
             OnPlayOutComplete = null;
-            
+
             foreach (AbstractContentGroup contentGroup in m_ContentGroups.Values)
             {
                 contentGroup.Dispose();
@@ -58,7 +58,7 @@ namespace Anvil.CSharp.Content
 
             base.DisposeSelf();
         }
-        
+
         /// <summary>
         /// Implement this function to construct the concrete version of <see cref="AbstractContentGroup"/>
         /// </summary>
@@ -70,7 +70,7 @@ namespace Anvil.CSharp.Content
         /// </summary>
         /// <param name="message">The message to be displayed as a warning.</param>
         protected abstract void LogWarning(string message);
-        
+
         /// <summary>
         /// Creates a new <see cref="AbstractContentGroup"/> based on a passed in <see cref="ContentGroupConfigVO"/>
         /// configuration data structure.
@@ -89,10 +89,10 @@ namespace Anvil.CSharp.Content
             m_ContentGroups.Add(contentGroup.ConfigVO.ID, contentGroup);
 
             AddLifeCycleListeners(contentGroup);
-            
+
             return this;
         }
-        
+
         /// <summary>
         /// Removes a <see cref="AbstractContentGroup"/> from the Content Manager based on its ID
         /// Will dispose the Content Group after removal
@@ -110,10 +110,10 @@ namespace Anvil.CSharp.Content
             AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             m_ContentGroups.Remove(contentGroupID);
             contentGroup.Dispose();
-            
+
             return this;
         }
-        
+
         /// <summary>
         /// Returns an <see cref="AbstractContentGroup"/> based on its ID
         /// </summary>
@@ -139,10 +139,10 @@ namespace Anvil.CSharp.Content
         {
             return m_ContentGroups.ContainsKey(contentGroupID);
         }
-        
+
 
         /// <summary>
-        /// Shows an instance of <see cref="AbstractContentController"/>. 
+        /// Shows an instance of <see cref="AbstractContentController"/>.
         /// </summary>
         /// <param name="contentController">The instance of the <see cref="AbstractContentController"/> to show.</param>
         /// <exception cref="ArgumentException">Occurs when the <see cref="AbstractContentController.ContentGroupID"/> is not found in the Content Manager</exception>
@@ -158,7 +158,7 @@ namespace Anvil.CSharp.Content
             AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             contentGroup.Show(contentController);
         }
-        
+
         /// <summary>
         /// Clears a specific <see cref="AbstractContentGroup"/> to show nothing.
         /// </summary>
@@ -171,49 +171,49 @@ namespace Anvil.CSharp.Content
                 LogWarning($"[CONTENT MANAGER] - ContentGroupID of {contentGroupID} does not exist in the Content Manager. Did you add the Content Group?");
                 return false;
             }
-            
+
             AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             contentGroup.Clear();
-            
+
             return true;
         }
 
         private void AddLifeCycleListeners(AbstractContentGroup contentGroup)
         {
-            contentGroup.OnLoadStart += HandleOnLoadStart;
-            contentGroup.OnLoadComplete += HandleOnLoadComplete;
-            contentGroup.OnPlayInStart += HandleOnPlayInStart;
-            contentGroup.OnPlayInComplete += HandleOnPlayInComplete;
-            contentGroup.OnPlayOutStart += HandleOnPlayOutStart;
-            contentGroup.OnPlayOutComplete += HandleOnPlayOutComplete;
+            contentGroup.OnLoadStart += ContentGroup_OnLoadStart;
+            contentGroup.OnLoadComplete += ContentGroup_OnLoadComplete;
+            contentGroup.OnPlayInStart += ContentGroup_OnPlayInStart;
+            contentGroup.OnPlayInComplete += ContentGroup_OnPlayInComplete;
+            contentGroup.OnPlayOutStart += ContentGroup_OnPlayOutStart;
+            contentGroup.OnPlayOutComplete += ContentGroup_OnPlayOutComplete;
         }
 
-        private void HandleOnLoadStart(AbstractContentController contentController)
+        private void ContentGroup_OnLoadStart(AbstractContentController contentController)
         {
             OnLoadStart?.Invoke(contentController);
         }
-        
-        private void HandleOnLoadComplete(AbstractContentController contentController)
+
+        private void ContentGroup_OnLoadComplete(AbstractContentController contentController)
         {
             OnLoadComplete?.Invoke(contentController);
         }
-        
-        private void HandleOnPlayInStart(AbstractContentController contentController)
+
+        private void ContentGroup_OnPlayInStart(AbstractContentController contentController)
         {
             OnPlayInStart?.Invoke(contentController);
         }
-        
-        private void HandleOnPlayInComplete(AbstractContentController contentController)
+
+        private void ContentGroup_OnPlayInComplete(AbstractContentController contentController)
         {
             OnPlayInComplete?.Invoke(contentController);
         }
-        
-        private void HandleOnPlayOutStart(AbstractContentController contentController)
+
+        private void ContentGroup_OnPlayOutStart(AbstractContentController contentController)
         {
             OnPlayOutStart?.Invoke(contentController);
         }
-        
-        private void HandleOnPlayOutComplete(AbstractContentController contentController)
+
+        private void ContentGroup_OnPlayOutComplete(AbstractContentController contentController)
         {
             OnPlayOutComplete?.Invoke(contentController);
         }
