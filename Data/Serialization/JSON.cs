@@ -1,40 +1,34 @@
-﻿using System;
-using TinyJSON;
+﻿using TinyJSON;
 
 namespace Anvil.CSharp.Data
 {
     public static class JSON
     {
-        public static void OverrideInstance(TinyJSONWorker instance)
+        public static void OverrideParser(IJSONParser instance)
         {
-            if (instance.Priority > s_Instance.Priority)
+            if (instance.Priority > s_Parser.Priority)
             {
-                Console.WriteLine("Overriding Instance");
-                s_Instance = instance;
+                s_Parser = instance;
             }
         }
 
-        private static TinyJSONWorker s_Instance = new TinyJSONWorker();
+        private static IJSONParser s_Parser = new TinyJSONParser();
 
-        public static Variant Load(string json)
+        public static string Encode(object data, EncodeOptions options = EncodeOptions.None)
         {
-            return s_Instance.Load(json);
+            return s_Parser.Encode(data, options);
         }
 
-        public static string Dump(object data)
+        public static T Decode<T>(string jsonString)
         {
-            return s_Instance.Dump(data);
-        }
-
-        public static string Dump(object data, EncodeOptions options)
-        {
-            return s_Instance.Dump(data, options);
+            return s_Parser.Decode<T>(jsonString);
         }
 
         public static void MakeInto<T>(Variant data, out T item)
         {
-            s_Instance.MakeInto<T>(data, out item);
+            s_Parser.MakeInto(data, out item);
         }
+
     }
 }
 

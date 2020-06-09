@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using Anvil.CSharp.Data;
 
-
 namespace TinyJSON
 {
 	public abstract class Variant : IConvertible
@@ -19,17 +18,16 @@ namespace TinyJSON
 
 		public T Make<T>()
 		{
-			T item;
-			JSON.MakeInto( this, out item );
+            JSON.MakeInto( this, out T item );
 			return item;
 		}
 
 
 		// ReSharper disable once InconsistentNaming
 		// ReSharper disable once UnusedMember.Global
-		public string ToJSON()
+		public string Encode()
 		{
-			return JSON.Dump( this );
+			return JSON.Encode( this );
 		}
 
 
