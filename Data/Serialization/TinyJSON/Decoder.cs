@@ -1,16 +1,16 @@
+using System;
 using System.IO;
 using System.Text;
-using System;
-
+using Anvil.CSharp.Data;
 
 namespace TinyJSON
 {
-	public sealed class Decoder : IDisposable
+	public class Decoder : IDecoder
 	{
-		const string whiteSpace = " \t\n\r";
-		const string wordBreak = " \t\n\r{}[],:\"";
+		private const string whiteSpace = " \t\n\r";
+		private const string wordBreak = " \t\n\r{}[],:\"";
 
-		enum Token
+        private enum Token
 		{
 			None,
 			OpenBrace,
@@ -26,34 +26,28 @@ namespace TinyJSON
 			Null
 		}
 
-		StringReader json;
+		private StringReader json;
 
-
-		Decoder( string jsonString )
+		public Decoder()
 		{
-			json = new StringReader( jsonString );
-		}
+        }
 
-
-		public static Variant Decode( string jsonString )
-		{
-			using (var instance = new Decoder( jsonString ))
-			{
-				return instance.DecodeValue();
-			}
-		}
-
-
-		public void Dispose()
+        public void Dispose()
 		{
 			json.Dispose();
 			json = null;
 		}
 
+        public Variant Decode(string jsonString)
+        {
+            json = new StringReader( jsonString );
+            return DecodeValue();
+        }
 
-		ProxyObject DecodeObject()
+
+		private ProxyObject DecodeObject()
 		{
-			var proxy = new ProxyObject();
+			ProxyObject proxy = new ProxyObject();
 
 			// Ditch opening brace.
 			json.Read();
@@ -97,18 +91,18 @@ namespace TinyJSON
 		}
 
 
-		ProxyArray DecodeArray()
+		private ProxyArray DecodeArray()
 		{
-			var proxy = new ProxyArray();
+			ProxyArray proxy = new ProxyArray();
 
 			// Ditch opening bracket.
 			json.Read();
 
 			// [
-			var parsing = true;
+			bool parsing = true;
 			while (parsing)
 			{
-				var nextToken = NextToken;
+				Token nextToken = NextToken;
 
 				// ReSharper disable once SwitchStatementMissingSomeCases
 				switch (nextToken)
@@ -133,53 +127,45 @@ namespace TinyJSON
 		}
 
 
-		Variant DecodeValue()
+		private Variant DecodeValue()
 		{
-			var nextToken = NextToken;
+			Token nextToken = NextToken;
 			return DecodeByToken( nextToken );
 		}
 
 
-		Variant DecodeByToken( Token token )
+        private Variant DecodeByToken( Token token )
+        {
+            // ReSharper disable once SwitchStatementMissingSomeCases
+            switch (token)
+            {
+                case Token.String:
+                    return DecodeString();
+                case Token.Number:
+                    return DecodeNumber();
+                case Token.OpenBrace:
+                    return DecodeObject();
+                case Token.OpenBracket:
+                    return DecodeArray();
+                case Token.True:
+                    return new ProxyBoolean(true);
+                case Token.False:
+                    return new ProxyBoolean(false);
+                case Token.Null:
+                default:
+                    return null;
+            }
+        }
+
+
+		private Variant DecodeString()
 		{
-			// ReSharper disable once SwitchStatementMissingSomeCases
-			switch (token)
-			{
-				case Token.String:
-					return DecodeString();
-
-				case Token.Number:
-					return DecodeNumber();
-
-				case Token.OpenBrace:
-					return DecodeObject();
-
-				case Token.OpenBracket:
-					return DecodeArray();
-
-				case Token.True:
-					return new ProxyBoolean( true );
-
-				case Token.False:
-					return new ProxyBoolean( false );
-
-				case Token.Null:
-					return null;
-
-				default:
-					return null;
-			}
-		}
-
-
-		Variant DecodeString()
-		{
-			var stringBuilder = new StringBuilder();
+			StringBuilder stringBuilder = new StringBuilder();
 
 			// ditch opening quote
 			json.Read();
 
-			var parsing = true;
+			bool parsing = true;
 			while (parsing)
 			{
 				if (json.Peek() == -1)
@@ -189,7 +175,7 @@ namespace TinyJSON
 					break;
 				}
 
-				var c = NextChar;
+				char c = NextChar;
 				switch (c)
 				{
 					case '"':
@@ -235,9 +221,9 @@ namespace TinyJSON
 								break;
 
 							case 'u':
-								var hex = new StringBuilder();
+								StringBuilder hex = new StringBuilder();
 
-								for (var i = 0; i < 4; i++)
+								for (int i = 0; i < 4; i++)
 								{
 									hex.Append( NextChar );
 								}
@@ -261,13 +247,13 @@ namespace TinyJSON
 		}
 
 
-		Variant DecodeNumber()
+        private Variant DecodeNumber()
 		{
 			return new ProxyNumber( NextWord );
 		}
 
 
-		void ConsumeWhiteSpace()
+        private void ConsumeWhiteSpace()
 		{
 			while (whiteSpace.IndexOf( PeekChar ) != -1)
 			{
@@ -281,30 +267,24 @@ namespace TinyJSON
 		}
 
 
-		char PeekChar
+        private char PeekChar
 		{
 			get
 			{
-				var peek = json.Peek();
+				int peek = json.Peek();
 				return peek == -1 ? '\0' : Convert.ToChar( peek );
 			}
 		}
 
 
-		char NextChar
+        private char NextChar => Convert.ToChar( json.Read() );
+
+
+        private string NextWord
 		{
 			get
 			{
-				return Convert.ToChar( json.Read() );
-			}
-		}
-
-
-		string NextWord
-		{
-			get
-			{
-				var word = new StringBuilder();
+				StringBuilder word = new StringBuilder();
 
 				while (wordBreak.IndexOf( PeekChar ) == -1)
 				{
@@ -321,7 +301,7 @@ namespace TinyJSON
 		}
 
 
-		Token NextToken
+        private Token NextToken
 		{
 			get
 			{
@@ -374,20 +354,18 @@ namespace TinyJSON
 				}
 
 				// ReSharper disable once SwitchStatementMissingSomeCases
-				switch (NextWord)
-				{
-					case "false":
-						return Token.False;
-
-					case "true":
-						return Token.True;
-
-					case "null":
-						return Token.Null;
-				}
-
-				return Token.None;
-			}
+                switch (NextWord)
+                {
+                    case "false":
+                        return Token.False;
+                    case "true":
+                        return Token.True;
+                    case "null":
+                        return Token.Null;
+                    default:
+                        return Token.None;
+                }
+            }
 		}
 	}
 }

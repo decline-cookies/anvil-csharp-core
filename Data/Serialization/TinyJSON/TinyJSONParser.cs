@@ -27,6 +27,15 @@ namespace TinyJSON
         private readonly MethodInfo decodeArrayMethod = typeof(TinyJSONParser).GetMethod( "DecodeArray", instanceBindingFlags );
         private readonly MethodInfo decodeMultiRankArrayMethod = typeof(TinyJSONParser).GetMethod( "DecodeMultiRankArray", instanceBindingFlags );
 
+        private readonly Type m_EncoderType;
+        private readonly Type m_DecoderType;
+
+        public TinyJSONParser()
+        {
+            m_EncoderType = typeof(Encoder);
+            m_DecoderType = typeof(Decoder);
+        }
+
 
         //TODO: Does this need to be public? Docs?
         private Variant Load( string json )
@@ -36,7 +45,10 @@ namespace TinyJSON
                 throw new ArgumentNullException( nameof(json) );
             }
 
-            return Decoder.Decode( json );
+            using (IDecoder decoder = (IDecoder) Activator.CreateInstance(m_DecoderType))
+            {
+                return decoder.Decode(json);
+            }
         }
 
         //TODO: Docs?
@@ -63,7 +75,10 @@ namespace TinyJSON
                 }
             }
 
-            return Encoder.Encode( data, options );
+            using (IEncoder encoder = (IEncoder) Activator.CreateInstance(m_EncoderType))
+            {
+                return encoder.Encode( data, options );
+            }
         }
 
         //TODO: Docs?

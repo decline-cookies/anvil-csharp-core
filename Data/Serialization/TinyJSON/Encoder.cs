@@ -4,81 +4,55 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using Anvil.CSharp.Data;
 
 
 namespace TinyJSON
 {
-	public sealed class Encoder
+	public class Encoder : IEncoder
 	{
 		static readonly Type includeAttrType = typeof(Include);
 		static readonly Type excludeAttrType = typeof(Exclude);
 		static readonly Type typeHintAttrType = typeof(TypeHint);
 
-		readonly StringBuilder builder;
-		readonly EncodeOptions options;
-		int indent;
+        private StringBuilder builder;
+        private EncodeOptions options;
+		private int indent;
 
 
-		Encoder( EncodeOptions options )
-		{
-			this.options = options;
-			builder = new StringBuilder();
-			indent = 0;
-		}
+        public Encoder()
+        {
+        }
+
+        public void Dispose()
+        {
+            builder = null;
+        }
+
+        public string Encode(object obj, EncodeOptions options)
+        {
+            this.options = options;
+            builder = new StringBuilder();
+            indent = 0;
+
+            EncodeValue(obj, false);
+
+            return builder.ToString();
+        }
+
+        private bool PrettyPrintEnabled => (options & EncodeOptions.PrettyPrint) == EncodeOptions.PrettyPrint;
 
 
-		// ReSharper disable once UnusedMember.Global
-		public static string Encode( object obj )
-		{
-			return Encode( obj, EncodeOptions.None );
-		}
+        private bool TypeHintsEnabled => (options & EncodeOptions.NoTypeHints) != EncodeOptions.NoTypeHints;
 
 
-		public static string Encode( object obj, EncodeOptions options )
-		{
-			var instance = new Encoder( options );
-			instance.EncodeValue( obj, false );
-			return instance.builder.ToString();
-		}
+        private bool IncludePublicPropertiesEnabled => (options & EncodeOptions.IncludePublicProperties) == EncodeOptions.IncludePublicProperties;
 
 
-		bool PrettyPrintEnabled
-		{
-			get
-			{
-				return (options & EncodeOptions.PrettyPrint) == EncodeOptions.PrettyPrint;
-			}
-		}
+        private bool EnforceHierarchyOrderEnabled => (options & EncodeOptions.EnforceHierarchyOrder) == EncodeOptions.EnforceHierarchyOrder;
 
 
-		bool TypeHintsEnabled
-		{
-			get
-			{
-				return (options & EncodeOptions.NoTypeHints) != EncodeOptions.NoTypeHints;
-			}
-		}
-
-
-		bool IncludePublicPropertiesEnabled
-		{
-			get
-			{
-				return (options & EncodeOptions.IncludePublicProperties) == EncodeOptions.IncludePublicProperties;
-			}
-		}
-
-
-		bool EnforceHierarchyOrderEnabled
-		{
-			get
-			{
-				return (options & EncodeOptions.EnforceHierarchyOrder) == EncodeOptions.EnforceHierarchyOrder;
-			}
-		}
-
-
-		void EncodeValue( object value, bool forceTypeHint )
+        private void EncodeValue( object value, bool forceTypeHint )
 		{
 			if (value == null)
 			{
@@ -174,18 +148,18 @@ namespace TinyJSON
 		}
 
 
-		IEnumerable<FieldInfo> GetFieldsForType( Type type )
+		private IEnumerable<FieldInfo> GetFieldsForType( Type type )
 		{
 			if (EnforceHierarchyOrderEnabled)
 			{
-				var types = new Stack<Type>();
+				Stack<Type> types = new Stack<Type>();
 				while (type != null)
 				{
 					types.Push( type );
 					type = type.BaseType;
 				}
 
-				var fields = new List<FieldInfo>();
+				List<FieldInfo> fields = new List<FieldInfo>();
 				while (types.Count > 0)
 				{
 					fields.AddRange( types.Pop().GetFields( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
@@ -198,18 +172,18 @@ namespace TinyJSON
 		}
 
 
-		IEnumerable<PropertyInfo> GetPropertiesForType( Type type )
+		private IEnumerable<PropertyInfo> GetPropertiesForType( Type type )
 		{
 			if (EnforceHierarchyOrderEnabled)
 			{
-				var types = new Stack<Type>();
+				Stack<Type> types = new Stack<Type>();
 				while (type != null)
 				{
 					types.Push( type );
 					type = type.BaseType;
 				}
 
-				var properties = new List<PropertyInfo>();
+				List<PropertyInfo> properties = new List<PropertyInfo>();
 				while (types.Count > 0)
 				{
 					properties.AddRange( types.Pop().GetProperties( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
@@ -222,17 +196,17 @@ namespace TinyJSON
 		}
 
 
-		void EncodeObject( object value, bool forceTypeHint )
+		private void EncodeObject( object value, bool forceTypeHint )
 		{
-			var type = value.GetType();
+			Type type = value.GetType();
 
 			AppendOpenBrace();
 
 			forceTypeHint = forceTypeHint || TypeHintsEnabled;
 
-			var includePublicProperties = IncludePublicPropertiesEnabled;
+			bool includePublicProperties = IncludePublicPropertiesEnabled;
 
-			var firstItem = !forceTypeHint;
+			bool firstItem = !forceTypeHint;
 			if (forceTypeHint)
 			{
 				if (PrettyPrintEnabled)
@@ -248,10 +222,10 @@ namespace TinyJSON
 				firstItem = false;
 			}
 
-			foreach (var field in GetFieldsForType( type ))
+			foreach (FieldInfo field in GetFieldsForType( type ))
 			{
-				var shouldTypeHint = false;
-				var shouldEncode = field.IsPublic;
+				bool shouldTypeHint = false;
+				bool shouldEncode = field.IsPublic;
 				foreach (var attribute in field.GetCustomAttributes( true ))
 				{
 					if (excludeAttrType.IsInstanceOfType( attribute ))
@@ -270,57 +244,63 @@ namespace TinyJSON
 					}
 				}
 
-				if (shouldEncode)
-				{
-					AppendComma( firstItem );
-					EncodeString( field.Name );
-					AppendColon();
-					EncodeValue( field.GetValue( value ), shouldTypeHint );
-					firstItem = false;
-				}
-			}
+                if (!shouldEncode)
+                {
+                    continue;
+                }
 
-			foreach (var property in GetPropertiesForType( type ))
-			{
-				if (property.CanRead)
-				{
-					var shouldTypeHint = false;
-					var shouldEncode = includePublicProperties;
+                AppendComma( firstItem );
+                EncodeString( field.Name );
+                AppendColon();
+                EncodeValue( field.GetValue( value ), shouldTypeHint );
+                firstItem = false;
+            }
 
-					foreach (var attribute in property.GetCustomAttributes( true ))
-					{
-						if (excludeAttrType.IsInstanceOfType( attribute ))
-						{
-							shouldEncode = false;
-						}
+			foreach (PropertyInfo property in GetPropertiesForType( type ))
+            {
+                if (!property.CanRead)
+                {
+                    continue;
+                }
 
-						if (includeAttrType.IsInstanceOfType( attribute ))
-						{
-							shouldEncode = true;
-						}
+                bool shouldTypeHint = false;
+                bool shouldEncode = includePublicProperties;
 
-						if (typeHintAttrType.IsInstanceOfType( attribute ))
-						{
-							shouldTypeHint = true;
-						}
-					}
+                foreach (object attribute in property.GetCustomAttributes( true ))
+                {
+                    if (excludeAttrType.IsInstanceOfType( attribute ))
+                    {
+                        shouldEncode = false;
+                    }
 
-					if (shouldEncode)
-					{
-						AppendComma( firstItem );
-						EncodeString( property.Name );
-						AppendColon();
-						EncodeValue( property.GetValue( value, null ), shouldTypeHint );
-						firstItem = false;
-					}
-				}
-			}
+                    if (includeAttrType.IsInstanceOfType( attribute ))
+                    {
+                        shouldEncode = true;
+                    }
+
+                    if (typeHintAttrType.IsInstanceOfType( attribute ))
+                    {
+                        shouldTypeHint = true;
+                    }
+                }
+
+                if (!shouldEncode)
+                {
+                    continue;
+                }
+
+                AppendComma( firstItem );
+                EncodeString( property.Name );
+                AppendColon();
+                EncodeValue( property.GetValue( value, null ), shouldTypeHint );
+                firstItem = false;
+            }
 
 			AppendCloseBrace();
 		}
 
 
-		void EncodeProxyArray( ProxyArray value )
+        private void EncodeProxyArray( ProxyArray value )
 		{
 			if (value.Count == 0)
 			{
@@ -330,8 +310,8 @@ namespace TinyJSON
 			{
 				AppendOpenBracket();
 
-				var firstItem = true;
-				foreach (var obj in value)
+				bool firstItem = true;
+				foreach (Variant obj in value)
 				{
 					AppendComma( firstItem );
 					EncodeValue( obj, false );
@@ -343,7 +323,7 @@ namespace TinyJSON
 		}
 
 
-		void EncodeProxyObject( ProxyObject value )
+        private void EncodeProxyObject( ProxyObject value )
 		{
 			if (value.Count == 0)
 			{
@@ -353,8 +333,8 @@ namespace TinyJSON
 			{
 				AppendOpenBrace();
 
-				var firstItem = true;
-				foreach (var e in value.Keys)
+				bool firstItem = true;
+				foreach (string e in value.Keys)
 				{
 					AppendComma( firstItem );
 					EncodeString( e );
@@ -368,7 +348,7 @@ namespace TinyJSON
 		}
 
 
-		void EncodeDictionary( IDictionary value, bool forceTypeHint )
+        private void EncodeDictionary( IDictionary value, bool forceTypeHint )
 		{
 			if (value.Count == 0)
 			{
@@ -378,8 +358,8 @@ namespace TinyJSON
 			{
 				AppendOpenBrace();
 
-				var firstItem = true;
-				foreach (var e in value.Keys)
+				bool firstItem = true;
+				foreach (object e in value.Keys)
 				{
 					AppendComma( firstItem );
 					EncodeString( e.ToString() );
@@ -394,7 +374,7 @@ namespace TinyJSON
 
 
 		// ReSharper disable once SuggestBaseTypeForParameter
-		void EncodeList( IList value, bool forceTypeHint )
+        private void EncodeList( IList value, bool forceTypeHint )
 		{
 			if (value.Count == 0)
 			{
@@ -404,8 +384,8 @@ namespace TinyJSON
 			{
 				AppendOpenBracket();
 
-				var firstItem = true;
-				foreach (var obj in value)
+				bool firstItem = true;
+				foreach (object obj in value)
 				{
 					AppendComma( firstItem );
 					EncodeValue( obj, forceTypeHint );
@@ -417,7 +397,7 @@ namespace TinyJSON
 		}
 
 
-		void EncodeArray( Array value, bool forceTypeHint )
+        private void EncodeArray( Array value, bool forceTypeHint )
 		{
 			if (value.Rank == 1)
 			{
@@ -425,22 +405,22 @@ namespace TinyJSON
 			}
 			else
 			{
-				var indices = new int[value.Rank];
+				int[] indices = new int[value.Rank];
 				EncodeArrayRank( value, 0, indices, forceTypeHint );
 			}
 		}
 
 
-		void EncodeArrayRank( Array value, int rank, int[] indices, bool forceTypeHint )
+        private void EncodeArrayRank( Array value, int rank, int[] indices, bool forceTypeHint )
 		{
 			AppendOpenBracket();
 
-			var min = value.GetLowerBound( rank );
-			var max = value.GetUpperBound( rank );
+			int min = value.GetLowerBound( rank );
+			int max = value.GetUpperBound( rank );
 
 			if (rank == value.Rank - 1)
 			{
-				for (var i = min; i <= max; i++)
+				for (int i = min; i <= max; i++)
 				{
 					indices[rank] = i;
 					AppendComma( i == min );
@@ -449,7 +429,7 @@ namespace TinyJSON
 			}
 			else
 			{
-				for (var i = min; i <= max; i++)
+				for (int i = min; i <= max; i++)
 				{
 					indices[rank] = i;
 					AppendComma( i == min );
@@ -461,12 +441,12 @@ namespace TinyJSON
 		}
 
 
-		void EncodeString( string value )
+		private void EncodeString( string value )
 		{
 			builder.Append( '\"' );
 
-			var charArray = value.ToCharArray();
-			foreach (var c in charArray)
+			char[] charArray = value.ToCharArray();
+			foreach (char c in charArray)
 			{
 				switch (c)
 				{
@@ -499,7 +479,7 @@ namespace TinyJSON
 						break;
 
 					default:
-						var codepoint = Convert.ToInt32( c );
+						int codepoint = Convert.ToInt32( c );
 						if ((codepoint >= 32) && (codepoint <= 126))
 						{
 							builder.Append( c );
@@ -519,28 +499,30 @@ namespace TinyJSON
 
 		#region Helpers
 
-		void AppendIndent()
+        private void AppendIndent()
 		{
-			for (var i = 0; i < indent; i++)
+			for (int i = 0; i < indent; i++)
 			{
 				builder.Append( '\t' );
 			}
 		}
 
 
-		void AppendOpenBrace()
+        private void AppendOpenBrace()
 		{
 			builder.Append( '{' );
 
-			if (PrettyPrintEnabled)
-			{
-				builder.Append( '\n' );
-				indent++;
-			}
-		}
+            if (!PrettyPrintEnabled)
+            {
+                return;
+            }
+
+            builder.Append( '\n' );
+            indent++;
+        }
 
 
-		void AppendCloseBrace()
+        private void AppendCloseBrace()
 		{
 			if (PrettyPrintEnabled)
 			{
@@ -553,19 +535,21 @@ namespace TinyJSON
 		}
 
 
-		void AppendOpenBracket()
+        private void AppendOpenBracket()
 		{
 			builder.Append( '[' );
 
-			if (PrettyPrintEnabled)
-			{
-				builder.Append( '\n' );
-				indent++;
-			}
-		}
+            if (!PrettyPrintEnabled)
+            {
+                return;
+            }
+
+            builder.Append( '\n' );
+            indent++;
+        }
 
 
-		void AppendCloseBracket()
+        private void AppendCloseBracket()
 		{
 			if (PrettyPrintEnabled)
 			{
@@ -578,7 +562,7 @@ namespace TinyJSON
 		}
 
 
-		void AppendComma( bool firstItem )
+        private void AppendComma( bool firstItem )
 		{
 			if (!firstItem)
 			{
@@ -597,7 +581,7 @@ namespace TinyJSON
 		}
 
 
-		void AppendColon()
+        private void AppendColon()
 		{
 			builder.Append( ':' );
 
