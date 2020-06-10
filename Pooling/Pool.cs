@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Pooling
 {
-    public class Pool<T> : AbstractAnvilDisposable
+    public class Pool<T> : AbstractAnvilDisposable where T : class
     {
         public event InstanceDisposer<T> InstanceDisposer;
 
         private readonly PoolSettings m_Settings;
-        private readonly Stack<T> m_Stack = new Stack<T>();
+        private readonly HashSet<T> m_Set = new HashSet<T>();
         private readonly InstanceCreator<T> m_InstanceCreator;
 
         private int m_InstanceCount;
@@ -19,31 +21,46 @@ namespace Anvil.CSharp.Pooling
             m_InstanceCreator = instanceCreator;
             m_Settings = settings ?? PoolSettings.DEFAULT;
 
-            for (int i = 0; i < m_Settings.InitialCount; i++)
+            Grow(m_Settings.InitialCount);
+        }
+
+        public void Populate(IEnumerable<T> instances)
+        {
+            foreach (T instance in instances)
             {
-                CreateInstance();
+                AddInstance(instance);
             }
         }
 
         public T Acquire()
         {
-            if (m_Stack.Count == 0)
+            if (m_Set.Count == 0)
             {
-                Grow();
+                Grow(GetGrowthStep());
             }
 
-            return m_Stack.Pop();
+            T instance = m_Set.First();
+            m_Set.Remove(instance);
+            return instance;
         }
 
         public void Release(T instance)
         {
-            m_Stack.Push(instance);
+            AddInstance(instance);
 
             // Track the maximum instance count, in case of released instances that were not created by the pool
-            m_InstanceCount = Math.Max(m_InstanceCount, m_Stack.Count);
+            m_InstanceCount = Math.Max(m_InstanceCount, m_Set.Count);
         }
 
-        private void Grow()
+        private void CreateInstance()
+        {
+            m_InstanceCount++;
+            AddInstance(m_InstanceCreator.Invoke());
+        }
+
+        private void AddInstance(T instance) => Debug.Assert(m_Set.Add(instance), "Instance already exists in pool!");
+
+        private int GetGrowthStep()
         {
             int growthStep = Math.Max(1, m_Settings.GrowthOperator.CalculateGrowthStep(m_InstanceCount));
 
@@ -58,16 +75,15 @@ namespace Anvil.CSharp.Pooling
                 }
             }
 
-            for (int i = 0; i < growthStep; i++)
+            return growthStep;
+        }
+
+        private void Grow(int step)
+        {
+            for (int i = 0; i < step; i++)
             {
                 CreateInstance();
             }
-        }
-
-        private void CreateInstance()
-        {
-            m_InstanceCount++;
-            m_Stack.Push(m_InstanceCreator.Invoke());
         }
 
         protected override void DisposeSelf()
