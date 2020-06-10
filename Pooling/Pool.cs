@@ -11,7 +11,7 @@ namespace Anvil.CSharp.Pooling
         public event InstanceDisposer<T> InstanceDisposer;
 
         private readonly PoolSettings m_Settings;
-        private readonly HashSet<T> m_Set = new HashSet<T>();
+        private readonly HashSet<T> m_InstanceSet = new HashSet<T>();
         private readonly InstanceCreator<T> m_InstanceCreator;
 
         private int m_InstanceCount;
@@ -34,13 +34,13 @@ namespace Anvil.CSharp.Pooling
 
         public T Acquire()
         {
-            if (m_Set.Count == 0)
+            if (m_InstanceSet.Count == 0)
             {
                 Grow(GetGrowthStep());
             }
 
-            T instance = m_Set.First();
-            m_Set.Remove(instance);
+            T instance = m_InstanceSet.First();
+            m_InstanceSet.Remove(instance);
             return instance;
         }
 
@@ -49,7 +49,7 @@ namespace Anvil.CSharp.Pooling
             AddInstance(instance);
 
             // Track the maximum instance count, in case of released instances that were not created by the pool
-            m_InstanceCount = Math.Max(m_InstanceCount, m_Set.Count);
+            m_InstanceCount = Math.Max(m_InstanceCount, m_InstanceSet.Count);
         }
 
         private void CreateInstance()
@@ -58,7 +58,9 @@ namespace Anvil.CSharp.Pooling
             AddInstance(m_InstanceCreator.Invoke());
         }
 
-        private void AddInstance(T instance) => Debug.Assert(m_Set.Add(instance), "Instance already exists in pool!");
+        private void AddInstance(T instance) {
+            Debug.Assert(m_InstanceSet.Add(instance), "Instance already exists in pool!");
+        }
 
         private int GetGrowthStep()
         {
@@ -88,7 +90,7 @@ namespace Anvil.CSharp.Pooling
 
         protected override void DisposeSelf()
         {
-            foreach (T instance in m_Set)
+            foreach (T instance in m_InstanceSet)
             {
                 InstanceDisposer?.Invoke(instance);
             }
