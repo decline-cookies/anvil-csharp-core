@@ -6,6 +6,8 @@ namespace Anvil.CSharp.Pooling
 {
     public class Pool<T> : AbstractAnvilDisposable
     {
+        public event InstanceDisposer<T> InstanceDisposer;
+
         private readonly PoolSettings m_Settings;
         private readonly Stack<T> m_Stack = new Stack<T>();
         private readonly InstanceCreator<T> m_InstanceCreator;
@@ -70,12 +72,9 @@ namespace Anvil.CSharp.Pooling
 
         protected override void DisposeSelf()
         {
-            if (typeof(IDisposable).IsAssignableFrom(typeof(T)))
+            foreach (T instance in m_Set)
             {
-                foreach (T instance in m_Stack)
-                {
-                    ((IDisposable)instance).Dispose();
-                }
+                InstanceDisposer?.Invoke(instance);
             }
         }
     }
