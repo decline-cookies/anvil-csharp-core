@@ -41,7 +41,6 @@ namespace TinyJSON
     [AttributeUsage( AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true )]
     public class DecodeAlias : Attribute
     {
-        //TODO: Could this be a HashSet instead?
         private readonly string[] m_Names;
 
         public DecodeAlias( params string[] names )
@@ -55,9 +54,8 @@ namespace TinyJSON
         }
     }
 
-    //TODO: REVISIT DOCS
     /// <summary>
-    /// Provide alternate names for fields and properties to be encoded under. This name will also be used when decoding.
+    /// Allows for supplying a custom name for a particular field or property instead of as written in the code.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class EncodeName : Attribute
@@ -70,20 +68,20 @@ namespace TinyJSON
         }
     }
 
-    //TODO: REVISIT DOCS
     /// <summary>
-    /// Invokes a conditional method on the Type to determine if a property or field can be encoded.
-    /// Attribute is constrained to a method which takes a string field/property name and returns a bool indicating if the field/property can be encoded.
-    /// Please note the name supplied to the method is the "Name" on the <see cref="FieldInfo"/> or <see cref="PropertyInfo"/> and not the name supplied to <see cref="EncodeName"/>.
+    /// Used to check at Encode time if a field or property can be encoded.
+    /// Method will accept a string of the field/property name and returns a bool with true for allowing for encoding
+    /// and false otherwise.
+    /// The name passed in will be the name of the field/property.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class EncodeConditional : Attribute {}
 
-    //TODO: REVISIT DOCS
     /// <summary>
-    /// Invokes a conditional method on the Type to determine if a property or field can be decoded.
-    /// Attribute is constrained to a method which takes a string field/property name and returns a bool indicating if the field/property can be decoded.
-    /// Please note the name supplied to the method is the "Name" on the <see cref="FieldInfo"/> or <see cref="PropertyInfo"/> and not the name supplied to <see cref="EncodeName"/>.
+    /// Used to check at Decode time if a field or property can be decoded.
+    /// Method will accept a string of the field/property name and returns a bool with true for allowing for decoding
+    /// and false otherwise.
+    /// The name passed in will be the name of the field/property.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class DecodeConditional : Attribute {}

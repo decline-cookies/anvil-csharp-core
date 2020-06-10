@@ -40,7 +40,6 @@ namespace TinyJSON
             decodeMultiRankArrayMethod = parserType.GetMethod( "DecodeMultiRankArray", instanceBindingFlags );
         }
 
-        //TODO: Does this need to be public? Docs?
         private Variant Load( string json )
         {
             if (json == null)
@@ -54,7 +53,6 @@ namespace TinyJSON
             }
         }
 
-        //TODO: Docs?
         public string Encode( object data, EncodeOptions options = EncodeOptions.None)
         {
             using (IEncoder encoder = (IEncoder) Activator.CreateInstance(typeof(TEncoder)))
@@ -63,19 +61,16 @@ namespace TinyJSON
             }
         }
 
-        //TODO: Docs?
         public void MakeInto<T>( Variant data, out T item )
         {
             item = DecodeType<T>( data );
         }
 
-        //TODO: Docs?
         public T Decode<T>(string json)
         {
             MakeInto(Load(json), out T item);
             return item;
         }
-
 
         private Type FindType( string fullName )
 		{
@@ -361,7 +356,7 @@ namespace TinyJSON
             {
                 return;
             }
-            
+
             MethodInfo makeFunc = decodeTypeMethod.MakeGenericMethod( field.FieldType );
             field.SetValue( instance, makeFunc.Invoke( this, new object[] { data } ) );
         }
