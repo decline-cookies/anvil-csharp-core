@@ -12,4 +12,3 @@ namespace TinyJSON
             : base( message, innerException ) {}
     }
 }
-

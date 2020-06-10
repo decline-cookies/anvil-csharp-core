@@ -16,4 +16,3 @@ namespace Anvil.CSharp.Data
         Variant Decode(string jsonString);
     }
 }
-

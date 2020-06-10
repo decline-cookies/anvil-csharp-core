@@ -3,21 +3,21 @@ using System;
 
 namespace TinyJSON
 {
-	public class ProxyString : Variant
-	{
-		protected readonly string value;
+    public class ProxyString : Variant
+    {
+        protected readonly string value;
 
 
-		public ProxyString( string value )
-		{
-			this.value = value;
-		}
+        public ProxyString( string value )
+        {
+            this.value = value;
+        }
 
 
-		public override string ToString( IFormatProvider provider )
-		{
-			return value;
-		}
+        public override string ToString( IFormatProvider provider )
+        {
+            return value;
+        }
 
         public override char ToChar( IFormatProvider provider )
         {
@@ -33,5 +33,5 @@ namespace TinyJSON
 
             return base.ToType( conversionType, provider );
         }
-	}
+    }
 }

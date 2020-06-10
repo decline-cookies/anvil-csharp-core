@@ -17,4 +17,3 @@ namespace Anvil.CSharp.Data
         string Encode(object obj, EncodeOptions options = EncodeOptions.None);
     }
 }
-

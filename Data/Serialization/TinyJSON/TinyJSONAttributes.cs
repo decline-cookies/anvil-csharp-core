@@ -86,4 +86,3 @@ namespace TinyJSON
     [AttributeUsage(AttributeTargets.Method)]
     public class DecodeConditional : Attribute {}
 }
-

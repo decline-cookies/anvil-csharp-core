@@ -13,21 +13,21 @@ namespace TinyJSON
     {
     }
 
-	public class Encoder<TProxyArray, TProxyBoolean, TProxyNumber, TProxyObject, TProxyString> : IEncoder
+    public class Encoder<TProxyArray, TProxyBoolean, TProxyNumber, TProxyObject, TProxyString> : IEncoder
         where TProxyArray : ProxyArray
         where TProxyBoolean : ProxyBoolean
         where TProxyNumber : ProxyNumber
         where TProxyObject : ProxyObject
         where TProxyString : ProxyString
-	{
+    {
         private static readonly Type includeAttrType = typeof(Include);
         private static readonly Type excludeAttrType = typeof(Exclude);
         private static readonly Type encodeNameAttrType = typeof(EncodeName);
-		private static readonly Type typeHintAttrType = typeof(TypeHint);
+        private static readonly Type typeHintAttrType = typeof(TypeHint);
 
         private StringBuilder builder;
         private EncodeOptions options;
-		private int indent;
+        private int indent;
 
         public void Dispose()
         {
@@ -58,96 +58,96 @@ namespace TinyJSON
 
 
         protected virtual void EncodeValue( object value, bool forceTypeHint )
-		{
-			if (value == null)
-			{
-				builder.Append( "null" );
-				return;
-			}
+        {
+            if (value == null)
+            {
+                builder.Append( "null" );
+                return;
+            }
 
-			if (value is string s)
-			{
-				EncodeString(s);
-				return;
-			}
+            if (value is string s)
+            {
+                EncodeString(s);
+                return;
+            }
 
-			if (value is TProxyString proxyString)
-			{
-				EncodeString( proxyString.ToString( CultureInfo.InvariantCulture ));
-				return;
-			}
+            if (value is TProxyString proxyString)
+            {
+                EncodeString( proxyString.ToString( CultureInfo.InvariantCulture ));
+                return;
+            }
 
-			if (value is char)
-			{
-				EncodeString( value.ToString() );
-				return;
-			}
+            if (value is char)
+            {
+                EncodeString( value.ToString() );
+                return;
+            }
 
-			if (value is bool b)
-			{
-				builder.Append( b ? "true" : "false" );
-				return;
-			}
+            if (value is bool b)
+            {
+                builder.Append( b ? "true" : "false" );
+                return;
+            }
 
-			if (value is Enum)
-			{
-				EncodeString( value.ToString() );
-				return;
-			}
+            if (value is Enum)
+            {
+                EncodeString( value.ToString() );
+                return;
+            }
 
-			if (value is Array array)
-			{
-				EncodeArray( array, forceTypeHint );
-				return;
-			}
+            if (value is Array array)
+            {
+                EncodeArray( array, forceTypeHint );
+                return;
+            }
 
-			if (value is IList iList)
-			{
-				EncodeList( iList, forceTypeHint );
-				return;
-			}
+            if (value is IList iList)
+            {
+                EncodeList( iList, forceTypeHint );
+                return;
+            }
 
-			if (value is IDictionary iDictionary)
-			{
-				EncodeDictionary( iDictionary, forceTypeHint );
-				return;
-			}
+            if (value is IDictionary iDictionary)
+            {
+                EncodeDictionary( iDictionary, forceTypeHint );
+                return;
+            }
 
-			if (value is Guid)
-			{
-				EncodeString( value.ToString() );
-				return;
-			}
+            if (value is Guid)
+            {
+                EncodeString( value.ToString() );
+                return;
+            }
 
-			if (value is TProxyArray proxyArray)
-			{
-				EncodeProxyArray( proxyArray );
-				return;
-			}
+            if (value is TProxyArray proxyArray)
+            {
+                EncodeProxyArray( proxyArray );
+                return;
+            }
 
-			if (value is TProxyObject proxyObject)
-			{
-				EncodeProxyObject( proxyObject );
-				return;
-			}
+            if (value is TProxyObject proxyObject)
+            {
+                EncodeProxyObject( proxyObject );
+                return;
+            }
 
-			if (value is float ||
-			    value is double ||
-			    value is int ||
-			    value is uint ||
-			    value is long ||
-			    value is sbyte ||
-			    value is byte ||
-			    value is short ||
-			    value is ushort ||
-			    value is ulong ||
-			    value is decimal ||
-			    value is TProxyBoolean ||
-			    value is TProxyNumber)
-			{
-				builder.Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
-				return;
-			}
+            if (value is float ||
+                value is double ||
+                value is int ||
+                value is uint ||
+                value is long ||
+                value is sbyte ||
+                value is byte ||
+                value is short ||
+                value is ushort ||
+                value is ulong ||
+                value is decimal ||
+                value is TProxyBoolean ||
+                value is TProxyNumber)
+            {
+                builder.Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
+                return;
+            }
 
             if (value is DateTime dateTime)
             {
@@ -156,60 +156,60 @@ namespace TinyJSON
             }
 
             EncodeObject( value, forceTypeHint );
-		}
+        }
 
 
-		private IEnumerable<FieldInfo> GetFieldsForType( Type type )
-		{
-			if (EnforceHierarchyOrderEnabled)
-			{
-				Stack<Type> types = new Stack<Type>();
-				while (type != null)
-				{
-					types.Push( type );
-					type = type.BaseType;
-				}
+        private IEnumerable<FieldInfo> GetFieldsForType( Type type )
+        {
+            if (EnforceHierarchyOrderEnabled)
+            {
+                Stack<Type> types = new Stack<Type>();
+                while (type != null)
+                {
+                    types.Push( type );
+                    type = type.BaseType;
+                }
 
-				List<FieldInfo> fields = new List<FieldInfo>();
-				while (types.Count > 0)
-				{
-					fields.AddRange( types.Pop().GetFields( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
-				}
+                List<FieldInfo> fields = new List<FieldInfo>();
+                while (types.Count > 0)
+                {
+                    fields.AddRange( types.Pop().GetFields( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
+                }
 
-				return fields;
-			}
+                return fields;
+            }
 
-			return type.GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
-		}
+            return type.GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+        }
 
 
-		private IEnumerable<PropertyInfo> GetPropertiesForType( Type type )
-		{
-			if (EnforceHierarchyOrderEnabled)
-			{
-				Stack<Type> types = new Stack<Type>();
-				while (type != null)
-				{
-					types.Push( type );
-					type = type.BaseType;
-				}
+        private IEnumerable<PropertyInfo> GetPropertiesForType( Type type )
+        {
+            if (EnforceHierarchyOrderEnabled)
+            {
+                Stack<Type> types = new Stack<Type>();
+                while (type != null)
+                {
+                    types.Push( type );
+                    type = type.BaseType;
+                }
 
-				List<PropertyInfo> properties = new List<PropertyInfo>();
-				while (types.Count > 0)
-				{
-					properties.AddRange( types.Pop().GetProperties( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
-				}
+                List<PropertyInfo> properties = new List<PropertyInfo>();
+                while (types.Count > 0)
+                {
+                    properties.AddRange( types.Pop().GetProperties( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
+                }
 
-				return properties;
-			}
+                return properties;
+            }
 
-			return type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
-		}
+            return type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+        }
 
         private void CheckForMethodAttributes(Type type, object value, out MethodInfo encodeConditionalMethod)
         {
-	        encodeConditionalMethod = null;
-	        
+            encodeConditionalMethod = null;
+
             if (type.IsEnum || type.IsPrimitive || type.IsArray)
             {
                 return;
@@ -219,76 +219,76 @@ namespace TinyJSON
             {
                 if (Attribute.IsDefined(method, typeof(EncodeConditional)))
                 {
-	                encodeConditionalMethod = method;
+                    encodeConditionalMethod = method;
                 }
-                
+
                 if (Attribute.IsDefined( method, typeof(BeforeEncode) ))
                 {
-	                method.Invoke( value, null );
+                    method.Invoke( value, null );
                 }
             }
         }
 
-		protected void EncodeObject( object value, bool forceTypeHint )
-		{
-			Type type = value.GetType();
+        protected void EncodeObject( object value, bool forceTypeHint )
+        {
+            Type type = value.GetType();
 
-			CheckForMethodAttributes(type, value, out MethodInfo encodeConditionalMethod);
+            CheckForMethodAttributes(type, value, out MethodInfo encodeConditionalMethod);
 
             AppendOpenBrace();
 
-			forceTypeHint = forceTypeHint || TypeHintsEnabled;
+            forceTypeHint = forceTypeHint || TypeHintsEnabled;
 
-			bool includePublicProperties = IncludePublicPropertiesEnabled;
+            bool includePublicProperties = IncludePublicPropertiesEnabled;
 
-			bool firstItem = !forceTypeHint;
-			if (forceTypeHint)
-			{
-				if (PrettyPrintEnabled)
-				{
-					AppendIndent();
-				}
+            bool firstItem = !forceTypeHint;
+            if (forceTypeHint)
+            {
+                if (PrettyPrintEnabled)
+                {
+                    AppendIndent();
+                }
 
-				EncodeString( ProxyObject.TypeHintKey );
-				AppendColon();
-				EncodeString( type.FullName );
+                EncodeString( ProxyObject.TypeHintKey );
+                AppendColon();
+                EncodeString( type.FullName );
 
-				// ReSharper disable once RedundantAssignment
-				firstItem = false;
-			}
+                // ReSharper disable once RedundantAssignment
+                firstItem = false;
+            }
 
-			foreach (FieldInfo field in GetFieldsForType( type ))
+            foreach (FieldInfo field in GetFieldsForType( type ))
             {
                 string fieldName = field.Name;
-				bool shouldTypeHint = false;
-				bool shouldEncode = field.IsPublic;
-				foreach (object attribute in field.GetCustomAttributes( true ))
-				{
-					if (excludeAttrType.IsInstanceOfType( attribute ))
-					{
-						shouldEncode = false;
-					}
+                bool shouldTypeHint = false;
+                bool shouldEncode = field.IsPublic;
+                foreach (object attribute in field.GetCustomAttributes( true ))
+                {
+                    if (excludeAttrType.IsInstanceOfType( attribute ))
+                    {
+                        shouldEncode = false;
+                    }
 
-					if (includeAttrType.IsInstanceOfType( attribute ))
-					{
-						shouldEncode = true;
-					}
+                    if (includeAttrType.IsInstanceOfType( attribute ))
+                    {
+                        shouldEncode = true;
+                    }
 
                     if (encodeConditionalMethod != null)
                     {
                         shouldEncode = shouldEncode && (bool)encodeConditionalMethod.Invoke(value, new object[]{ fieldName });
                     }
 
-					if (typeHintAttrType.IsInstanceOfType( attribute ))
-					{
-						shouldTypeHint = true;
-					}
+                    if (typeHintAttrType.IsInstanceOfType( attribute ))
+                    {
+                        shouldTypeHint = true;
+                    }
 
                     if (encodeNameAttrType.IsInstanceOfType(attribute))
                     {
                         fieldName = ((EncodeName) attribute).Name;
                     }
-				}
+                }
 
                 if (!shouldEncode)
                 {
@@ -302,7 +302,7 @@ namespace TinyJSON
                 firstItem = false;
             }
 
-			foreach (PropertyInfo property in GetPropertiesForType( type ))
+            foreach (PropertyInfo property in GetPropertiesForType( type ))
             {
                 if (!property.CanRead)
                 {
@@ -353,221 +353,221 @@ namespace TinyJSON
                 firstItem = false;
             }
 
-			AppendCloseBrace();
-		}
+            AppendCloseBrace();
+        }
 
 
         private void EncodeProxyArray( TProxyArray value )
-		{
-			if (value.Count == 0)
-			{
-				builder.Append( "[]" );
-			}
-			else
-			{
-				AppendOpenBracket();
+        {
+            if (value.Count == 0)
+            {
+                builder.Append( "[]" );
+            }
+            else
+            {
+                AppendOpenBracket();
 
-				bool firstItem = true;
-				foreach (Variant obj in value)
-				{
-					AppendComma( firstItem );
-					EncodeValue( obj, false );
-					firstItem = false;
-				}
+                bool firstItem = true;
+                foreach (Variant obj in value)
+                {
+                    AppendComma( firstItem );
+                    EncodeValue( obj, false );
+                    firstItem = false;
+                }
 
-				AppendCloseBracket();
-			}
-		}
+                AppendCloseBracket();
+            }
+        }
 
 
         private void EncodeProxyObject( TProxyObject value )
-		{
-			if (value.Count == 0)
-			{
-				builder.Append( "{}" );
-			}
-			else
-			{
-				AppendOpenBrace();
+        {
+            if (value.Count == 0)
+            {
+                builder.Append( "{}" );
+            }
+            else
+            {
+                AppendOpenBrace();
 
-				bool firstItem = true;
-				foreach (string e in value.Keys)
-				{
-					AppendComma( firstItem );
-					EncodeString( e );
-					AppendColon();
-					EncodeValue( value[e], false );
-					firstItem = false;
-				}
+                bool firstItem = true;
+                foreach (string e in value.Keys)
+                {
+                    AppendComma( firstItem );
+                    EncodeString( e );
+                    AppendColon();
+                    EncodeValue( value[e], false );
+                    firstItem = false;
+                }
 
-				AppendCloseBrace();
-			}
-		}
+                AppendCloseBrace();
+            }
+        }
 
 
         private void EncodeDictionary( IDictionary value, bool forceTypeHint )
-		{
-			if (value.Count == 0)
-			{
-				builder.Append( "{}" );
-			}
-			else
-			{
-				AppendOpenBrace();
+        {
+            if (value.Count == 0)
+            {
+                builder.Append( "{}" );
+            }
+            else
+            {
+                AppendOpenBrace();
 
-				bool firstItem = true;
-				foreach (object e in value.Keys)
-				{
-					AppendComma( firstItem );
-					EncodeString( e.ToString() );
-					AppendColon();
-					EncodeValue( value[e], forceTypeHint );
-					firstItem = false;
-				}
+                bool firstItem = true;
+                foreach (object e in value.Keys)
+                {
+                    AppendComma( firstItem );
+                    EncodeString( e.ToString() );
+                    AppendColon();
+                    EncodeValue( value[e], forceTypeHint );
+                    firstItem = false;
+                }
 
-				AppendCloseBrace();
-			}
-		}
+                AppendCloseBrace();
+            }
+        }
 
 
-		// ReSharper disable once SuggestBaseTypeForParameter
+        // ReSharper disable once SuggestBaseTypeForParameter
         private void EncodeList( IList value, bool forceTypeHint )
-		{
-			if (value.Count == 0)
-			{
-				builder.Append( "[]" );
-			}
-			else
-			{
-				AppendOpenBracket();
+        {
+            if (value.Count == 0)
+            {
+                builder.Append( "[]" );
+            }
+            else
+            {
+                AppendOpenBracket();
 
-				bool firstItem = true;
-				foreach (object obj in value)
-				{
-					AppendComma( firstItem );
-					EncodeValue( obj, forceTypeHint );
-					firstItem = false;
-				}
+                bool firstItem = true;
+                foreach (object obj in value)
+                {
+                    AppendComma( firstItem );
+                    EncodeValue( obj, forceTypeHint );
+                    firstItem = false;
+                }
 
-				AppendCloseBracket();
-			}
-		}
+                AppendCloseBracket();
+            }
+        }
 
 
         private void EncodeArray( Array value, bool forceTypeHint )
-		{
-			if (value.Rank == 1)
-			{
-				EncodeList( value, forceTypeHint );
-			}
-			else
-			{
-				int[] indices = new int[value.Rank];
-				EncodeArrayRank( value, 0, indices, forceTypeHint );
-			}
-		}
+        {
+            if (value.Rank == 1)
+            {
+                EncodeList( value, forceTypeHint );
+            }
+            else
+            {
+                int[] indices = new int[value.Rank];
+                EncodeArrayRank( value, 0, indices, forceTypeHint );
+            }
+        }
 
 
         private void EncodeArrayRank( Array value, int rank, int[] indices, bool forceTypeHint )
-		{
-			AppendOpenBracket();
+        {
+            AppendOpenBracket();
 
-			int min = value.GetLowerBound( rank );
-			int max = value.GetUpperBound( rank );
+            int min = value.GetLowerBound( rank );
+            int max = value.GetUpperBound( rank );
 
-			if (rank == value.Rank - 1)
-			{
-				for (int i = min; i <= max; i++)
-				{
-					indices[rank] = i;
-					AppendComma( i == min );
-					EncodeValue( value.GetValue( indices ), forceTypeHint );
-				}
-			}
-			else
-			{
-				for (int i = min; i <= max; i++)
-				{
-					indices[rank] = i;
-					AppendComma( i == min );
-					EncodeArrayRank( value, rank + 1, indices, forceTypeHint );
-				}
-			}
+            if (rank == value.Rank - 1)
+            {
+                for (int i = min; i <= max; i++)
+                {
+                    indices[rank] = i;
+                    AppendComma( i == min );
+                    EncodeValue( value.GetValue( indices ), forceTypeHint );
+                }
+            }
+            else
+            {
+                for (int i = min; i <= max; i++)
+                {
+                    indices[rank] = i;
+                    AppendComma( i == min );
+                    EncodeArrayRank( value, rank + 1, indices, forceTypeHint );
+                }
+            }
 
-			AppendCloseBracket();
-		}
-
-
-		protected void EncodeString( string value )
-		{
-			builder.Append( '\"' );
-
-			char[] charArray = value.ToCharArray();
-			foreach (char c in charArray)
-			{
-				switch (c)
-				{
-					case '"':
-						builder.Append( "\\\"" );
-						break;
-
-					case '\\':
-						builder.Append( "\\\\" );
-						break;
-
-					case '\b':
-						builder.Append( "\\b" );
-						break;
-
-					case '\f':
-						builder.Append( "\\f" );
-						break;
-
-					case '\n':
-						builder.Append( "\\n" );
-						break;
-
-					case '\r':
-						builder.Append( "\\r" );
-						break;
-
-					case '\t':
-						builder.Append( "\\t" );
-						break;
-
-					default:
-						int codepoint = Convert.ToInt32( c );
-						if ((codepoint >= 32) && (codepoint <= 126))
-						{
-							builder.Append( c );
-						}
-						else
-						{
-							builder.Append( "\\u" + Convert.ToString( codepoint, 16 ).PadLeft( 4, '0' ) );
-						}
-
-						break;
-				}
-			}
-
-			builder.Append( '\"' );
-		}
+            AppendCloseBracket();
+        }
 
 
-		#region Helpers
+        protected void EncodeString( string value )
+        {
+            builder.Append( '\"' );
+
+            char[] charArray = value.ToCharArray();
+            foreach (char c in charArray)
+            {
+                switch (c)
+                {
+                    case '"':
+                        builder.Append( "\\\"" );
+                        break;
+
+                    case '\\':
+                        builder.Append( "\\\\" );
+                        break;
+
+                    case '\b':
+                        builder.Append( "\\b" );
+                        break;
+
+                    case '\f':
+                        builder.Append( "\\f" );
+                        break;
+
+                    case '\n':
+                        builder.Append( "\\n" );
+                        break;
+
+                    case '\r':
+                        builder.Append( "\\r" );
+                        break;
+
+                    case '\t':
+                        builder.Append( "\\t" );
+                        break;
+
+                    default:
+                        int codepoint = Convert.ToInt32( c );
+                        if ((codepoint >= 32) && (codepoint <= 126))
+                        {
+                            builder.Append( c );
+                        }
+                        else
+                        {
+                            builder.Append( "\\u" + Convert.ToString( codepoint, 16 ).PadLeft( 4, '0' ) );
+                        }
+
+                        break;
+                }
+            }
+
+            builder.Append( '\"' );
+        }
+
+
+        #region Helpers
 
         private void AppendIndent()
-		{
-			for (int i = 0; i < indent; i++)
-			{
-				builder.Append( '\t' );
-			}
-		}
+        {
+            for (int i = 0; i < indent; i++)
+            {
+                builder.Append( '\t' );
+            }
+        }
 
 
         private void AppendOpenBrace()
-		{
-			builder.Append( '{' );
+        {
+            builder.Append( '{' );
 
             if (!PrettyPrintEnabled)
             {
@@ -580,21 +580,21 @@ namespace TinyJSON
 
 
         private void AppendCloseBrace()
-		{
-			if (PrettyPrintEnabled)
-			{
-				builder.Append( '\n' );
-				indent--;
-				AppendIndent();
-			}
+        {
+            if (PrettyPrintEnabled)
+            {
+                builder.Append( '\n' );
+                indent--;
+                AppendIndent();
+            }
 
-			builder.Append( '}' );
-		}
+            builder.Append( '}' );
+        }
 
 
         private void AppendOpenBracket()
-		{
-			builder.Append( '[' );
+        {
+            builder.Append( '[' );
 
             if (!PrettyPrintEnabled)
             {
@@ -607,47 +607,47 @@ namespace TinyJSON
 
 
         private void AppendCloseBracket()
-		{
-			if (PrettyPrintEnabled)
-			{
-				builder.Append( '\n' );
-				indent--;
-				AppendIndent();
-			}
+        {
+            if (PrettyPrintEnabled)
+            {
+                builder.Append( '\n' );
+                indent--;
+                AppendIndent();
+            }
 
-			builder.Append( ']' );
-		}
+            builder.Append( ']' );
+        }
 
 
         private void AppendComma( bool firstItem )
-		{
-			if (!firstItem)
-			{
-				builder.Append( ',' );
+        {
+            if (!firstItem)
+            {
+                builder.Append( ',' );
 
-				if (PrettyPrintEnabled)
-				{
-					builder.Append( '\n' );
-				}
-			}
+                if (PrettyPrintEnabled)
+                {
+                    builder.Append( '\n' );
+                }
+            }
 
-			if (PrettyPrintEnabled)
-			{
-				AppendIndent();
-			}
-		}
+            if (PrettyPrintEnabled)
+            {
+                AppendIndent();
+            }
+        }
 
 
         private void AppendColon()
-		{
-			builder.Append( ':' );
+        {
+            builder.Append( ':' );
 
-			if (PrettyPrintEnabled)
-			{
-				builder.Append( ' ' );
-			}
-		}
+            if (PrettyPrintEnabled)
+            {
+                builder.Append( ' ' );
+            }
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

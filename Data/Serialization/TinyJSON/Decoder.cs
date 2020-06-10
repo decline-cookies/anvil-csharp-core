@@ -9,39 +9,39 @@ namespace TinyJSON
     {
     }
 
-	public class Decoder<TProxyArray, TProxyBoolean, TProxyNumber, TProxyObject, TProxyString> : IDecoder
+    public class Decoder<TProxyArray, TProxyBoolean, TProxyNumber, TProxyObject, TProxyString> : IDecoder
         where TProxyArray : ProxyArray, new()
         where TProxyBoolean : ProxyBoolean
         where TProxyNumber : ProxyNumber
         where TProxyObject : ProxyObject, new()
         where TProxyString : ProxyString
-	{
-		private const string whiteSpace = " \t\n\r";
-		private const string wordBreak = " \t\n\r{}[],:\"";
+    {
+        private const string whiteSpace = " \t\n\r";
+        private const string wordBreak = " \t\n\r{}[],:\"";
 
         private enum Token
-		{
-			None,
-			OpenBrace,
-			CloseBrace,
-			OpenBracket,
-			CloseBracket,
-			Colon,
-			Comma,
-			String,
-			Number,
-			True,
-			False,
-			Null
-		}
+        {
+            None,
+            OpenBrace,
+            CloseBrace,
+            OpenBracket,
+            CloseBracket,
+            Colon,
+            Comma,
+            String,
+            Number,
+            True,
+            False,
+            Null
+        }
 
-		private StringReader json;
+        private StringReader json;
 
         public void Dispose()
-		{
-			json.Dispose();
-			json = null;
-		}
+        {
+            json.Dispose();
+            json = null;
+        }
 
         public Variant Decode(string jsonString)
         {
@@ -50,93 +50,93 @@ namespace TinyJSON
         }
 
 
-		private TProxyObject DecodeObject()
-		{
-			TProxyObject proxy = new TProxyObject();
+        private TProxyObject DecodeObject()
+        {
+            TProxyObject proxy = new TProxyObject();
 
-			// Ditch opening brace.
-			json.Read();
+            // Ditch opening brace.
+            json.Read();
 
-			// {
-			while (true)
-			{
-				// ReSharper disable once SwitchStatementMissingSomeCases
-				switch (NextToken)
-				{
-					case Token.None:
-						return null;
+            // {
+            while (true)
+            {
+                // ReSharper disable once SwitchStatementMissingSomeCases
+                switch (NextToken)
+                {
+                    case Token.None:
+                        return null;
 
-					case Token.Comma:
-						continue;
+                    case Token.Comma:
+                        continue;
 
-					case Token.CloseBrace:
-						return proxy;
+                    case Token.CloseBrace:
+                        return proxy;
 
-					default:
-						// Key
-						string key = DecodeString();
-						if (key == null)
-						{
-							return null;
-						}
+                    default:
+                        // Key
+                        string key = DecodeString();
+                        if (key == null)
+                        {
+                            return null;
+                        }
 
-						// :
-						if (NextToken != Token.Colon)
-						{
-							return null;
-						}
+                        // :
+                        if (NextToken != Token.Colon)
+                        {
+                            return null;
+                        }
 
-						json.Read();
+                        json.Read();
 
-						// Value
-						proxy.Add( key, DecodeValue() );
-						break;
-				}
-			}
-		}
-
-
-		private TProxyArray DecodeArray()
-		{
-			TProxyArray proxy = new TProxyArray();
-
-			// Ditch opening bracket.
-			json.Read();
-
-			// [
-			bool parsing = true;
-			while (parsing)
-			{
-				Token nextToken = NextToken;
-
-				// ReSharper disable once SwitchStatementMissingSomeCases
-				switch (nextToken)
-				{
-					case Token.None:
-						return null;
-
-					case Token.Comma:
-						continue;
-
-					case Token.CloseBracket:
-						parsing = false;
-						break;
-
-					default:
-						proxy.Add( DecodeByToken( nextToken ) );
-						break;
-				}
-			}
-
-			return proxy;
-		}
+                        // Value
+                        proxy.Add( key, DecodeValue() );
+                        break;
+                }
+            }
+        }
 
 
-		private Variant DecodeValue()
-		{
-			Token nextToken = NextToken;
-			return DecodeByToken( nextToken );
-		}
+        private TProxyArray DecodeArray()
+        {
+            TProxyArray proxy = new TProxyArray();
+
+            // Ditch opening bracket.
+            json.Read();
+
+            // [
+            bool parsing = true;
+            while (parsing)
+            {
+                Token nextToken = NextToken;
+
+                // ReSharper disable once SwitchStatementMissingSomeCases
+                switch (nextToken)
+                {
+                    case Token.None:
+                        return null;
+
+                    case Token.Comma:
+                        continue;
+
+                    case Token.CloseBracket:
+                        parsing = false;
+                        break;
+
+                    default:
+                        proxy.Add( DecodeByToken( nextToken ) );
+                        break;
+                }
+            }
+
+            return proxy;
+        }
+
+
+        private Variant DecodeValue()
+        {
+            Token nextToken = NextToken;
+            return DecodeByToken( nextToken );
+        }
 
 
         private Variant DecodeByToken( Token token )
@@ -163,202 +163,202 @@ namespace TinyJSON
         }
 
 
-		private Variant DecodeString()
-		{
-			StringBuilder stringBuilder = new StringBuilder();
+        private Variant DecodeString()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
 
-			// ditch opening quote
-			json.Read();
+            // ditch opening quote
+            json.Read();
 
-			bool parsing = true;
-			while (parsing)
-			{
-				if (json.Peek() == -1)
-				{
-					// ReSharper disable once RedundantAssignment
-					parsing = false;
-					break;
-				}
+            bool parsing = true;
+            while (parsing)
+            {
+                if (json.Peek() == -1)
+                {
+                    // ReSharper disable once RedundantAssignment
+                    parsing = false;
+                    break;
+                }
 
-				char c = NextChar;
-				switch (c)
-				{
-					case '"':
-						parsing = false;
-						break;
+                char c = NextChar;
+                switch (c)
+                {
+                    case '"':
+                        parsing = false;
+                        break;
 
-					case '\\':
-						if (json.Peek() == -1)
-						{
-							parsing = false;
-							break;
-						}
+                    case '\\':
+                        if (json.Peek() == -1)
+                        {
+                            parsing = false;
+                            break;
+                        }
 
-						c = NextChar;
+                        c = NextChar;
 
-						// ReSharper disable once SwitchStatementMissingSomeCases
-						switch (c)
-						{
-							case '"':
-							case '\\':
-							case '/':
-								stringBuilder.Append( c );
-								break;
+                        // ReSharper disable once SwitchStatementMissingSomeCases
+                        switch (c)
+                        {
+                            case '"':
+                            case '\\':
+                            case '/':
+                                stringBuilder.Append( c );
+                                break;
 
-							case 'b':
-								stringBuilder.Append( '\b' );
-								break;
+                            case 'b':
+                                stringBuilder.Append( '\b' );
+                                break;
 
-							case 'f':
-								stringBuilder.Append( '\f' );
-								break;
+                            case 'f':
+                                stringBuilder.Append( '\f' );
+                                break;
 
-							case 'n':
-								stringBuilder.Append( '\n' );
-								break;
+                            case 'n':
+                                stringBuilder.Append( '\n' );
+                                break;
 
-							case 'r':
-								stringBuilder.Append( '\r' );
-								break;
+                            case 'r':
+                                stringBuilder.Append( '\r' );
+                                break;
 
-							case 't':
-								stringBuilder.Append( '\t' );
-								break;
+                            case 't':
+                                stringBuilder.Append( '\t' );
+                                break;
 
-							case 'u':
-								StringBuilder hex = new StringBuilder();
+                            case 'u':
+                                StringBuilder hex = new StringBuilder();
 
-								for (int i = 0; i < 4; i++)
-								{
-									hex.Append( NextChar );
-								}
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    hex.Append( NextChar );
+                                }
 
-								stringBuilder.Append( (char) Convert.ToInt32( hex.ToString(), 16 ) );
-								break;
+                                stringBuilder.Append( (char) Convert.ToInt32( hex.ToString(), 16 ) );
+                                break;
 
-							//default:
-							//	throw new DecodeException( @"Illegal character following escape character: " + c );
-						}
+                            //default:
+                            //	throw new DecodeException( @"Illegal character following escape character: " + c );
+                        }
 
-						break;
+                        break;
 
-					default:
-						stringBuilder.Append( c );
-						break;
-				}
-			}
+                    default:
+                        stringBuilder.Append( c );
+                        break;
+                }
+            }
 
             return (TProxyString) Activator.CreateInstance(typeof(TProxyString), stringBuilder.ToString());
         }
 
 
         private Variant DecodeNumber()
-		{
+        {
             return (TProxyNumber) Activator.CreateInstance(typeof(TProxyNumber), NextWord);
         }
 
 
         private void ConsumeWhiteSpace()
-		{
-			while (whiteSpace.IndexOf( PeekChar ) != -1)
-			{
-				json.Read();
+        {
+            while (whiteSpace.IndexOf( PeekChar ) != -1)
+            {
+                json.Read();
 
-				if (json.Peek() == -1)
-				{
-					break;
-				}
-			}
-		}
+                if (json.Peek() == -1)
+                {
+                    break;
+                }
+            }
+        }
 
 
         private char PeekChar
-		{
-			get
-			{
-				int peek = json.Peek();
-				return peek == -1 ? '\0' : Convert.ToChar( peek );
-			}
-		}
+        {
+            get
+            {
+                int peek = json.Peek();
+                return peek == -1 ? '\0' : Convert.ToChar( peek );
+            }
+        }
 
 
         private char NextChar => Convert.ToChar( json.Read() );
 
 
         private string NextWord
-		{
-			get
-			{
-				StringBuilder word = new StringBuilder();
+        {
+            get
+            {
+                StringBuilder word = new StringBuilder();
 
-				while (wordBreak.IndexOf( PeekChar ) == -1)
-				{
-					word.Append( NextChar );
+                while (wordBreak.IndexOf( PeekChar ) == -1)
+                {
+                    word.Append( NextChar );
 
-					if (json.Peek() == -1)
-					{
-						break;
-					}
-				}
+                    if (json.Peek() == -1)
+                    {
+                        break;
+                    }
+                }
 
-				return word.ToString();
-			}
-		}
+                return word.ToString();
+            }
+        }
 
 
         private Token NextToken
-		{
-			get
-			{
-				ConsumeWhiteSpace();
+        {
+            get
+            {
+                ConsumeWhiteSpace();
 
-				if (json.Peek() == -1)
-				{
-					return Token.None;
-				}
+                if (json.Peek() == -1)
+                {
+                    return Token.None;
+                }
 
-				// ReSharper disable once SwitchStatementMissingSomeCases
-				switch (PeekChar)
-				{
-					case '{':
-						return Token.OpenBrace;
+                // ReSharper disable once SwitchStatementMissingSomeCases
+                switch (PeekChar)
+                {
+                    case '{':
+                        return Token.OpenBrace;
 
-					case '}':
-						json.Read();
-						return Token.CloseBrace;
+                    case '}':
+                        json.Read();
+                        return Token.CloseBrace;
 
-					case '[':
-						return Token.OpenBracket;
+                    case '[':
+                        return Token.OpenBracket;
 
-					case ']':
-						json.Read();
-						return Token.CloseBracket;
+                    case ']':
+                        json.Read();
+                        return Token.CloseBracket;
 
-					case ',':
-						json.Read();
-						return Token.Comma;
+                    case ',':
+                        json.Read();
+                        return Token.Comma;
 
-					case '"':
-						return Token.String;
+                    case '"':
+                        return Token.String;
 
-					case ':':
-						return Token.Colon;
+                    case ':':
+                        return Token.Colon;
 
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9':
-					case '-':
-						return Token.Number;
-				}
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                    case '-':
+                        return Token.Number;
+                }
 
-				// ReSharper disable once SwitchStatementMissingSomeCases
+                // ReSharper disable once SwitchStatementMissingSomeCases
                 switch (NextWord)
                 {
                     case "false":
@@ -371,6 +371,6 @@ namespace TinyJSON
                         return Token.None;
                 }
             }
-		}
-	}
+        }
+    }
 }

@@ -9,7 +9,7 @@ using Anvil.CSharp.Data;
 namespace TinyJSON
 {
     // ReSharper disable once InconsistentNaming
-	public class TinyJSONParser<TEncoder, TDecoder> : IJSONParser
+    public class TinyJSONParser<TEncoder, TDecoder> : IJSONParser
         where TEncoder : IEncoder
         where TDecoder : IDecoder
     {
@@ -73,20 +73,20 @@ namespace TinyJSON
         }
 
         private Type FindType( string fullName )
-		{
-			if (fullName == null)
-			{
-				return null;
-			}
+        {
+            if (fullName == null)
+            {
+                return null;
+            }
 
             if (typeCache.TryGetValue( fullName, out Type type ))
-			{
-				return type;
-			}
+            {
+                return type;
+            }
 
-			foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				type = assembly.GetType( fullName );
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                type = assembly.GetType( fullName );
                 if (type == null)
                 {
                     continue;
@@ -96,8 +96,8 @@ namespace TinyJSON
                 return type;
             }
 
-			return null;
-		}
+            return null;
+        }
 
         protected virtual T DecodeType<T>( Variant data )
         {
@@ -113,15 +113,15 @@ namespace TinyJSON
                 return decodedData;
             }
 
-			// At this point we should be dealing with a class or struct.
+            // At this point we should be dealing with a class or struct.
             T instance = DTCreateInstance<T>(data, type, out Type instanceType);
             //Reset type since it could have changed due to typehints
             type = instanceType;
 
             DTDecodeInstance(data, type, instance);
 
-			return instance;
-		}
+            return instance;
+        }
 
         private bool DTCheckNull<T>(Variant data, out T decodedData)
         {
@@ -463,89 +463,89 @@ namespace TinyJSON
             return property.CanWrite && property.GetCustomAttributes(false).AnyOfType(includeAttrType);
         }
 
-		// ReSharper disable once UnusedMethodReturnValue.Local
-		protected virtual TList DecodeList<TList, T>( Variant data )
+        // ReSharper disable once UnusedMethodReturnValue.Local
+        protected virtual TList DecodeList<TList, T>( Variant data )
             where TList : IList<T>, new()
-		{
+        {
             TList list = new TList();
 
             if (!(data is ProxyArray proxyArray))
-			{
-				throw new DecodeException( "Variant is expected to be a ProxyArray here, but it is not." );
-			}
+            {
+                throw new DecodeException( "Variant is expected to be a ProxyArray here, but it is not." );
+            }
 
-			foreach (Variant item in proxyArray)
-			{
-				list.Add( DecodeType<T>( item ) );
-			}
+            foreach (Variant item in proxyArray)
+            {
+                list.Add( DecodeType<T>( item ) );
+            }
 
-			return list;
-		}
+            return list;
+        }
 
-		// ReSharper disable once UnusedMethodReturnValue.Local
-		protected virtual TDictionary DecodeDictionary<TDictionary, TKey, TValue>( Variant data )
+        // ReSharper disable once UnusedMethodReturnValue.Local
+        protected virtual TDictionary DecodeDictionary<TDictionary, TKey, TValue>( Variant data )
             where TDictionary : IDictionary<TKey, TValue>, new()
-		{
-			TDictionary dict = new TDictionary();
-			Type type = typeof(TKey);
+        {
+            TDictionary dict = new TDictionary();
+            Type type = typeof(TKey);
 
             if (!(data is ProxyObject proxyObject))
-			{
-				throw new DecodeException( "Variant is expected to be a ProxyObject here, but it is not." );
-			}
+            {
+                throw new DecodeException( "Variant is expected to be a ProxyObject here, but it is not." );
+            }
 
-			foreach (KeyValuePair<string, Variant> pair in proxyObject)
-			{
-				TKey k = (TKey) (type.IsEnum ? Enum.Parse( type, pair.Key ) : Convert.ChangeType( pair.Key, type ));
-				TValue v = DecodeType<TValue>( pair.Value );
-				dict.Add( k, v );
-			}
+            foreach (KeyValuePair<string, Variant> pair in proxyObject)
+            {
+                TKey k = (TKey) (type.IsEnum ? Enum.Parse( type, pair.Key ) : Convert.ChangeType( pair.Key, type ));
+                TValue v = DecodeType<TValue>( pair.Value );
+                dict.Add( k, v );
+            }
 
-			return dict;
-		}
+            return dict;
+        }
 
-		// ReSharper disable once UnusedMethodReturnValue.Local
-		protected virtual T[] DecodeArray<T>( Variant data )
-		{
+        // ReSharper disable once UnusedMethodReturnValue.Local
+        protected virtual T[] DecodeArray<T>( Variant data )
+        {
             if (!(data is ProxyArray arrayData))
-			{
-				throw new DecodeException( "Variant is expected to be a ProxyArray here, but it is not." );
-			}
+            {
+                throw new DecodeException( "Variant is expected to be a ProxyArray here, but it is not." );
+            }
 
-			int arraySize = arrayData.Count;
-			T[] array = new T[arraySize];
+            int arraySize = arrayData.Count;
+            T[] array = new T[arraySize];
 
-			int i = 0;
-			foreach (Variant item in arrayData)
-			{
-				array[i++] = DecodeType<T>( item );
-			}
+            int i = 0;
+            foreach (Variant item in arrayData)
+            {
+                array[i++] = DecodeType<T>( item );
+            }
 
-			return array;
-		}
+            return array;
+        }
 
-		// ReSharper disable once UnusedMember.Local
-		protected virtual void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
-		{
-			int count = arrayData.Count;
-			for (int i = 0; i < count; i++)
-			{
-				indices[arrayRank - 1] = i;
-				if (arrayRank < array.Rank)
-				{
-					DecodeMultiRankArray<T>( arrayData[i] as ProxyArray, array, arrayRank + 1, indices );
-				}
-				else
-				{
-					array.SetValue( DecodeType<T>( arrayData[i] ), indices );
-				}
-			}
-		}
+        // ReSharper disable once UnusedMember.Local
+        protected virtual void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
+        {
+            int count = arrayData.Count;
+            for (int i = 0; i < count; i++)
+            {
+                indices[arrayRank - 1] = i;
+                if (arrayRank < array.Rank)
+                {
+                    DecodeMultiRankArray<T>( arrayData[i] as ProxyArray, array, arrayRank + 1, indices );
+                }
+                else
+                {
+                    array.SetValue( DecodeType<T>( arrayData[i] ), indices );
+                }
+            }
+        }
 
         // ReSharper disable once InconsistentNaming
-		public void SupportTypeForAOT<T>()
-		{
-			DecodeType<T>( null );
+        public void SupportTypeForAOT<T>()
+        {
+            DecodeType<T>( null );
         }
 
         public void SupportListTypeForAOT<TList, T>()
