@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace TinyJSON
 {
 	public static class Extensions
@@ -18,7 +17,7 @@ namespace TinyJSON
 				throw new ArgumentNullException( "expectedType" );
 			}
 
-			foreach (var item in source)
+			foreach (TSource item in source)
 			{
 				if (expectedType.IsInstanceOfType( item ))
 				{

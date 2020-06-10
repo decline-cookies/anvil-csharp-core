@@ -3,9 +3,9 @@ using System;
 
 namespace TinyJSON
 {
-	public sealed class ProxyString : Variant
+	public class ProxyString : Variant
 	{
-		readonly string value;
+		protected readonly string value;
 
 
 		public ProxyString( string value )
@@ -18,5 +18,20 @@ namespace TinyJSON
 		{
 			return value;
 		}
+
+        public override char ToChar( IFormatProvider provider )
+        {
+            return value[0];
+        }
+
+        public override object ToType(Type conversionType, IFormatProvider provider)
+        {
+            if (conversionType == typeof(Guid))
+            {
+                return new Guid( value );
+            }
+
+            return base.ToType( conversionType, provider );
+        }
 	}
 }

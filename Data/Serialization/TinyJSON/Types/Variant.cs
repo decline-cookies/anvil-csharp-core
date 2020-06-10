@@ -6,7 +6,7 @@ namespace TinyJSON
 {
 	public abstract class Variant : IConvertible
 	{
-		protected static readonly IFormatProvider FormatProvider = new NumberFormatInfo();
+        private static readonly IFormatProvider FormatProvider = new NumberFormatInfo();
 
 
 		// ReSharper disable once UnusedMember.Global
@@ -141,96 +141,84 @@ namespace TinyJSON
 		// ReSharper disable once UnusedMemberInSuper.Global
 		public virtual Variant this[ string key ]
 		{
-			get
-			{
-				throw new NotSupportedException();
-			}
+			get => throw new NotSupportedException();
 
-			// ReSharper disable once UnusedMember.Global
-			set
-			{
-				throw new NotSupportedException();
-			}
-		}
+            // ReSharper disable once UnusedMember.Global
+			set => throw new NotSupportedException();
+        }
 
 
 		// ReSharper disable once UnusedMemberInSuper.Global
 		public virtual Variant this[ int index ]
 		{
-			get
-			{
-				throw new NotSupportedException();
-			}
+			get => throw new NotSupportedException();
 
-			// ReSharper disable once UnusedMember.Global
-			set
-			{
-				throw new NotSupportedException();
-			}
-		}
+            // ReSharper disable once UnusedMember.Global
+			set => throw new NotSupportedException();
+        }
 
 
-		public static implicit operator Boolean( Variant variant )
+		public static implicit operator bool( Variant variant )
 		{
 			return variant.ToBoolean( FormatProvider );
 		}
 
 
-		public static implicit operator Single( Variant variant )
+		public static implicit operator float( Variant variant )
 		{
 			return variant.ToSingle( FormatProvider );
 		}
 
 
-		public static implicit operator Double( Variant variant )
+		public static implicit operator double( Variant variant )
 		{
 			return variant.ToDouble( FormatProvider );
 		}
 
 
-		public static implicit operator UInt16( Variant variant )
+		public static implicit operator ushort( Variant variant )
 		{
 			return variant.ToUInt16( FormatProvider );
 		}
 
 
-		public static implicit operator Int16( Variant variant )
+		public static implicit operator short( Variant variant )
 		{
 			return variant.ToInt16( FormatProvider );
 		}
 
 
-		public static implicit operator UInt32( Variant variant )
+		public static implicit operator uint( Variant variant )
 		{
 			return variant.ToUInt32( FormatProvider );
 		}
 
 
-		public static implicit operator Int32( Variant variant )
+		public static implicit operator int( Variant variant )
 		{
 			return variant.ToInt32( FormatProvider );
 		}
 
 
-		public static implicit operator UInt64( Variant variant )
+		public static implicit operator ulong( Variant variant )
 		{
 			return variant.ToUInt64( FormatProvider );
 		}
 
 
-		public static implicit operator Int64( Variant variant )
+		public static implicit operator long( Variant variant )
 		{
 			return variant.ToInt64( FormatProvider );
 		}
 
 
-		public static implicit operator Decimal( Variant variant )
+		public static implicit operator decimal( Variant variant )
 		{
 			return variant.ToDecimal( FormatProvider );
 		}
 
 
-		public static implicit operator String( Variant variant )
+		public static implicit operator string( Variant variant )
 		{
 			return variant.ToString( FormatProvider );
 		}

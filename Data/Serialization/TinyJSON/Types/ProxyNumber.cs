@@ -1,10 +1,9 @@
 using System;
 using System.Globalization;
 
-
 namespace TinyJSON
 {
-	public sealed class ProxyNumber : Variant
+	public class ProxyNumber : Variant
 	{
 		static readonly char[] floatingPointCharacters = { '.', 'e' };
 		readonly IConvertible value;
@@ -12,8 +11,7 @@ namespace TinyJSON
 
 		public ProxyNumber( IConvertible value )
 		{
-			var stringValue = value as string;
-			this.value = stringValue != null ? Parse( stringValue ) : value;
+            this.value = value is string stringValue ? Parse( stringValue ) : value;
 		}
 
 
@@ -23,32 +21,28 @@ namespace TinyJSON
 			{
 				if (value[0] == '-')
 				{
-					Int64 parsedValue;
-					if (Int64.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
+                    if (long.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out long parsedValue ))
 					{
 						return parsedValue;
 					}
 				}
 				else
 				{
-					UInt64 parsedValue;
-					if (UInt64.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
+                    if (ulong.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out ulong parsedValue ))
 					{
 						return parsedValue;
 					}
 				}
 			}
 
-			Decimal decimalValue;
-			if (Decimal.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out decimalValue ))
+            if (decimal.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out decimal decimalValue ))
 			{
 				// Check for decimal underflow.
-				if (decimalValue == Decimal.Zero)
+				if (decimalValue == decimal.Zero)
 				{
-					Double parsedValue;
-					if (Double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
+                    if (double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out double parsedValue ))
 					{
-						if (Math.Abs( parsedValue ) > Double.Epsilon)
+						if (Math.Abs( parsedValue ) > double.Epsilon)
 						{
 							return parsedValue;
 						}
@@ -58,8 +52,7 @@ namespace TinyJSON
 				return decimalValue;
 			}
 
-			Double doubleValue;
-			if (Double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out doubleValue ))
+            if (double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out double doubleValue ))
 			{
 				return doubleValue;
 			}
@@ -150,5 +143,10 @@ namespace TinyJSON
 		{
 			return value.ToUInt64( provider );
 		}
+
+        public override DateTime ToDateTime(IFormatProvider provider)
+        {
+            return new DateTime().AddTicks( value.ToInt64( provider ) );
+        }
 	}
 }

@@ -1,9 +1,8 @@
 using System;
 
-
 namespace TinyJSON
 {
-	public sealed class ProxyBoolean : Variant
+	public class ProxyBoolean : Variant
 	{
 		readonly bool value;
 

@@ -9,20 +9,25 @@ using Anvil.CSharp.Data;
 
 namespace TinyJSON
 {
-	public class Encoder : IEncoder
+    public class Encoder : Encoder<ProxyArray, ProxyBoolean, ProxyNumber, ProxyObject, ProxyString>
+    {
+    }
+
+	public class Encoder<TProxyArray, TProxyBoolean, TProxyNumber, TProxyObject, TProxyString> : IEncoder
+        where TProxyArray : ProxyArray
+        where TProxyBoolean : ProxyBoolean
+        where TProxyNumber : ProxyNumber
+        where TProxyObject : ProxyObject
+        where TProxyString : ProxyString
 	{
-		static readonly Type includeAttrType = typeof(Include);
-		static readonly Type excludeAttrType = typeof(Exclude);
-		static readonly Type typeHintAttrType = typeof(TypeHint);
+        private static readonly Type includeAttrType = typeof(Include);
+        private static readonly Type excludeAttrType = typeof(Exclude);
+        private static readonly Type encodeNameAttrType = typeof(EncodeName);
+		private static readonly Type typeHintAttrType = typeof(TypeHint);
 
         private StringBuilder builder;
         private EncodeOptions options;
 		private int indent;
-
-
-        public Encoder()
-        {
-        }
 
         public void Dispose()
         {
@@ -52,7 +57,7 @@ namespace TinyJSON
         private bool EnforceHierarchyOrderEnabled => (options & EncodeOptions.EnforceHierarchyOrder) == EncodeOptions.EnforceHierarchyOrder;
 
 
-        private void EncodeValue( object value, bool forceTypeHint )
+        protected virtual void EncodeValue( object value, bool forceTypeHint )
 		{
 			if (value == null)
 			{
@@ -60,15 +65,15 @@ namespace TinyJSON
 				return;
 			}
 
-			if (value is string)
+			if (value is string s)
 			{
-				EncodeString( (string) value );
+				EncodeString(s);
 				return;
 			}
 
-			if (value is ProxyString)
+			if (value is TProxyString proxyString)
 			{
-				EncodeString( ((ProxyString) value).ToString( CultureInfo.InvariantCulture ) );
+				EncodeString( proxyString.ToString( CultureInfo.InvariantCulture ));
 				return;
 			}
 
@@ -78,9 +83,9 @@ namespace TinyJSON
 				return;
 			}
 
-			if (value is bool)
+			if (value is bool b)
 			{
-				builder.Append( (bool) value ? "true" : "false" );
+				builder.Append( b ? "true" : "false" );
 				return;
 			}
 
@@ -90,21 +95,21 @@ namespace TinyJSON
 				return;
 			}
 
-			if (value is Array)
+			if (value is Array array)
 			{
-				EncodeArray( (Array) value, forceTypeHint );
+				EncodeArray( array, forceTypeHint );
 				return;
 			}
 
-			if (value is IList)
+			if (value is IList iList)
 			{
-				EncodeList( (IList) value, forceTypeHint );
+				EncodeList( iList, forceTypeHint );
 				return;
 			}
 
-			if (value is IDictionary)
+			if (value is IDictionary iDictionary)
 			{
-				EncodeDictionary( (IDictionary) value, forceTypeHint );
+				EncodeDictionary( iDictionary, forceTypeHint );
 				return;
 			}
 
@@ -114,15 +119,15 @@ namespace TinyJSON
 				return;
 			}
 
-			if (value is ProxyArray)
+			if (value is TProxyArray proxyArray)
 			{
-				EncodeProxyArray( (ProxyArray) value );
+				EncodeProxyArray( proxyArray );
 				return;
 			}
 
-			if (value is ProxyObject)
+			if (value is TProxyObject proxyObject)
 			{
-				EncodeProxyObject( (ProxyObject) value );
+				EncodeProxyObject( proxyObject );
 				return;
 			}
 
@@ -137,14 +142,20 @@ namespace TinyJSON
 			    value is ushort ||
 			    value is ulong ||
 			    value is decimal ||
-			    value is ProxyBoolean ||
-			    value is ProxyNumber)
+			    value is TProxyBoolean ||
+			    value is TProxyNumber)
 			{
 				builder.Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
 				return;
 			}
 
-			EncodeObject( value, forceTypeHint );
+            if (value is DateTime dateTime)
+            {
+                builder.Append( Convert.ToString( dateTime.Ticks, CultureInfo.InvariantCulture ) );
+                return;
+            }
+
+            EncodeObject( value, forceTypeHint );
 		}
 
 
@@ -195,12 +206,31 @@ namespace TinyJSON
 			return type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 		}
 
+        private MethodInfo CheckForEncodeConditionalMethod(Type type)
+        {
+            if (type.IsEnum || type.IsPrimitive || type.IsArray)
+            {
+                return null;
+            }
 
-		private void EncodeObject( object value, bool forceTypeHint )
+            foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                if (Attribute.IsDefined(method, typeof(EncodeConditional)))
+                {
+                    return method;
+                }
+            }
+
+            return null;
+        }
+
+		protected void EncodeObject( object value, bool forceTypeHint )
 		{
 			Type type = value.GetType();
 
-			AppendOpenBrace();
+            MethodInfo encodeConditionalMethod = CheckForEncodeConditionalMethod(type);
+
+            AppendOpenBrace();
 
 			forceTypeHint = forceTypeHint || TypeHintsEnabled;
 
@@ -223,10 +253,11 @@ namespace TinyJSON
 			}
 
 			foreach (FieldInfo field in GetFieldsForType( type ))
-			{
+            {
+                string fieldName = field.Name;
 				bool shouldTypeHint = false;
 				bool shouldEncode = field.IsPublic;
-				foreach (var attribute in field.GetCustomAttributes( true ))
+				foreach (object attribute in field.GetCustomAttributes( true ))
 				{
 					if (excludeAttrType.IsInstanceOfType( attribute ))
 					{
@@ -238,10 +269,20 @@ namespace TinyJSON
 						shouldEncode = true;
 					}
 
+                    if (encodeConditionalMethod != null)
+                    {
+                        shouldEncode = shouldEncode && (bool)encodeConditionalMethod.Invoke(value, new object[]{ fieldName });
+                    }
+
 					if (typeHintAttrType.IsInstanceOfType( attribute ))
 					{
 						shouldTypeHint = true;
 					}
+
+                    if (encodeNameAttrType.IsInstanceOfType(attribute))
+                    {
+                        fieldName = ((EncodeName) attribute).Name;
+                    }
 				}
 
                 if (!shouldEncode)
@@ -250,7 +291,7 @@ namespace TinyJSON
                 }
 
                 AppendComma( firstItem );
-                EncodeString( field.Name );
+                EncodeString( fieldName );
                 AppendColon();
                 EncodeValue( field.GetValue( value ), shouldTypeHint );
                 firstItem = false;
@@ -263,6 +304,7 @@ namespace TinyJSON
                     continue;
                 }
 
+                string propertyName = property.Name;
                 bool shouldTypeHint = false;
                 bool shouldEncode = includePublicProperties;
 
@@ -278,9 +320,19 @@ namespace TinyJSON
                         shouldEncode = true;
                     }
 
+                    if (encodeConditionalMethod != null)
+                    {
+                        shouldEncode = shouldEncode && (bool)encodeConditionalMethod.Invoke(value, new object[]{ propertyName });
+                    }
+
                     if (typeHintAttrType.IsInstanceOfType( attribute ))
                     {
                         shouldTypeHint = true;
+                    }
+
+                    if (encodeNameAttrType.IsInstanceOfType( attribute ))
+                    {
+                        propertyName = ((EncodeName)attribute).Name;
                     }
                 }
 
@@ -290,7 +342,7 @@ namespace TinyJSON
                 }
 
                 AppendComma( firstItem );
-                EncodeString( property.Name );
+                EncodeString( propertyName );
                 AppendColon();
                 EncodeValue( property.GetValue( value, null ), shouldTypeHint );
                 firstItem = false;
@@ -300,7 +352,7 @@ namespace TinyJSON
 		}
 
 
-        private void EncodeProxyArray( ProxyArray value )
+        private void EncodeProxyArray( TProxyArray value )
 		{
 			if (value.Count == 0)
 			{
@@ -323,7 +375,7 @@ namespace TinyJSON
 		}
 
 
-        private void EncodeProxyObject( ProxyObject value )
+        private void EncodeProxyObject( TProxyObject value )
 		{
 			if (value.Count == 0)
 			{
@@ -441,7 +493,7 @@ namespace TinyJSON
 		}
 
 
-		private void EncodeString( string value )
+		protected void EncodeString( string value )
 		{
 			builder.Append( '\"' );
 

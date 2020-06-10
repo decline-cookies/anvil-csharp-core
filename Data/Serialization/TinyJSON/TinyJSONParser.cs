@@ -9,7 +9,9 @@ using Anvil.CSharp.Data;
 namespace TinyJSON
 {
     // ReSharper disable once InconsistentNaming
-	public class TinyJSONParser : IJSONParser
+	public class TinyJSONParser<TEncoder, TDecoder> : IJSONParser
+        where TEncoder : IEncoder
+        where TDecoder : IDecoder
     {
         public int Priority { get; } = 0;
 
@@ -21,21 +23,22 @@ namespace TinyJSON
         private readonly Dictionary<string, Type> typeCache = new Dictionary<string, Type>();
 
         private const BindingFlags instanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        private readonly MethodInfo decodeTypeMethod = typeof(TinyJSONParser).GetMethod( "DecodeType", instanceBindingFlags );
-        private readonly MethodInfo decodeListMethod = typeof(TinyJSONParser).GetMethod( "DecodeList", instanceBindingFlags );
-        private readonly MethodInfo decodeDictionaryMethod = typeof(TinyJSONParser).GetMethod( "DecodeDictionary", instanceBindingFlags );
-        private readonly MethodInfo decodeArrayMethod = typeof(TinyJSONParser).GetMethod( "DecodeArray", instanceBindingFlags );
-        private readonly MethodInfo decodeMultiRankArrayMethod = typeof(TinyJSONParser).GetMethod( "DecodeMultiRankArray", instanceBindingFlags );
+        private readonly MethodInfo decodeTypeMethod;
+        private readonly MethodInfo decodeListMethod;
+        private readonly MethodInfo decodeDictionaryMethod;
+        private readonly MethodInfo decodeArrayMethod;
+        private readonly MethodInfo decodeMultiRankArrayMethod;
 
-        private readonly Type m_EncoderType;
-        private readonly Type m_DecoderType;
 
         public TinyJSONParser()
         {
-            m_EncoderType = typeof(Encoder);
-            m_DecoderType = typeof(Decoder);
+            Type parserType = GetType();
+            decodeTypeMethod = parserType.GetMethod("DecodeType", instanceBindingFlags);
+            decodeListMethod = parserType.GetMethod( "DecodeList", instanceBindingFlags );
+            decodeDictionaryMethod = parserType.GetMethod( "DecodeDictionary", instanceBindingFlags );
+            decodeArrayMethod = parserType.GetMethod( "DecodeArray", instanceBindingFlags );
+            decodeMultiRankArrayMethod = parserType.GetMethod( "DecodeMultiRankArray", instanceBindingFlags );
         }
-
 
         //TODO: Does this need to be public? Docs?
         private Variant Load( string json )
@@ -45,7 +48,7 @@ namespace TinyJSON
                 throw new ArgumentNullException( nameof(json) );
             }
 
-            using (IDecoder decoder = (IDecoder) Activator.CreateInstance(m_DecoderType))
+            using (IDecoder decoder = (IDecoder) Activator.CreateInstance(typeof(TDecoder)))
             {
                 return decoder.Decode(json);
             }
@@ -75,7 +78,7 @@ namespace TinyJSON
                 }
             }
 
-            using (IEncoder encoder = (IEncoder) Activator.CreateInstance(m_EncoderType))
+            using (IEncoder encoder = (IEncoder) Activator.CreateInstance(typeof(TEncoder)))
             {
                 return encoder.Encode( data, options );
             }
@@ -152,8 +155,7 @@ namespace TinyJSON
             return (data == null);
         }
 
-        //TODO: Allow for further assignables like Vector2Int, Vector3Int.
-        private bool DTCheckType<T>(Variant data, Type type, out T decodedType)
+        protected virtual bool DTCheckType<T>(Variant data, Type type, out T decodedType)
         {
             return DTCheckEnum(data, type, out decodedType)
                    || DTCheckConvert(data, type, out decodedType)
@@ -177,9 +179,8 @@ namespace TinyJSON
             return false;
         }
 
-        private bool DTCheckConvert<T>(Variant data, Type type, out T decodedType)
+        protected virtual bool DTCheckConvert<T>(Variant data, Type type, out T decodedType)
         {
-            //TODO: Allow for deriving classes to add to this for convert checks
             if (type.IsPrimitive
                 || type == typeof(string)
                 || type == typeof(decimal)

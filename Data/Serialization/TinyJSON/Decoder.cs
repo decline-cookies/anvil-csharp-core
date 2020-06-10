@@ -5,7 +5,16 @@ using Anvil.CSharp.Data;
 
 namespace TinyJSON
 {
-	public class Decoder : IDecoder
+    public class Decoder : Decoder<ProxyArray, ProxyBoolean, ProxyNumber, ProxyObject, ProxyString>
+    {
+    }
+
+	public class Decoder<TProxyArray, TProxyBoolean, TProxyNumber, TProxyObject, TProxyString> : IDecoder
+        where TProxyArray : ProxyArray, new()
+        where TProxyBoolean : ProxyBoolean
+        where TProxyNumber : ProxyNumber
+        where TProxyObject : ProxyObject, new()
+        where TProxyString : ProxyString
 	{
 		private const string whiteSpace = " \t\n\r";
 		private const string wordBreak = " \t\n\r{}[],:\"";
@@ -28,10 +37,6 @@ namespace TinyJSON
 
 		private StringReader json;
 
-		public Decoder()
-		{
-        }
-
         public void Dispose()
 		{
 			json.Dispose();
@@ -45,9 +50,9 @@ namespace TinyJSON
         }
 
 
-		private ProxyObject DecodeObject()
+		private TProxyObject DecodeObject()
 		{
-			ProxyObject proxy = new ProxyObject();
+			TProxyObject proxy = new TProxyObject();
 
 			// Ditch opening brace.
 			json.Read();
@@ -91,9 +96,9 @@ namespace TinyJSON
 		}
 
 
-		private ProxyArray DecodeArray()
+		private TProxyArray DecodeArray()
 		{
-			ProxyArray proxy = new ProxyArray();
+			TProxyArray proxy = new TProxyArray();
 
 			// Ditch opening bracket.
 			json.Read();
@@ -148,9 +153,9 @@ namespace TinyJSON
                 case Token.OpenBracket:
                     return DecodeArray();
                 case Token.True:
-                    return new ProxyBoolean(true);
+                    return (TProxyBoolean) Activator.CreateInstance(typeof(TProxyBoolean), new []{true});
                 case Token.False:
-                    return new ProxyBoolean(false);
+                    return (TProxyBoolean) Activator.CreateInstance(typeof(TProxyBoolean), new []{false});
                 case Token.Null:
                 default:
                     return null;
@@ -243,14 +248,14 @@ namespace TinyJSON
 				}
 			}
 
-			return new ProxyString( stringBuilder.ToString() );
-		}
+            return (TProxyString) Activator.CreateInstance(typeof(TProxyString), stringBuilder.ToString());
+        }
 
 
         private Variant DecodeNumber()
 		{
-			return new ProxyNumber( NextWord );
-		}
+            return (TProxyNumber) Activator.CreateInstance(typeof(TProxyNumber), NextWord);
+        }
 
 
         private void ConsumeWhiteSpace()

@@ -12,7 +12,7 @@ namespace Anvil.CSharp.Data
             }
         }
 
-        private static IJSONParser s_Parser = new TinyJSONParser();
+        private static IJSONParser s_Parser = new TinyJSONParser<Encoder, Decoder>();
 
         public static string Encode(object data, EncodeOptions options = EncodeOptions.None)
         {
