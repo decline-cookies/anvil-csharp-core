@@ -13,7 +13,7 @@ namespace TinyJSON
         where TEncoder : IEncoder
         where TDecoder : IDecoder
     {
-        public int Priority { get; } = 0;
+        public virtual int Priority { get; } = 0;
 
         private static readonly Type includeAttrType = typeof(Include);
         private static readonly Type excludeAttrType = typeof(Exclude);
@@ -57,27 +57,6 @@ namespace TinyJSON
         //TODO: Docs?
         public string Encode( object data, EncodeOptions options = EncodeOptions.None)
         {
-            // Invoke methods tagged with [BeforeEncode] attribute.
-            if (data != null)
-            {
-                Type type = data.GetType();
-                if (!(type.IsEnum || type.IsPrimitive || type.IsArray))
-                {
-                    foreach (MethodInfo method in type.GetMethods( instanceBindingFlags ))
-                    {
-                        if (!method.GetCustomAttributes(false).AnyOfType(typeof(BeforeEncode)))
-                        {
-                            continue;
-                        }
-
-                        if (method.GetParameters().Length == 0)
-                        {
-                            method.Invoke( data, null );
-                        }
-                    }
-                }
-            }
-
             using (IEncoder encoder = (IEncoder) Activator.CreateInstance(typeof(TEncoder)))
             {
                 return encoder.Encode( data, options );
@@ -127,16 +106,16 @@ namespace TinyJSON
 
         protected virtual T DecodeType<T>( Variant data )
         {
-            if (DTCheckNull(data, out T decodedType))
+            if (DTCheckNull(data, out T decodedData))
             {
-                return decodedType;
+                return decodedData;
             }
 
             Type type = typeof(T);
 
-            if (DTCheckType(data, type, out decodedType))
+            if (DTCheckType(data, type, out decodedData))
             {
-                return decodedType;
+                return decodedData;
             }
 
 			// At this point we should be dealing with a class or struct.
@@ -149,37 +128,37 @@ namespace TinyJSON
 			return instance;
 		}
 
-        private bool DTCheckNull<T>(Variant data, out T decodedType)
+        private bool DTCheckNull<T>(Variant data, out T decodedData)
         {
-            decodedType = default;
+            decodedData = default;
             return (data == null);
         }
 
-        protected virtual bool DTCheckType<T>(Variant data, Type type, out T decodedType)
+        protected virtual bool DTCheckType<T>(Variant data, Type type, out T decodedData)
         {
-            return DTCheckEnum(data, type, out decodedType)
-                   || DTCheckConvert(data, type, out decodedType)
-                   || DTCheckGuid(data, type, out decodedType)
-                   || DTCheckArray(data, type, out decodedType)
-                   || DTCheckAssignableIList(data, type, out decodedType)
-                   || DTCheckAssignableIDictionary(data, type, out decodedType)
-                   || DTCheckNullable(data, type, out decodedType);
+            return DTCheckEnum(data, type, out decodedData)
+                   || DTCheckConvert(data, type, out decodedData)
+                   || DTCheckGuid(data, type, out decodedData)
+                   || DTCheckArray(data, type, out decodedData)
+                   || DTCheckAssignableIList(data, type, out decodedData)
+                   || DTCheckAssignableIDictionary(data, type, out decodedData)
+                   || DTCheckNullable(data, type, out decodedData);
 
         }
 
-        private bool DTCheckEnum<T>(Variant data, Type type, out T decodedType)
+        private bool DTCheckEnum<T>(Variant data, Type type, out T decodedData)
         {
             if (type.IsEnum)
             {
-                decodedType = (T) Enum.Parse( type, data.ToString( CultureInfo.InvariantCulture ) );
+                decodedData = (T) Enum.Parse( type, data.ToString( CultureInfo.InvariantCulture ) );
                 return true;
             }
 
-            decodedType = default;
+            decodedData = default;
             return false;
         }
 
-        protected virtual bool DTCheckConvert<T>(Variant data, Type type, out T decodedType)
+        protected virtual bool DTCheckConvert<T>(Variant data, Type type, out T decodedData)
         {
             if (type.IsPrimitive
                 || type == typeof(string)
@@ -187,34 +166,34 @@ namespace TinyJSON
                 || type == typeof(char)
                 || type == typeof(DateTime))
             {
-                decodedType = (T) Convert.ChangeType( data, type );
+                decodedData = (T) Convert.ChangeType( data, type );
                 return true;
             }
 
-            decodedType = default;
+            decodedData = default;
             return false;
         }
 
-        private bool DTCheckGuid<T>(Variant data, Type type, out T decodedType)
+        private bool DTCheckGuid<T>(Variant data, Type type, out T decodedData)
         {
             if (type == typeof(Guid))
             {
-                decodedType = (T) (object) new Guid( data.ToString( CultureInfo.InvariantCulture ) );
+                decodedData = (T) (object) new Guid( data.ToString( CultureInfo.InvariantCulture ) );
                 return true;
             }
 
-            decodedType = default;
+            decodedData = default;
             return false;
         }
 
-        private bool DTCheckArray<T>(Variant data, Type type, out T decodedType)
+        private bool DTCheckArray<T>(Variant data, Type type, out T decodedData)
         {
             if (type.IsArray)
             {
                 if (type.GetArrayRank() == 1)
                 {
                     MethodInfo decodeArrayMakeFunc = decodeArrayMethod.MakeGenericMethod( type.GetElementType() );
-                    decodedType = (T) decodeArrayMakeFunc.Invoke( null, new object[] { data } );
+                    decodedData = (T) decodeArrayMakeFunc.Invoke( this, new object[] { data } );
                     return true;
                 }
 
@@ -242,58 +221,62 @@ namespace TinyJSON
                 MethodInfo decodeMultiRankMakeFunc = decodeMultiRankArrayMethod.MakeGenericMethod( elementType );
                 try
                 {
-                    decodeMultiRankMakeFunc.Invoke( null, new object[] { arrayData, array, 1, rankLengths } );
+                    decodeMultiRankMakeFunc.Invoke( this, new object[] { arrayData, array, 1, rankLengths } );
                 }
                 catch (Exception e)
                 {
                     throw new DecodeException( "Error decoding multidimensional array. Did you try to decode into an array of incompatible rank or element type?", e );
                 }
 
-                decodedType = (T) Convert.ChangeType( array, typeof(T) );
+                decodedData = (T) Convert.ChangeType( array, typeof(T) );
                 return true;
             }
 
-            decodedType = default;
+            decodedData = default;
             return false;
         }
 
-        private bool DTCheckAssignableIList<T>(Variant data, Type type, out T decodedType)
+        private bool DTCheckAssignableIList<T>(Variant data, Type type, out T decodedData)
         {
             if (typeof(IList).IsAssignableFrom( type ))
             {
-                MethodInfo makeFunc = decodeListMethod.MakeGenericMethod( type.GetGenericArguments() );
-                decodedType = (T) makeFunc.Invoke( null, new object[] { data } );
+                List<Type> typeArgs = new List<Type> {type};
+                typeArgs.AddRange(type.GetGenericArguments());
+                MethodInfo makeFunc = decodeListMethod.MakeGenericMethod( typeArgs.ToArray() );
+                decodedData = (T) makeFunc.Invoke( this, new object[] { data } );
                 return true;
             }
 
-            decodedType = default;
+            decodedData = default;
             return false;
         }
 
-        private bool DTCheckAssignableIDictionary<T>(Variant data, Type type, out T decodedType)
+        private bool DTCheckAssignableIDictionary<T>(Variant data, Type type, out T decodedData)
         {
             if (typeof(IDictionary).IsAssignableFrom( type ))
             {
-                MethodInfo makeFunc = decodeDictionaryMethod.MakeGenericMethod( type.GetGenericArguments() );
-                decodedType = (T) makeFunc.Invoke( null, new object[] { data } );
+                List<Type> typeArgs = new List<Type> {type};
+                typeArgs.AddRange(type.GetGenericArguments());
+                MethodInfo makeFunc = decodeDictionaryMethod.MakeGenericMethod( typeArgs.ToArray() );
+                decodedData = (T) makeFunc.Invoke( this, new object[] { data } );
                 return true;
             }
 
-            decodedType = default;
+            decodedData = default;
             return false;
         }
 
-        private bool DTCheckNullable<T>(Variant data, Type type, out T decodedType)
+        private bool DTCheckNullable<T>(Variant data, Type type, out T decodedData)
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 Type argType = type.GetGenericArguments()[0];
                 MethodInfo makeFunc = decodeTypeMethod.MakeGenericMethod(argType);
-                decodedType = (T) makeFunc.Invoke(null, new object[] {data});
+                decodedData = (T) makeFunc.Invoke(this, new object[] {data});
                 return true;
             }
 
-            decodedType = default;
+            decodedData = default;
             return false;
         }
 
@@ -363,7 +346,7 @@ namespace TinyJSON
         private void DTDecodeInstanceField<T>(FieldInfo field, Type type, string name, Variant data, T instance, MethodInfo decodeConditionalMethod)
         {
             // If the field doesn't exist, search through any [DecodeAlias] or [EncodeName] attributes.
-            if (field == null)
+            if (field == null || Attribute.IsDefined(field, typeof(Exclude)))
             {
                 field = DTCheckFieldCustomAttributes(type, name);
 
@@ -378,9 +361,9 @@ namespace TinyJSON
             {
                 return;
             }
-
+            
             MethodInfo makeFunc = decodeTypeMethod.MakeGenericMethod( field.FieldType );
-            field.SetValue( instance, makeFunc.Invoke( null, new object[] { data } ) );
+            field.SetValue( instance, makeFunc.Invoke( this, new object[] { data } ) );
         }
 
         private FieldInfo DTCheckFieldCustomAttributes(Type type, string name)
@@ -432,7 +415,7 @@ namespace TinyJSON
         private void DTDecodeInstanceProperty<T>(PropertyInfo property, Type type, string name, Variant data, T instance, MethodInfo decodeConditionalMethod)
         {
             // If the property doesn't exist, search through any [DecodeAlias] or [EncodeName] attributes.
-            if (property == null)
+            if (property == null || Attribute.IsDefined(property, typeof(Exclude)))
             {
                 property = DTCheckPropertyCustomAttributes(type, name);
 
@@ -449,7 +432,7 @@ namespace TinyJSON
             }
 
             MethodInfo decodeTypeMakeFunc = decodeTypeMethod.MakeGenericMethod(property.PropertyType);
-            property.SetValue( instance, decodeTypeMakeFunc.Invoke( null, new object[] { data } ), null );
+            property.SetValue( instance, decodeTypeMakeFunc.Invoke( this, new object[] { data } ), null );
         }
 
         private PropertyInfo DTCheckPropertyCustomAttributes(Type type, string name)
@@ -565,32 +548,32 @@ namespace TinyJSON
 		}
 
         // ReSharper disable once InconsistentNaming
-		public virtual void SupportTypeForAOT<T>()
+		public void SupportTypeForAOT<T>()
 		{
 			DecodeType<T>( null );
         }
 
-        public virtual void SupportListTypeForAOT<TList, T>()
+        public void SupportListTypeForAOT<TList, T>()
             where TList : IList<T>, new()
         {
             SupportTypeForAOT<TList>();
             DecodeList<TList, T>(null);
         }
 
-        public virtual void SupportDictionaryTypeForAOT<TDictionary, TKey, TValue>()
+        public void SupportDictionaryTypeForAOT<TDictionary, TKey, TValue>()
             where TDictionary : IDictionary<TKey, TValue>, new()
         {
             SupportTypeForAOT<TDictionary>();
             DecodeDictionary<TDictionary, TKey, TValue>(null);
         }
 
-        public virtual void SupportArrayTypeForAOT<TArray, T>()
+        public void SupportArrayTypeForAOT<TArray, T>()
         {
             SupportTypeForAOT<TArray>();
             DecodeArray<T>(null);
         }
 
-        public virtual void SupportMultiRankArrayTypeForAOT<TArray, T>()
+        public void SupportMultiRankArrayTypeForAOT<TArray, T>()
         {
             SupportTypeForAOT<TArray>();
             DecodeMultiRankArray<T>(null, null, 0, null);

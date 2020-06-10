@@ -206,29 +206,34 @@ namespace TinyJSON
 			return type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 		}
 
-        private MethodInfo CheckForEncodeConditionalMethod(Type type)
+        private void CheckForMethodAttributes(Type type, object value, out MethodInfo encodeConditionalMethod)
         {
+	        encodeConditionalMethod = null;
+	        
             if (type.IsEnum || type.IsPrimitive || type.IsArray)
             {
-                return null;
+                return;
             }
 
             foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (Attribute.IsDefined(method, typeof(EncodeConditional)))
                 {
-                    return method;
+	                encodeConditionalMethod = method;
+                }
+                
+                if (Attribute.IsDefined( method, typeof(BeforeEncode) ))
+                {
+	                method.Invoke( value, null );
                 }
             }
-
-            return null;
         }
 
 		protected void EncodeObject( object value, bool forceTypeHint )
 		{
 			Type type = value.GetType();
 
-            MethodInfo encodeConditionalMethod = CheckForEncodeConditionalMethod(type);
+			CheckForMethodAttributes(type, value, out MethodInfo encodeConditionalMethod);
 
             AppendOpenBrace();
 

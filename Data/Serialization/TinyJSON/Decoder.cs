@@ -153,9 +153,9 @@ namespace TinyJSON
                 case Token.OpenBracket:
                     return DecodeArray();
                 case Token.True:
-                    return (TProxyBoolean) Activator.CreateInstance(typeof(TProxyBoolean), new []{true});
+                    return (TProxyBoolean) Activator.CreateInstance(typeof(TProxyBoolean), new object[]{true});
                 case Token.False:
-                    return (TProxyBoolean) Activator.CreateInstance(typeof(TProxyBoolean), new []{false});
+                    return (TProxyBoolean) Activator.CreateInstance(typeof(TProxyBoolean), new object[]{false});
                 case Token.Null:
                 default:
                     return null;
