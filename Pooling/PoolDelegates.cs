@@ -1,6 +1,8 @@
-﻿namespace Anvil.CSharp.Pooling
+﻿using System.Collections.Generic;
+
+namespace Anvil.CSharp.Pooling
 {
     public delegate T InstanceCreator<out T>();
 
-    public delegate void InstanceDisposer<in T>(T instance);
+    public delegate void InstanceDisposer<T>(List<T> instance);
 }

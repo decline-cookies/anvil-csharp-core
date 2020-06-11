@@ -10,18 +10,47 @@ namespace Anvil.CSharp.Pooling
     {
         public event InstanceDisposer<T> InstanceDisposer;
 
-        private readonly PoolSettings m_Settings;
         private readonly HashSet<T> m_InstanceSet = new HashSet<T>();
+
         private readonly InstanceCreator<T> m_InstanceCreator;
+        private readonly InstanceDisposer<T> m_InstanceDisposer;
+
+        private readonly IGrowthOperator m_GrowthOperator;
+
+        private readonly int m_InitialCount;
+        private readonly int? m_MaxCount;
 
         private int m_InstanceCount;
 
-        public Pool(InstanceCreator<T> instanceCreator, PoolSettings settings = null)
+        public Pool(InstanceCreator<T> instanceCreator,
+            InstanceDisposer<T> instanceDisposer = null,
+            int initialCount = 0,
+            int? maxCount = null,
+            IGrowthOperator growthOperator = null)
         {
             m_InstanceCreator = instanceCreator;
-            m_Settings = settings ?? PoolSettings.DEFAULT;
+            m_InstanceDisposer = instanceDisposer;
 
-            Grow(m_Settings.InitialCount);
+            m_InitialCount = Math.Max(0, initialCount);
+            m_MaxCount = maxCount;
+
+            m_GrowthOperator = growthOperator ?? new MultiplicativeGrowth(2);
+
+            if (m_MaxCount.HasValue)
+            {
+                m_MaxCount = Math.Max(1, m_MaxCount.Value);
+                m_InitialCount = Math.Min(m_MaxCount.Value, m_InitialCount);
+            }
+
+            Grow(m_InitialCount);
+        }
+
+        public void Grow(int step)
+        {
+            for (int i = 0; i < step; i++)
+            {
+                CreateInstance();
+            }
         }
 
         public void Populate(IEnumerable<T> instances)
@@ -64,35 +93,27 @@ namespace Anvil.CSharp.Pooling
 
         private int GetGrowthStep()
         {
-            int growthStep = Math.Max(1, m_Settings.GrowthOperator.CalculateGrowthStep(m_InstanceCount));
+            int growthStep = Math.Max(1, m_GrowthOperator.CalculateGrowthStep(m_InstanceCount));
 
-            if (m_Settings.MaxCount.HasValue)
+            if (m_MaxCount.HasValue)
             {
-                growthStep = Math.Min(growthStep, m_Settings.MaxCount.Value - m_InstanceCount);
+                growthStep = Math.Min(growthStep, m_MaxCount.Value - m_InstanceCount);
 
                 if (growthStep <= 0)
                 {
                     throw new Exception(
-                        $"Failed to increase pool size, max instances ({m_Settings.MaxCount}) already exist!");
+                        $"Failed to increase pool size, max instances ({m_MaxCount}) already exist!");
                 }
             }
 
             return growthStep;
         }
 
-        private void Grow(int step)
-        {
-            for (int i = 0; i < step; i++)
-            {
-                CreateInstance();
-            }
-        }
-
         protected override void DisposeSelf()
         {
-            foreach (T instance in m_InstanceSet)
+            if (InstanceDisposer != null && m_InstanceSet.Any())
             {
-                InstanceDisposer?.Invoke(instance);
+                InstanceDisposer(m_InstanceSet.ToList());
             }
         }
     }
