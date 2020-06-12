@@ -8,8 +8,6 @@ namespace Anvil.CSharp.Pooling
 {
     public class Pool<T> : AbstractAnvilDisposable where T : class
     {
-        public event InstanceDisposer<T> InstanceDisposer;
-
         private readonly HashSet<T> m_InstanceSet = new HashSet<T>();
 
         private readonly InstanceCreator<T> m_InstanceCreator;
@@ -111,9 +109,9 @@ namespace Anvil.CSharp.Pooling
 
         protected override void DisposeSelf()
         {
-            if (InstanceDisposer != null && m_InstanceSet.Any())
+            if (m_InstanceDisposer != null && m_InstanceSet.Any())
             {
-                InstanceDisposer(m_InstanceSet.ToList());
+                m_InstanceDisposer(m_InstanceSet.ToList());
             }
         }
     }
