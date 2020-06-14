@@ -15,7 +15,6 @@ namespace Anvil.CSharp.Pooling
 
         private readonly IGrowthOperator m_GrowthOperator;
 
-        private readonly int m_InitialCount;
         private readonly int? m_MaxCount;
 
         private int m_InstanceCount;
@@ -29,7 +28,7 @@ namespace Anvil.CSharp.Pooling
             m_InstanceCreator = instanceCreator;
             m_InstanceDisposer = instanceDisposer;
 
-            m_InitialCount = Math.Max(0, initialCount);
+            initialCount = Math.Max(0, initialCount);
             m_MaxCount = maxCount;
 
             m_GrowthOperator = growthOperator ?? new MultiplicativeGrowth(2);
@@ -37,17 +36,17 @@ namespace Anvil.CSharp.Pooling
             if (m_MaxCount.HasValue)
             {
                 m_MaxCount = Math.Max(1, m_MaxCount.Value);
-                m_InitialCount = Math.Min(m_MaxCount.Value, m_InitialCount);
+                initialCount = Math.Min(m_MaxCount.Value, initialCount);
             }
 
-            Grow(m_InitialCount);
+            Grow(initialCount);
         }
 
         public void Grow(int step)
         {
             for (int i = 0; i < step; i++)
             {
-                CreateInstance();
+                AddInstance(CreateInstance());
             }
         }
 
@@ -71,22 +70,20 @@ namespace Anvil.CSharp.Pooling
             return instance;
         }
 
-        public void Release(T instance)
-        {
-            AddInstance(instance);
+        public void Release(T instance) => AddInstance(instance);
 
-            // Track the maximum instance count, in case of released instances that were not created by the pool
-            m_InstanceCount = Math.Max(m_InstanceCount, m_InstanceSet.Count);
-        }
-
-        private void CreateInstance()
+        private T CreateInstance()
         {
             m_InstanceCount++;
-            AddInstance(m_InstanceCreator.Invoke());
+            return m_InstanceCreator.Invoke();
         }
 
         private void AddInstance(T instance) {
+            Debug.Assert(instance != null, "Cannot add a null instance to the pool!");
             Debug.Assert(m_InstanceSet.Add(instance), "Instance already exists in pool!");
+
+            // Instance count may increase via Populate() or releasing instances not created by the pool
+            m_InstanceCount = Math.Max(m_InstanceCount, m_InstanceSet.Count);
         }
 
         private int GetGrowthStep()

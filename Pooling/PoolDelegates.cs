@@ -4,5 +4,5 @@ namespace Anvil.CSharp.Pooling
 {
     public delegate T InstanceCreator<out T>();
 
-    public delegate void InstanceDisposer<T>(List<T> instance);
+    public delegate void InstanceDisposer<T>(List<T> instanceList);
 }
