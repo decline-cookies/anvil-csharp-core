@@ -116,8 +116,15 @@ namespace Anvil.CSharp.Pooling
         }
 
         private void AddInstance(T instance) {
-            Debug.Assert(instance != null, "Cannot add a null instance to the pool!");
-            Debug.Assert(m_InstanceSet.Add(instance), "Instance already exists in pool!");
+            if (instance == null)
+            {
+                throw new Exception("Cannot add a null instance to the pool.");
+            }
+
+            if (!m_InstanceSet.Add(instance))
+            {
+                throw new Exception("Instance already exists in pool.");
+            }
 
             // Instance count may increase via Populate() or releasing instances not created by the pool
             m_InstanceCount = Math.Max(m_InstanceCount, m_InstanceSet.Count);
@@ -133,8 +140,7 @@ namespace Anvil.CSharp.Pooling
 
                 if (growthStep <= 0)
                 {
-                    throw new Exception(
-                        $"Failed to increase pool size, max instances ({m_MaxCount}) already exist!");
+                    throw new Exception($"Failed to increase pool size, max instances ({m_MaxCount}) already exist.");
                 }
             }
 
