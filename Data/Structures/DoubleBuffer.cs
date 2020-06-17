@@ -3,9 +3,6 @@
     /// <summary>
     /// A data structure to hold two of the same objects for easy comparision over time.
     /// </summary>
-    /// <remarks>
-    /// Commonly
-    /// </remarks>
     /// <typeparam name="T">The type of object to compare.</typeparam>
     public class DoubleBuffer<T>
         where T:new()
