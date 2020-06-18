@@ -13,7 +13,7 @@ namespace TinyJSON
         where TEncoder : IEncoder
         where TDecoder : IDecoder
     {
-        public virtual int Priority { get; } = 0;
+        public virtual int Priority => 0;
 
         private static readonly Type includeAttrType = typeof(Include);
         private static readonly Type excludeAttrType = typeof(Exclude);
