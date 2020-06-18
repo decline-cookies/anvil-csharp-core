@@ -2,98 +2,72 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 
-
 namespace TinyJSON
 {
-	public sealed class ProxyObject : Variant, IEnumerable<KeyValuePair<string, Variant>>
-	{
-		public const string TypeHintKey = "@type";
-		readonly Dictionary<string, Variant> dict;
+    public class ProxyObject : Variant, IEnumerable<KeyValuePair<string, Variant>>
+    {
+        public const string TypeHintKey = "@type";
+        readonly Dictionary<string, Variant> dict;
 
 
-		public ProxyObject()
-		{
-			dict = new Dictionary<string, Variant>();
-		}
+        public ProxyObject()
+        {
+            dict = new Dictionary<string, Variant>();
+        }
 
 
-		IEnumerator<KeyValuePair<string, Variant>> IEnumerable<KeyValuePair<string, Variant>>.GetEnumerator()
-		{
-			return dict.GetEnumerator();
-		}
+        IEnumerator<KeyValuePair<string, Variant>> IEnumerable<KeyValuePair<string, Variant>>.GetEnumerator()
+        {
+            return dict.GetEnumerator();
+        }
 
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return dict.GetEnumerator();
-		}
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return dict.GetEnumerator();
+        }
 
 
-		public void Add( string key, Variant item )
-		{
-			dict.Add( key, item );
-		}
+        public void Add( string key, Variant item )
+        {
+            dict.Add( key, item );
+        }
 
 
-		public bool TryGetValue( string key, out Variant item )
-		{
-			return dict.TryGetValue( key, out item );
-		}
+        public bool TryGetValue( string key, out Variant item )
+        {
+            return dict.TryGetValue( key, out item );
+        }
 
 
-		public string TypeHint
-		{
-			get
-			{
-				Variant item;
-				if (TryGetValue( TypeHintKey, out item ))
-				{
-					return item.ToString( CultureInfo.InvariantCulture );
-				}
+        public string TypeHint
+        {
+            get
+            {
+                if (TryGetValue( TypeHintKey, out Variant item ))
+                {
+                    return item.ToString( CultureInfo.InvariantCulture );
+                }
 
-				return null;
-			}
-		}
-
-
-		public override Variant this[ string key ]
-		{
-			get
-			{
-				return dict[key];
-			}
-			set
-			{
-				dict[key] = value;
-			}
-		}
+                return null;
+            }
+        }
 
 
-		public int Count
-		{
-			get
-			{
-				return dict.Count;
-			}
-		}
+        public override Variant this[ string key ]
+        {
+            get => dict[key];
+            set => dict[key] = value;
+        }
 
 
-		public Dictionary<string, Variant>.KeyCollection Keys
-		{
-			get
-			{
-				return dict.Keys;
-			}
-		}
+        public int Count => dict.Count;
 
 
-		// ReSharper disable once UnusedMember.Global
-		public Dictionary<string, Variant>.ValueCollection Values
-		{
-			get
-			{
-				return dict.Values;
-			}
-		}
-	}
+        public Dictionary<string, Variant>.KeyCollection Keys => dict.Keys;
+
+
+        // ReSharper disable once UnusedMember.Global
+        public Dictionary<string, Variant>.ValueCollection Values => dict.Values;
+    }
 }

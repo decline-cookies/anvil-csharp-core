@@ -12,8 +12,8 @@ namespace Anvil.CSharp.Data
         /// Default <see cref="EncodeOptions"/> set to <see cref="EncodeOptions.PrettyPrint"/>
         /// This allows for easy human reading and seeing changes in a diff nicely.
         /// </summary>
-        public const EncodeOptions DEFAULT_ENCODE_OPTIONS = EncodeOptions.PrettyPrint;
-        
+        public const EncodeOptions DEFAULT_ENCODE_OPTIONS = EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints;
+
         /// <summary>
         /// Converts the VO to a JSON string representation.
         /// </summary>
@@ -21,7 +21,7 @@ namespace Anvil.CSharp.Data
         /// <returns>A JSON string representing the VO</returns>
         public string ToJSON(EncodeOptions encodeOptions = DEFAULT_ENCODE_OPTIONS)
         {
-            return JSON.Dump(this, encodeOptions);
+            return JSON.Encode(this, encodeOptions);
         }
     }
 }
