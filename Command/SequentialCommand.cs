@@ -58,12 +58,12 @@ namespace Anvil.CSharp.Command
         /// <param name="index">The index for when the command should be executed.</param>
         /// <param name="childCommand">The <see cref="{T}"/> to insert into the collection.</param>
         /// <returns>The <see cref="AbstractCollectionCommand"/> the child was inserted into. Useful for method chaining.</returns>
-        /// <exception cref="Exception">Occurs when the <see cref="State"/> is not CommandState.Initialized</exception>
+        /// <exception cref="InvalidOperationException">Occurs when the <see cref="State"/> is not <see cref="CommandState.Initialized"/></exception>
         public SequentialCommand<T> InsertChild(int index, T childCommand)
         {
             if (State != CommandState.Initialized)
             {
-                throw new Exception($"Tried to insert child command {childCommand} to {this} but State was {State} instead of Initialized!");
+                throw new InvalidOperationException($"Tried to insert child command {childCommand} to {this} but State was {State} instead of Initialized!");
             }
 
             m_ChildCommands.Insert(index, childCommand);

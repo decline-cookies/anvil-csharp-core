@@ -86,12 +86,11 @@ namespace Anvil.CSharp.Command
         /// <summary>
         /// <inheritdoc cref="ICommand.Execute"/>
         /// </summary>
-        /// <exception cref="Exception">Occurs when the <see cref="State"/> is not CommandState.Initialized</exception>
-        public void Execute()
+        /// <exception cref="InvalidOperationException">Occurs when the <see cref="State"/> is not <see cref="CommandState.Initialized"/></exception>
         {
             if (State != CommandState.Initialized)
             {
-                throw new Exception($"Tired to call {nameof(Execute)} on {this} but State was {State} instead of {CommandState.Initialized}!");
+                throw new InvalidOperationException($"Tired to call {nameof(Execute)} on {this} but State was {State} instead of {CommandState.Initialized}!");
             }
 
             State = CommandState.Executing;
@@ -106,12 +105,12 @@ namespace Anvil.CSharp.Command
         /// <summary>
         /// Call when the command is complete. Command will auto dispose after dispatching <see cref="OnComplete"/>
         /// </summary>
-        /// <exception cref="Exception">Occurs when <see cref="State"/> is not CommandState.Executing</exception>
+        /// <exception cref="InvalidOperationException">Occurs when <see cref="State"/> is not <see cref="CommandState.Executing"/></exception>
         protected void CompleteCommand()
         {
             if (State != CommandState.Executing)
             {
-                throw new Exception($"Tried to call {nameof(CompleteCommand)} on {this} but State was {State} instead of {CommandState.Executing}!");
+                throw new InvalidOperationException($"Tried to call {nameof(CompleteCommand)} on {this} but State was {State} instead of {CommandState.Executing}!");
             }
             State = CommandState.Completed;
             DispatchOnComplete();

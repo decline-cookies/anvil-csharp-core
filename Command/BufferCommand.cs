@@ -30,6 +30,7 @@ namespace Anvil.CSharp.Command
         /// <see cref="BufferCommand"/> will throw an <see cref="NotSupportedException"/> if the
         /// OnComplete event is subscribed to.
         /// </summary>
+        /// <exception cref="NotSupportedException">Always thrown.</exception>
         [Obsolete("Buffer Commands are designed to never complete!", true)]
         public new event Action<BufferCommand<T>> OnComplete
         {
@@ -53,7 +54,6 @@ namespace Anvil.CSharp.Command
         /// </summary>
         public BufferCommand()
         {
-
         }
 
         /// <summary>
@@ -126,6 +126,7 @@ namespace Anvil.CSharp.Command
             {
                 childCommand.Dispose();
             }
+
             m_ChildCommands.Clear();
         }
 
@@ -137,6 +138,7 @@ namespace Anvil.CSharp.Command
             {
                 return;
             }
+
             ExecuteNextChildCommandInBuffer();
         }
 
