@@ -1,3 +1,4 @@
+using Anvil.CSharp.Core;
 using System;
 
 namespace Anvil.CSharp.Command
@@ -7,7 +8,7 @@ namespace Anvil.CSharp.Command
     /// Interface for the concept of a Command in the Anvil Framework.
     /// A Command provides the flow for executing a discrete piece of logic and will dispose itself once complete.
     /// </summary>
-    public interface ICommand : IDisposable
+    public interface ICommand : IAnvilDisposable
     {
         /// <summary>
         /// Dispatches when the Command is complete.
