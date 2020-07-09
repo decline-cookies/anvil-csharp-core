@@ -34,7 +34,7 @@ namespace Anvil.CSharp.Command
         /// </summary>
         /// <param name="childCommand">The <see cref="{TChild}"/> to add to the collection.</param>
         /// <returns>The <see cref="AbstractCollectionCommand{T}"/> the child was added to. Useful for method chaining.</returns>
-        /// <exception cref="InvalidOperationException">Occurs when the <see cref="State"/> is not <see cref="cref="CommandState.Initialized"/></exception>
+        /// <exception cref="InvalidOperationException">Occurs when the <see cref="State"/> is not <see cref="CommandState.Initialized"/></exception>
         public T AddChild(TChild childCommand)
         {
             if (State != CommandState.Initialized)
