@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Anvil.CSharp.Command
 {
@@ -38,7 +39,7 @@ namespace Anvil.CSharp.Command
             remove => throw new NotSupportedException($"Buffer Commands are designed to never complete!");
         }
 
-        private readonly Queue<T> m_ChildCommands = new Queue<T>();
+        protected readonly Queue<T> m_ChildCommands = new Queue<T>();
 
         /// <summary>
         /// The currently executing child command.
@@ -152,9 +153,13 @@ namespace Anvil.CSharp.Command
 
         private void ChildCommand_OnComplete(ICommand childCommand)
         {
+            Debug.Assert(childCommand == m_ChildCommands.Peek());
+            Debug.Assert(CurrentChild == childCommand);
+
             childCommand.OnComplete -= ChildCommand_OnComplete;
 
             m_ChildCommands.Dequeue();
+            
             CurrentChild = null;
 
             if (m_ChildCommands.Count > 0)
