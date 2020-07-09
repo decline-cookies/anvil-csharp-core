@@ -90,7 +90,7 @@ namespace Anvil.CSharp.Command
         {
             if (State != CommandState.Initialized)
             {
-                throw new InvalidOperationException($"Tired to call {nameof(Execute)} on {this} but State was {State} instead of {CommandState.Initialized}!");
+                throw new InvalidOperationException($"Tried to call {nameof(Execute)} on {this} but State was {State} instead of {CommandState.Initialized}!");
             }
 
             State = CommandState.Executing;
