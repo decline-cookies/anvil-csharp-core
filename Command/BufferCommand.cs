@@ -40,14 +40,14 @@ namespace Anvil.CSharp.Command
         }
 
         protected readonly Queue<T> m_ChildCommands = new Queue<T>();
+        protected T m_CurrentChild;
 
         /// <summary>
         /// The currently executing child command.
         /// </summary>
         public T CurrentChild
         {
-            get;
-            private set;
+            get => m_CurrentChild;
         }
 
         /// <summary>
@@ -145,22 +145,22 @@ namespace Anvil.CSharp.Command
 
         private void ExecuteNextChildCommandInBuffer()
         {
-            CurrentChild = m_ChildCommands.Peek();
+            m_CurrentChild = m_ChildCommands.Peek();
 
-            CurrentChild.OnComplete += ChildCommand_OnComplete;
-            CurrentChild.Execute();
+            m_CurrentChild.OnComplete += ChildCommand_OnComplete;
+            m_CurrentChild.Execute();
         }
 
         private void ChildCommand_OnComplete(ICommand childCommand)
         {
             Debug.Assert(childCommand == m_ChildCommands.Peek());
-            Debug.Assert(CurrentChild == childCommand);
+            Debug.Assert(m_CurrentChild == childCommand);
 
             childCommand.OnComplete -= ChildCommand_OnComplete;
 
             m_ChildCommands.Dequeue();
-            
-            CurrentChild = null;
+
+            m_CurrentChild = null;
 
             if (m_ChildCommands.Count > 0)
             {
