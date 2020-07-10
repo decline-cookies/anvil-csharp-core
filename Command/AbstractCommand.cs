@@ -71,7 +71,7 @@ namespace Anvil.CSharp.Command
         /// Should only be set by abstract commands that need to modify expected command flow.
         /// Ex: <see cref="AbstractCancelableCommand{T}"/>
         /// </summary>
-        public CommandState State { get; internal set; } = CommandState.Initialized;
+        public CommandState State { get; private protected set; } = CommandState.Initialized;
 
         protected AbstractCommand()
         {
