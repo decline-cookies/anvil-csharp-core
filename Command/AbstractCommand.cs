@@ -116,6 +116,7 @@ namespace Anvil.CSharp.Command
             {
                 throw new InvalidOperationException($"Tried to call {nameof(CompleteCommand)} on {this} but State was {State} instead of {CommandState.Executing}!");
             }
+
             State = CommandState.Completed;
             DispatchOnComplete();
             Dispose();

@@ -1,7 +1,7 @@
 namespace Anvil.CSharp.Command
 {
     /// <summary>
-    /// An implementation of <see cref="ICancelableCommand"/> based off of <see cref="AbstractCancelableCommand{T}"/>.
+    /// An implementation of <see cref="ICancelableCommand"/> based off of <see cref="AbstractCommand{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICancelableCommand"/> to use.</typeparam>
     public abstract class AbstractCancelableCommand<T> : AbstractCommand<T>, ICancelableCommand where T : AbstractCancelableCommand<T>
@@ -54,7 +54,7 @@ namespace Anvil.CSharp.Command
         /// <summary>
         /// Gracefully cancel execution.
         /// Only called if command was executing when <see cref="Cancel"/> was called.
-        /// Remeber to call <see cref="AbstractCommand.CompleteCommand"/> when finished cancelling!
+        /// Remember to call <see cref="AbstractCommand.CompleteCommand"/> when finished cancelling!
         /// </summary>
         protected abstract void CancelCommand();
     }
