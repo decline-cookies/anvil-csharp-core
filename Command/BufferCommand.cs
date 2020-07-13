@@ -40,6 +40,13 @@ namespace Anvil.CSharp.Command
         }
 
         protected readonly Queue<T> m_ChildCommands = new Queue<T>();
+        /// <summary>
+        /// The currently executing child command
+        /// </summary>
+        /// <remarks>
+        /// Do not set outside of <see cref="BufferCommand"/>. This should only be used for direct access optimisation
+        /// to circumvent <see cref="CurrentChild"/> getter overhead.
+        /// </remarks>
         protected T m_CurrentChild;
 
         /// <summary>
