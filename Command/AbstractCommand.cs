@@ -90,13 +90,18 @@ namespace Anvil.CSharp.Command
         /// </summary>
         /// <remarks>Do not implement command logic here. Use <see cref="ExecuteCommand"/></remarks>
         /// <exception cref="InvalidOperationException">Occurs when the <see cref="State"/> is not <see cref="CommandState.Initialized"/></exception>
-        public virtual void Execute()
+        public void Execute()
         {
             if (State != CommandState.Initialized)
             {
                 throw new InvalidOperationException($"Tried to call {nameof(Execute)} on {this} but State was {State} instead of {CommandState.Initialized}!");
             }
 
+            ExecuteInternal();
+        }
+
+        private protected virtual void ExecuteInternal()
+        {
             State = CommandState.Executing;
             ExecuteCommand();
         }

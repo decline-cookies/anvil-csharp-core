@@ -17,20 +17,18 @@ namespace Anvil.CSharp.Command
             base.DisposeSelf();
         }
 
-        /// <summary>
-        /// <inheritdoc cref="AbstractCommand.Execute"/>
-        /// </summary>
-        public override void Execute()
+        private protected override void ExecuteInternal()
         {
             // If the command has been cancelled skip execution and go straight to complete
-            if(State == CommandState.Initialized && WasCancelled)
+            if (State == CommandState.Initialized && WasCancelled)
             {
                 State = CommandState.Executing;
                 CompleteCommand();
-                return;
             }
-
-            base.Execute();
+            else
+            {
+                base.ExecuteInternal();
+            }
         }
 
         /// <summary>
