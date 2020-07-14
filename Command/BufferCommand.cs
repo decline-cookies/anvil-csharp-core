@@ -44,7 +44,7 @@ namespace Anvil.CSharp.Command
         /// The currently executing child command
         /// </summary>
         /// <remarks>
-        /// Do not set outside of <see cref="BufferCommand"/>. This should only be used for direct access optimisation
+        /// Do not set outside of <see cref="BufferCommand"/>. This should only be used for direct access optimization
         /// to circumvent <see cref="CurrentChild"/> getter overhead.
         /// </remarks>
         protected T m_CurrentChild;
