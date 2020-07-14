@@ -68,8 +68,10 @@ namespace Anvil.CSharp.Command
 
         /// <summary>
         /// <inheritdoc cref="ICommand.State"/>
+        /// Should only be set by abstract commands that need to modify expected command flow.
+        /// Ex: <see cref="AbstractCancelableCommand{T}"/>
         /// </summary>
-        public CommandState State { get; private set; } = CommandState.Initialized;
+        public CommandState State { get; private protected set; } = CommandState.Initialized;
 
         protected AbstractCommand()
         {
@@ -86,13 +88,20 @@ namespace Anvil.CSharp.Command
         /// <summary>
         /// <inheritdoc cref="ICommand.Execute"/>
         /// </summary>
+        /// <remarks>Do not implement command logic here. Use <see cref="ExecuteCommand"/></remarks>
         /// <exception cref="InvalidOperationException">Occurs when the <see cref="State"/> is not <see cref="CommandState.Initialized"/></exception>
+        public void Execute()
         {
             if (State != CommandState.Initialized)
             {
                 throw new InvalidOperationException($"Tried to call {nameof(Execute)} on {this} but State was {State} instead of {CommandState.Initialized}!");
             }
 
+            ExecuteInternal();
+        }
+
+        private protected virtual void ExecuteInternal()
+        {
             State = CommandState.Executing;
             ExecuteCommand();
         }
@@ -112,6 +121,7 @@ namespace Anvil.CSharp.Command
             {
                 throw new InvalidOperationException($"Tried to call {nameof(CompleteCommand)} on {this} but State was {State} instead of {CommandState.Executing}!");
             }
+
             State = CommandState.Completed;
             DispatchOnComplete();
             Dispose();

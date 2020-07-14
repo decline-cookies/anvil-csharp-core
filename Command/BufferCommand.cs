@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Anvil.CSharp.Command
 {
@@ -38,15 +39,22 @@ namespace Anvil.CSharp.Command
             remove => throw new NotSupportedException($"Buffer Commands are designed to never complete!");
         }
 
-        private readonly Queue<T> m_ChildCommands = new Queue<T>();
+        protected readonly Queue<T> m_ChildCommands = new Queue<T>();
+        /// <summary>
+        /// The currently executing child command
+        /// </summary>
+        /// <remarks>
+        /// Do not set outside of <see cref="BufferCommand"/>. This should only be used for direct access optimization
+        /// to circumvent <see cref="CurrentChild"/> getter overhead.
+        /// </remarks>
+        protected T m_CurrentChild;
 
         /// <summary>
         /// The currently executing child command.
         /// </summary>
         public T CurrentChild
         {
-            get;
-            private set;
+            get => m_CurrentChild;
         }
 
         /// <summary>
@@ -144,18 +152,22 @@ namespace Anvil.CSharp.Command
 
         private void ExecuteNextChildCommandInBuffer()
         {
-            CurrentChild = m_ChildCommands.Peek();
+            m_CurrentChild = m_ChildCommands.Peek();
 
-            CurrentChild.OnComplete += ChildCommand_OnComplete;
-            CurrentChild.Execute();
+            m_CurrentChild.OnComplete += ChildCommand_OnComplete;
+            m_CurrentChild.Execute();
         }
 
         private void ChildCommand_OnComplete(ICommand childCommand)
         {
+            Debug.Assert(childCommand == m_ChildCommands.Peek());
+            Debug.Assert(m_CurrentChild == childCommand);
+
             childCommand.OnComplete -= ChildCommand_OnComplete;
 
             m_ChildCommands.Dequeue();
-            CurrentChild = null;
+
+            m_CurrentChild = null;
 
             if (m_ChildCommands.Count > 0)
             {
