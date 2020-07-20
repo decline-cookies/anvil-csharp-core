@@ -22,7 +22,7 @@ namespace Anvil.CSharp.Command
         where T:class, ICommand
     {
         /// <summary>
-        /// Dispatches when the <see cref="BufferCommand"/> is idle and not executing any commands and has none left in
+        /// Dispatches when the <see cref="BufferCommand"/> is idle, not executing any commands and has none left in
         /// the buffer. It is able to accept more commands at any time.
         /// </summary>
         public event Action<BufferCommand<T>> OnBufferIdle;
@@ -56,6 +56,12 @@ namespace Anvil.CSharp.Command
         {
             get => m_CurrentChild;
         }
+
+        /// <summary>
+        /// Is true when the <see cref="BufferCommand"/> is idle, not executing any commands and has none left in
+        /// the buffer. It is able to accept more commands at any time.
+        /// </summary>
+        public bool IsBufferIdle { get; private set; } = true;
 
         /// <summary>
         /// Creates a new instance of a <see cref="BufferCommand"/> that is initially empty.
@@ -152,6 +158,7 @@ namespace Anvil.CSharp.Command
 
         private void ExecuteNextChildCommandInBuffer()
         {
+            IsBufferIdle = false;
             m_CurrentChild = m_ChildCommands.Peek();
 
             m_CurrentChild.OnComplete += ChildCommand_OnComplete;
@@ -176,6 +183,7 @@ namespace Anvil.CSharp.Command
             else
             {
                 OnBufferIdle?.Invoke(this);
+                IsBufferIdle = true;
             }
         }
     }
