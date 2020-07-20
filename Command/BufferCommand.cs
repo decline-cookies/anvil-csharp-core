@@ -182,8 +182,8 @@ namespace Anvil.CSharp.Command
             }
             else
             {
-                OnBufferIdle?.Invoke(this);
                 IsBufferIdle = true;
+                OnBufferIdle?.Invoke(this);
             }
         }
     }
