@@ -96,9 +96,16 @@ namespace Anvil.CSharp.Pooling
                 Grow(GetGrowthStep());
             }
 
-            T instance = m_InstanceSet.First();
-            m_InstanceSet.Remove(instance);
-            return instance;
+            //This does what m_InstanceSet.First() would do but without the GC Alloc.
+            T acquiredInstance = null;
+            foreach (T instance in m_InstanceSet)
+            {
+                m_InstanceSet.Remove(instance);
+                acquiredInstance = instance;
+                break;
+            }
+
+            return acquiredInstance;
         }
 
         /// <summary>
