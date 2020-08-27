@@ -100,10 +100,11 @@ namespace Anvil.CSharp.Pooling
             T acquiredInstance = null;
             foreach (T instance in m_InstanceSet)
             {
-                m_InstanceSet.Remove(instance);
                 acquiredInstance = instance;
                 break;
             }
+
+            m_InstanceSet.Remove(acquiredInstance);
 
             return acquiredInstance;
         }
