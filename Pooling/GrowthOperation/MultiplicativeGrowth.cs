@@ -1,4 +1,5 @@
 ﻿using System;
+using Anvil.CSharp.Logging;
 
 namespace Anvil.CSharp.Pooling
 {
@@ -15,7 +16,7 @@ namespace Anvil.CSharp.Pooling
         {
             if (multiplier < 1)
             {
-                Console.Error.WriteLine($"Multiplier must not be less than one: {multiplier}. Setting to 1.");
+                Log.Error($"Multiplier must not be less than one: {multiplier}. Setting to 1.");
                 multiplier = 1;
             }
 

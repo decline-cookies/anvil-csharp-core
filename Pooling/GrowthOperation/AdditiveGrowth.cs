@@ -1,4 +1,5 @@
 ﻿using System;
+using Anvil.CSharp.Logging;
 
 namespace Anvil.CSharp.Pooling
 {
@@ -15,7 +16,7 @@ namespace Anvil.CSharp.Pooling
         {
             if (step <= 0)
             {
-                Console.Error.WriteLine($"Step must be greater than zero: {step}. Setting to 1");
+                Log.Error($"Step must be greater than zero: {step}. Setting to 1");
                 step = 1;
             }
             GrowthStep = step;
