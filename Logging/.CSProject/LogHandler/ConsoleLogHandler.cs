@@ -2,6 +2,7 @@
 
 namespace Anvil.CSharp.Logging
 {
+    [DefaultLogHandler(priority: 0)]
     public class ConsoleLogHandler : ILogHandler
     {
         public void HandleLog(LogLevel level, string message)
