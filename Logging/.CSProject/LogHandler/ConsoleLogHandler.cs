@@ -2,9 +2,14 @@
 
 namespace Anvil.CSharp.Logging
 {
-    [DefaultLogHandler(priority: 0)]
+    /// <summary>
+    /// Forwards logs to System.Console.
+    /// </summary>
+    [DefaultLogHandler(PRIORITY)]
     public class ConsoleLogHandler : ILogHandler
     {
+        public const int PRIORITY = 0;
+
         public void HandleLog(LogLevel level, string message)
         {
             switch (level)
