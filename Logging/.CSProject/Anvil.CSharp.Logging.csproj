@@ -43,7 +43,6 @@
     <Compile Include="Log.cs" />
     <Compile Include="LogHandler\ConsoleLogHandler.cs" />
     <Compile Include="LogHandler\ILogHandler.cs" />
-    <Compile Include="LogHandler\FileLogHandler.cs" />
     <Compile Include="LogLevel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

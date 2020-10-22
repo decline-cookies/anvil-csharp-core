@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
+using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Logging
 {
     /// <summary>
     /// Forwards logs to a given text file.
     /// </summary>
-    public class FileLogHandler : ILogHandler, IDisposable
+    public class FileLogHandler : AbstractAnvilDisposable, ILogHandler
     {
         private readonly StreamWriter m_Writer;
 
@@ -40,7 +41,7 @@ namespace Anvil.CSharp.Logging
             };
         }
 
-        public void Dispose()
+        protected override void DisposeSelf()
         {
             m_Writer.Dispose();
         }
