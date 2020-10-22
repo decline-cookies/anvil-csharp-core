@@ -6,7 +6,7 @@ namespace Anvil.CSharp.Logging
     /// <summary>
     /// Forwards logs to a given text file.
     /// </summary>
-    public class FileLogHandler : ILogHandler
+    public class FileLogHandler : ILogHandler, IDisposable
     {
         private readonly StreamWriter m_Writer;
 
@@ -38,6 +38,11 @@ namespace Anvil.CSharp.Logging
             {
                 AutoFlush = true
             };
+        }
+
+        public void Dispose()
+        {
+            m_Writer.Dispose();
         }
 
         public void HandleLog(LogLevel level, string message)
