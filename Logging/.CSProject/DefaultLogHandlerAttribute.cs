@@ -9,11 +9,8 @@ namespace Anvil.CSharp.Logging
     [AttributeUsage(AttributeTargets.Class)]
     public class DefaultLogHandlerAttribute : Attribute
     {
-        public int Priority { get; }
+        public uint Priority { get; }
 
-        public DefaultLogHandlerAttribute(int priority)
-        {
-            Priority = priority;
-        }
+        public DefaultLogHandlerAttribute(uint priority) => Priority = priority;
     }
 }
