@@ -43,7 +43,7 @@ namespace Anvil.CSharp.Logging
             bool ShouldIgnore(Assembly assembly)
             {
                 string name = assembly.GetName().Name;
-                return IGNORE_ASSEMBLIES.Any(ignore => name == ignore || name.StartsWith(ignore));
+                return IGNORE_ASSEMBLIES.Any(ignore => name == ignore || name.StartsWith($"{ignore}."));
             }
         }
 
