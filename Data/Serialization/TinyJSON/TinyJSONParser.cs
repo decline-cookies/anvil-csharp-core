@@ -393,7 +393,7 @@ namespace TinyJSON
                     shouldDecode = false;
                 }
 
-                if (includeAttrType.IsInstanceOfType( attribute ))
+                if (includeAttrType.IsInstanceOfType( attribute ) || decodeAliasAttrType.IsInstanceOfType(attribute))
                 {
                     shouldDecode = true;
                 }
