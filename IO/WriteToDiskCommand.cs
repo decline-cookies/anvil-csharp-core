@@ -21,7 +21,6 @@ namespace Anvil.IO
 
         private readonly string m_Path;
         private readonly byte[] m_Data;
-        private readonly CancellationTokenSource m_CancellationTokenSource;
 
         private FileStream m_FileStream;
 
@@ -29,12 +28,10 @@ namespace Anvil.IO
         {
             m_Path = path;
             m_Data = data;
-            m_CancellationTokenSource = new CancellationTokenSource();
         }
 
         protected override void DisposeSelf()
         {
-            m_CancellationTokenSource.Dispose();
             m_FileStream?.Dispose();
             
             base.DisposeSelf();
@@ -60,7 +57,7 @@ namespace Anvil.IO
 
             try
             {
-                await m_FileStream.WriteAsync(m_Data, 0, totalBytes, m_CancellationTokenSource.Token);
+                await m_FileStream.WriteAsync(m_Data, 0, totalBytes);
             }
             catch (Exception e)
             {
