@@ -45,6 +45,11 @@ namespace Anvil.CSharp.Logging
                 string name = assembly.GetName().Name;
                 return IGNORE_ASSEMBLIES.Any(ignore => name == ignore || name.StartsWith($"{ignore}."));
             }
+
+            if (IGNORE_ASSEMBLIES.Any())
+            {
+                Debug($"Default logger search ignoring assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
+            }
         }
 
         /// <summary>
