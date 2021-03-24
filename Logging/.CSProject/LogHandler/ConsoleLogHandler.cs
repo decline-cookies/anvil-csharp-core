@@ -8,7 +8,7 @@ namespace Anvil.CSharp.Logging
     [DefaultLogHandler(PRIORITY)]
     public class ConsoleLogHandler : ILogHandler
     {
-        public const int PRIORITY = 0;
+        public const uint PRIORITY = 0;
 
         public void HandleLog(LogLevel level, string message)
         {
@@ -22,7 +22,7 @@ namespace Anvil.CSharp.Logging
                     Console.Error.WriteLine(message);
                     break;
                 default:
-                    throw new ArgumentException($"Unhandled log level: {level}");
+                    throw new NotImplementedException($"Unhandled log level: {level}");
             }
         }
     }
