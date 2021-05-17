@@ -7,7 +7,7 @@ namespace Anvil.CSharp.Debugging
     /// A collection of convenient checks to make it easier/clearner for developers to assert
     /// complex conditions.
     /// </summary>
-    public static class Assertion
+    public static class AssertUtil
     {
         /// <summary>
         /// Returns true if the executing method is being called by a method with the provided name.
