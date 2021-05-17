@@ -116,6 +116,20 @@ namespace Anvil.CSharp.Pooling
         /// <exception cref="Exception">Thrown if the instance given is already in the pool.</exception>
         public void Release(T instance) => AddInstance(instance);
 
+        /// <summary>
+        /// Returns a collection of <see cref="T"/> instances to the pool.
+        /// </summary>
+        /// <param name="instances">A collection of instances of <see cref="T"/> to return to the pool.</param>
+        /// <exception cref="Exception">Thrown if the instance given is null.</exception>
+        /// <exception cref="Exception">Thrown if the instance given is already in the pool.</exception>
+        public void Release(IEnumerable<T> instances)
+        {
+            foreach(T instance in instances)
+            {
+                Release(instance);
+            }
+        }
+
         private T CreateInstance()
         {
             m_InstanceCount++;
