@@ -6,15 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Anvil.CSharp.Logging">
-      <HintPath>Logging\Anvil.CSharp.Logging.dll</HintPath>
-    </Reference>
+    <None Remove="Logging\Anvil.CSharp.Logging.dll" />
+    <None Remove="Logging\Anvil.CSharp.Logging.pdb" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Logging\Anvil.CSharp.Logging.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="Logging\.CSProject\Anvil.CSharp.Logging.csproj" />
   </ItemGroup>
 
 </Project>
