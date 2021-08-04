@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>anvil_csharp_core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Anvil.CSharp.Logging">
+      <HintPath>Logging\Anvil.CSharp.Logging.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Logging\Anvil.CSharp.Logging.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
