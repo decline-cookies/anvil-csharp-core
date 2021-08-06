@@ -51,3 +51,4 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 bin
+Logging/anvil-csharp-logging.deps.json
