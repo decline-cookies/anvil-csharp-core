@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "anvil-csharp-logging/1.0.0": {
+        "runtime": {
+          "anvil-csharp-logging.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "anvil-csharp-logging/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

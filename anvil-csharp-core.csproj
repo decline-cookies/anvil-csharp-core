@@ -6,12 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Logging\Anvil.CSharp.Logging.dll" />
-    <None Remove="Logging\Anvil.CSharp.Logging.pdb" />
+    <None Remove="Logging\anvil-csharp-logging.dll" />
+    <None Remove="Logging\anvil-csharp-logging.pdb" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="Logging\.CSProject\Anvil.CSharp.Logging.csproj" />
+    <ProjectReference Include="Logging\.CSProject\anvil-csharp-logging.csproj" />
   </ItemGroup>
 
 </Project>
