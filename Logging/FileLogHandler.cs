@@ -13,9 +13,15 @@ namespace Anvil.CSharp.Logging
 
         /// <summary>
         /// Indicates whether to prefix logs with a timestamp.
-        /// Example: 12:34:56
+        /// The format is dictated by <see cref="TimestampFormat"/>
         /// </summary>
         public bool IncludeTimestamp { get; set; } = true;
+
+        /// <summary>
+        /// Defines the format of the timestamp written to the log
+        /// Default: HH:mm:ss(Ex: 12:34:56)
+        /// </summary>
+        public string TimestampFormat { get; set; } = "HH:mm:ss";
 
         /// <summary>
         /// Indicates whether to prefix logs with a symbol indicating their severity.
@@ -60,7 +66,7 @@ namespace Anvil.CSharp.Logging
 
             if (IncludeTimestamp)
             {
-                message = $"{DateTime.Now:HH:mm:ss} {message}";
+                message = $"{DateTime.Now.ToString(TimestampFormat)} {message}";
             }
 
             m_Writer.WriteLine(message);
