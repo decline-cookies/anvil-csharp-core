@@ -15,8 +15,6 @@ namespace Anvil.CSharp.Logging
             "System", "mscorlib", "Unity", "UnityEngine", "UnityEditor", "nunit"
         };
 
-        private static readonly ILogHandler DEFAULT_HANDLER;
-
         private static readonly HashSet<ILogHandler> s_AdditionalHandlerList = new HashSet<ILogHandler>();
 
         static Log()
@@ -38,7 +36,7 @@ namespace Anvil.CSharp.Logging
                 throw new Exception($"Default log handler {defaultLogHandlerType} does not implement {nameof(ILogHandler)}");
             }
 
-            DEFAULT_HANDLER = (ILogHandler)Activator.CreateInstance(defaultLogHandlerType);
+            AddHandler((ILogHandler)Activator.CreateInstance(defaultLogHandlerType));
 
             bool ShouldIgnore(Assembly assembly)
             {
@@ -66,6 +64,11 @@ namespace Anvil.CSharp.Logging
         /// <param name="handler">The log handler to remove.</param>
         /// <returns>Returns whether the handler was successfully removed.</returns>
         public static bool RemoveHandler(ILogHandler handler) => s_AdditionalHandlerList.Remove(handler);
+
+        /// <summary>
+        /// Removes all log handlers including any default handlers.
+        /// </summary>
+        public static void RemoveAllHandlers() => s_AdditionalHandlerList.Clear();
 
         /// <summary>
         /// Logs a message.
@@ -108,8 +111,6 @@ namespace Anvil.CSharp.Logging
 
         private static void DispatchLog(LogLevel level, string message)
         {
-            DEFAULT_HANDLER.HandleLog(level, message);
-
             foreach (ILogHandler handler in s_AdditionalHandlerList)
             {
                 handler.HandleLog(level, message);
