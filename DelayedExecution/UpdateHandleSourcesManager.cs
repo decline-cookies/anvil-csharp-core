@@ -20,7 +20,7 @@ namespace Anvil.CSharp.DelayedExecution
         {
             if (!s_UpdateSources.ContainsKey(sourceType))
             {
-                AbstractUpdateSource updateSource = (AbstractUpdateSource)Activator.CreateInstance(sourceType);
+                AbstractUpdateSource updateSource = (AbstractUpdateSource)Activator.CreateInstance(sourceType, true);
                 s_UpdateSources[sourceType] = updateSource;
             }
 
