@@ -109,6 +109,22 @@ namespace Anvil.CSharp.Logging
         /// <param name="args">The format arguments.</param>
         public static void ErrorFormat(string format, params object[] args) => Error(string.Format(format, args));
 
+        /// <summary>
+        /// Logs a formatted message to the level provided.
+        /// </summary>
+        /// <param name="level">The level to log at.</param>
+        /// <param name="format">A format string.</param>
+        /// <param name="args">The format arguments.</param>
+        public static void AtLevel(LogLevel level, string format, params object[] args) => AtLevel(level, string.Format(format, args));
+
+        /// <summary>
+        /// Logs a message to the level provided.
+        /// </summary>
+        /// <param name="level">The level to log at.</param>
+        /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
+        public static void AtLevel(LogLevel level, object message) => DispatchLog(level, $"{message}");
+
+
         private static void DispatchLog(LogLevel level, string message)
         {
             foreach (ILogHandler handler in s_AdditionalHandlerList)
