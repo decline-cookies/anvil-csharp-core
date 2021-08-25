@@ -201,7 +201,7 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void CallAfterHandle_OnDisposing(CallAfterHandle callAfterHandle)
         {
-            Debug.Assert(!m_CallAfterHandles.ContainsKey(callAfterHandle.ID), $"Tried to remove Call After Handle with ID {callAfterHandle.ID} but it didn't exist in the lookup!");
+            Debug.Assert(m_CallAfterHandles.ContainsKey(callAfterHandle.ID), $"Tried to remove Call After Handle with ID {callAfterHandle.ID} but it didn't exist in the lookup!");
 
             m_CallAfterHandles.Remove(callAfterHandle.ID);
             ValidateUpdateSourceHook();
