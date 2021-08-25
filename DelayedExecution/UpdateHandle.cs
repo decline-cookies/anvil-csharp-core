@@ -23,7 +23,10 @@ namespace Anvil.CSharp.DelayedExecution
 
         private const uint CALL_AFTER_HANDLE_INITIAL_ID = 0;
 
-
+        /// <summary>
+        /// A <see cref="DeltaProvider"/> that provides a fixed delta of 1.
+        /// </summary>
+        public static readonly DeltaProvider FixedDeltaProvider = () => 1f;
 
         /// <summary>
         /// Convenience method for creation of an UpdateHandle
@@ -144,33 +147,49 @@ namespace Anvil.CSharp.DelayedExecution
         }
 
         /// <summary>
-        /// Calls a specific function later on in the future via <see cref="CallAfterHandle"/>.
+        /// Calls the provided callback after an arbitrary delta (usually time) via a <see cref="CallAfterHandle"/>.
+        /// Delta is measured on each <see cref="OnUpdate"/> tick and the callback is called if the aggregated delta is >= the targetDelta.
         /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
         /// </summary>
         /// <remarks>
-        /// CallAfterHandles operate on floats but can easily be used to call after a certain amount of "frames".
-        /// Simply pass in whole numbers (1.0f, 2.0f, etc) and use a <see cref="DeltaProvider"/> function that returns
-        /// whole numbers to represent "frames".
+        /// CallAfterHandles operate usually operate on delta time but can easily be used to call after any type of delta. 
+        /// Example: <see cref="CallAfterUpdates(int, Action, uint)"/> is a convenience method that calls after a 
+        /// number of updates (usually frames).
         /// </remarks>
-        /// <param name="targetTime">The amount of time to wait until firing the callback function.</param>
+        /// <param name="targetDelta">The amount of delta (usually time) to wait until firing the callback function.</param>
         /// <param name="callback">The callback function to fire</param>
-        /// <param name="deltaTimeProvider">A <see cref="DeltaProvider"/> function to allow the
-        /// <see cref="CallAfterHandle"/></param> to calculate the amount of time that has passed each time this
-        /// <see cref="UpdateHandle"/>'s Update event fires.
+        /// <param name="deltaProvider">A <see cref="DeltaProvider"/> function to allow the <see cref="CallAfterHandle"/>
+        ///  to calculate the amount of delta that has passed each between <see cref="OnUpdate"/> calls from this
+        /// <see cref="UpdateHandle"/>.</param>
         /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
         /// <see cref="CALL_AFTER_DEFAULT_CALL_LIMIT"/></param>
         /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
-        public CallAfterHandle CallAfter(float targetTime, Action callback, DeltaProvider deltaTimeProvider, uint repeatCount = CALL_AFTER_DEFAULT_CALL_LIMIT)
+        public CallAfterHandle CallAfter(float targetDelta, Action callback, DeltaProvider deltaProvider, uint repeatCount = CALL_AFTER_DEFAULT_CALL_LIMIT)
         {
             CallAfterHandle callAfterHandle = new CallAfterHandle(GetNextCallAfterHandleID(),
                 callback,
-                targetTime,
-                deltaTimeProvider,
+                targetDelta,
+                deltaProvider,
                 repeatCount);
 
             FinalizeHandle(callAfterHandle);
 
             return callAfterHandle;
+        }
+
+        /// <summary>
+        /// Calls the provided callback after a number of <see cref="OnUpdate"/> ticks.
+        /// This is a convenience wrapper for <see cref="CallAfter(float, Action, DeltaProvider, uint)"/>
+        /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
+        /// </summary>
+        /// <param name="updateCount">The number of <see cref="OnUpdate"/> ticks before the callback is fired.</param>
+        /// <param name="callback">The callback function to fire.</param>
+        /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
+        /// <see cref="CALL_AFTER_DEFAULT_CALL_LIMIT"/></param>
+        /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
+        public CallAfterHandle CallAfterUpdates(int updateCount, Action callback, uint repeatCount = CALL_AFTER_DEFAULT_CALL_LIMIT)
+        {
+            return CallAfter(updateCount, callback, FixedDeltaProvider, repeatCount);
         }
 
         private void FinalizeHandle(CallAfterHandle callAfterHandle)
