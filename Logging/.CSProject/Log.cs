@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Anvil.CSharp.Logging
 {
@@ -74,40 +75,51 @@ namespace Anvil.CSharp.Logging
         /// Logs a message.
         /// </summary>
         /// <param name="message">The message object to log. The object is converting to a log by ToString().</param>
-        public static void Debug(object message) => DispatchLog(LogLevel.Debug, $"{message}");
-
-        /// <summary>
-        /// Logs a formatted message.
-        /// </summary>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void DebugFormat(string format, params object[] args) => Debug(string.Format(format, args));
+        public static void Debug(
+            object message, 
+            [CallerFilePath]string callerPath = "", 
+            [CallerMemberName]string callerName="", 
+            [CallerLineNumber]int callerLine=0
+            ) => DispatchLog(
+                LogLevel.Debug,
+                (string)message,
+                callerPath,
+                callerName,
+                callerLine);
 
         /// <summary>
         /// Logs a warning message.
         /// </summary>
         /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void Warning(object message) => DispatchLog(LogLevel.Warning, $"{message}");
-
-        /// <summary>
-        /// Logs a formatted warning message.
-        /// </summary>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void WarningFormat(string format, params object[] args) => Warning(string.Format(format, args));
+        public static void Warning(
+            object message,
+            [CallerFilePath] string callerPath = "",
+            [CallerMemberName] string callerName = "",
+            [CallerLineNumber] int callerLine = 0
+            ) => DispatchLog(
+                LogLevel.Warning,
+                (string)message,
+                callerPath,
+                callerName,
+                callerLine
+                );
 
         /// <summary>
         /// Logs an error message.
         /// </summary>
         /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void Error(object message) => DispatchLog(LogLevel.Error, $"{message}");
-
-        /// <summary>
-        /// Logs a formatted error message.
-        /// </summary>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void ErrorFormat(string format, params object[] args) => Error(string.Format(format, args));
+        public static void Error(
+            object message,
+            [CallerFilePath] string callerPath = "",
+            [CallerMemberName] string callerName = "",
+            [CallerLineNumber] int callerLine = 0
+            ) => DispatchLog(
+                LogLevel.Error,
+                (string)message,
+                callerPath,
+                callerName,
+                callerLine
+                );
 
         /// <summary>
         /// Logs a formatted message to the level provided.
@@ -122,14 +134,34 @@ namespace Anvil.CSharp.Logging
         /// </summary>
         /// <param name="level">The level to log at.</param>
         /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void AtLevel(LogLevel level, object message) => DispatchLog(level, $"{message}");
+        public static void AtLevel(
+            LogLevel level, 
+            object message,
+            [CallerFilePath] string callerPath = "",
+            [CallerMemberName] string callerName = "",
+            [CallerLineNumber] int callerLine = 0
+            ) => DispatchLog(
+                level,
+                (string)message,
+                callerPath,
+                callerName,
+                callerLine);
 
 
-        private static void DispatchLog(LogLevel level, string message)
+        private static void DispatchLog(
+            LogLevel level,
+            string message,
+            string callerPath,
+            string callerName,
+            int callerLine)
         {
             foreach (ILogHandler handler in s_AdditionalHandlerList)
             {
-                handler.HandleLog(level, message);
+                handler.HandleLog(level,
+                message,
+                callerPath,
+                callerName,
+                callerLine);
             }
         }
     }

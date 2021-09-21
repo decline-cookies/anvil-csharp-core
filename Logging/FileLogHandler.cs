@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Logging
@@ -52,24 +53,23 @@ namespace Anvil.CSharp.Logging
             m_Writer.Dispose();
         }
 
-        public void HandleLog(LogLevel level, string message)
+        public void HandleLog(
+            LogLevel level, 
+            string message,
+            string callerPath,
+            string callerName,
+            int callerLine)
         {
             if ((int)level < (int)MinimumLevel)
             {
                 return;
             }
 
-            if (IncludeLogLevel)
-            {
-                message = $"[{level.ToString()[0]}] {message}";
-            }
+            string timestamp = IncludeTimestamp ? $"{DateTime.Now.ToString(TimestampFormat)} " : string.Empty;
+            string logLevel = IncludeLogLevel ? $"[{level.ToString()[0]}] " : string.Empty;
+            string context = $"({Path.GetFileNameWithoutExtension(callerPath)}|{callerName}:{callerLine}) ";
 
-            if (IncludeTimestamp)
-            {
-                message = $"{DateTime.Now.ToString(TimestampFormat)} {message}";
-            }
-
-            m_Writer.WriteLine(message);
+            m_Writer.WriteLine($"{timestamp}{logLevel}{context}{message}");
         }
     }
 }
