@@ -76,6 +76,7 @@ namespace Anvil.CSharp.Logging
         /// </summary>
         /// <param name="message">The message object to log. The object is converting to a log by ToString().</param>
         public static void Debug(
+            object callerInstance,
             object message, 
             [CallerFilePath]string callerPath = "", 
             [CallerMemberName]string callerName="", 
@@ -83,6 +84,7 @@ namespace Anvil.CSharp.Logging
             ) => DispatchLog(
                 LogLevel.Debug,
                 (string)message,
+                callerInstance,
                 callerPath,
                 callerName,
                 callerLine);
@@ -151,6 +153,7 @@ namespace Anvil.CSharp.Logging
         private static void DispatchLog(
             LogLevel level,
             string message,
+            object callerInstance,
             string callerPath,
             string callerName,
             int callerLine)
@@ -159,6 +162,7 @@ namespace Anvil.CSharp.Logging
             {
                 handler.HandleLog(level,
                 message,
+                callerInstance,
                 callerPath,
                 callerName,
                 callerLine);
