@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,92 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public static class Log
     {
+        public readonly struct Logger
+        {
+            private readonly string m_DerivedTypeName;
+            
+            public Logger(Type type)
+            {
+                m_DerivedTypeName = type.Name;
+            }
+            public Logger(in object instance)
+            {
+                m_DerivedTypeName = instance.GetType().Name;
+            }
+
+            /// <summary>
+            /// Logs a message.
+            /// </summary>
+            /// <param name="message">The message object to log. The object is converting to a log by ToString().</param>
+            public void Debug(
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    LogLevel.Debug,
+                    (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine);
+
+            /// <summary>
+            /// Logs a warning message.
+            /// </summary>
+            /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
+            public void Warning(
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    LogLevel.Warning,
+                    (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine
+                    );
+
+            /// <summary>
+            /// Logs an error message.
+            /// </summary>
+            /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
+            public void Error(
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    LogLevel.Error,
+                    (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine
+                    );
+
+            /// <summary>
+            /// Logs a message to the level provided.
+            /// </summary>
+            /// <param name="level">The level to log at.</param>
+            /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
+            public void AtLevel(
+                LogLevel level,
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    level,
+                    (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine);
+        }
+
         private static readonly string[] IGNORE_ASSEMBLIES =
         {
             "System", "mscorlib", "Unity", "UnityEngine", "UnityEditor", "nunit"
@@ -47,7 +134,7 @@ namespace Anvil.CSharp.Logging
 
             if (IGNORE_ASSEMBLIES.Any())
             {
-                Debug($"Default logger search ignoring assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
+                GetStaticLogger(typeof(Log)).Debug($"Default logger search ignoring assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
             }
         }
 
@@ -71,98 +158,30 @@ namespace Anvil.CSharp.Logging
         /// </summary>
         public static void RemoveAllHandlers() => s_AdditionalHandlerList.Clear();
 
-        /// <summary>
-        /// Logs a message.
-        /// </summary>
-        /// <param name="message">The message object to log. The object is converting to a log by ToString().</param>
-        public static void Debug(
-            object callerInstance,
-            object message, 
-            [CallerFilePath]string callerPath = "", 
-            [CallerMemberName]string callerName="", 
-            [CallerLineNumber]int callerLine=0
-            ) => DispatchLog(
-                LogLevel.Debug,
-                (string)message,
-                callerInstance,
-                callerPath,
-                callerName,
-                callerLine);
+        public static Logger GetStaticLogger(Type type)
+        {
+            return new Logger(type);
+        }
 
-        /// <summary>
-        /// Logs a warning message.
-        /// </summary>
-        /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void Warning(
-            object message,
-            [CallerFilePath] string callerPath = "",
-            [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
-            ) => DispatchLog(
-                LogLevel.Warning,
-                (string)message,
-                callerPath,
-                callerName,
-                callerLine
-                );
-
-        /// <summary>
-        /// Logs an error message.
-        /// </summary>
-        /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void Error(
-            object message,
-            [CallerFilePath] string callerPath = "",
-            [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
-            ) => DispatchLog(
-                LogLevel.Error,
-                (string)message,
-                callerPath,
-                callerName,
-                callerLine
-                );
-
-        /// <summary>
-        /// Logs a formatted message to the level provided.
-        /// </summary>
-        /// <param name="level">The level to log at.</param>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void AtLevel(LogLevel level, string format, params object[] args) => AtLevel(level, string.Format(format, args));
-
-        /// <summary>
-        /// Logs a message to the level provided.
-        /// </summary>
-        /// <param name="level">The level to log at.</param>
-        /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void AtLevel(
-            LogLevel level, 
-            object message,
-            [CallerFilePath] string callerPath = "",
-            [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
-            ) => DispatchLog(
-                level,
-                (string)message,
-                callerPath,
-                callerName,
-                callerLine);
-
+        public static Logger GetLogger(in object instance)
+        {
+            return new Logger(in instance);
+        }
 
         private static void DispatchLog(
             LogLevel level,
             string message,
-            object callerInstance,
+            string callerDerivedTypeName,
             string callerPath,
             string callerName,
             int callerLine)
         {
+            Debug.Assert(!string.IsNullOrEmpty(callerDerivedTypeName));
             foreach (ILogHandler handler in s_AdditionalHandlerList)
             {
                 handler.HandleLog(level,
                 message,
-                callerInstance,
+                callerDerivedTypeName,
                 callerPath,
                 callerName,
                 callerLine);

@@ -10,9 +10,10 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public class FileLogHandler : AbstractAnvilDisposable, ILogHandler
     {
-        public const string LOG_CONTEXT_CALLER_FILE = "{0}";
-        public const string LOG_CONTEXT_CALLER_METHOD = "{1}";
-        public const string LOG_CONTEXT_CALLER_LINE = "{2}";
+        public const string LOG_CONTEXT_CALLER_DERIVED_TYPE = "{0}";
+        public const string LOG_CONTEXT_CALLER_FILE = "{1}";
+        public const string LOG_CONTEXT_CALLER_METHOD = "{2}";
+        public const string LOG_CONTEXT_CALLER_LINE = "{3}";
 
         private readonly StreamWriter m_Writer;
 
@@ -37,6 +38,7 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Defines the format of the context added to log messages.
         /// The following wraped in {} are substituted at runtime
+        ///  - <see cref="LOG_CONTEXT_CALLER_DERIVED_TYPE"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_FILE"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_METHOD"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_LINE"/>
@@ -75,6 +77,7 @@ namespace Anvil.CSharp.Logging
         public void HandleLog(
             LogLevel level,
             string message,
+            string callerDerivedTypeName,
             string callerPath,
             string callerName,
             int callerLine)
@@ -88,7 +91,10 @@ namespace Anvil.CSharp.Logging
             string logLevel = IncludeLogLevel ? $"[{level.ToString()[0]}] " : string.Empty;
 
             string filename = Path.GetFileNameWithoutExtension(callerPath);
-            string context = string.Format(LogContextFormat, filename, callerName, callerLine);
+            string context = string.Format(
+                LogContextFormat, 
+                callerDerivedTypeName, filename, callerName, callerLine
+                );
 
             m_Writer.WriteLine($"{timestamp}{logLevel}{context}{message}");
         }

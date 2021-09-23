@@ -14,6 +14,7 @@ namespace Anvil.CSharp.Logging
         public void HandleLog(
             LogLevel level, 
             string message,
+            string callerDerivedTypeName,
             string callerPath,
             string callerName,
             int callerLine)
