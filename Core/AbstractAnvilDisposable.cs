@@ -27,6 +27,7 @@ namespace Anvil.CSharp.Core
         protected Log.Logger m_Logger
         {
             get => m_InternalLogger ??= Log.GetLogger(this);
+            set => m_InternalLogger = value;
         }
 
         /// <summary>
