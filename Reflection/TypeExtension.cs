@@ -16,5 +16,19 @@
         {
             return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
+
+        /// <summary>
+        /// Determine whether a type represents a static class.
+        /// </summary>
+        /// <param name="type">The type to check if it's static</param>
+        /// <returns>True if the class is static</returns>
+        /// <remarks>
+        /// This works because a static class is defined as abstract, sealed at the IL level
+        /// Source: https://stackoverflow.com/a/1175901/640196
+        /// </remarks>
+        public static bool isStatic(this Type type)
+        {
+            return type.IsAbstract && type.IsSealed;
+        }
     }
 }
