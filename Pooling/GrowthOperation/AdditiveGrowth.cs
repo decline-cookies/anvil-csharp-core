@@ -16,7 +16,7 @@ namespace Anvil.CSharp.Pooling
         {
             if (step <= 0)
             {
-                Log.Error($"Step must be greater than zero: {step}. Setting to 1");
+                Log.GetLogger(this).Error($"Step must be greater than zero: {step}. Setting to 1");
                 step = 1;
             }
             GrowthStep = step;
