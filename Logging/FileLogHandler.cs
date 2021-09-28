@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Logging
@@ -7,8 +8,13 @@ namespace Anvil.CSharp.Logging
     /// <summary>
     /// Forwards logs to a given text file.
     /// </summary>
-    public class FileLogHandler : AbstractAnvilDisposable, ILogHandler
+    public class FileLogHandler : AbstractAnvilBase, ILogHandler
     {
+        public const string LOG_CONTEXT_CALLER_DERIVED_TYPE = "{0}";
+        public const string LOG_CONTEXT_CALLER_FILE = "{1}";
+        public const string LOG_CONTEXT_CALLER_METHOD = "{2}";
+        public const string LOG_CONTEXT_CALLER_LINE = "{3}";
+
         private readonly StreamWriter m_Writer;
 
         /// <summary>
@@ -25,9 +31,25 @@ namespace Anvil.CSharp.Logging
 
         /// <summary>
         /// Indicates whether to prefix logs with a symbol indicating their severity.
-        /// Example: [D]
         /// </summary>
+        /// <example>[D]</example>
         public bool IncludeLogLevel { get; set; } = true;
+
+        /// <summary>
+        /// Defines the format of the context added to log messages.
+        /// The following wraped in {} are substituted at runtime
+        ///  - <see cref="LOG_CONTEXT_CALLER_DERIVED_TYPE"/>
+        ///  - <see cref="LOG_CONTEXT_CALLER_FILE"/>
+        ///  - <see cref="LOG_CONTEXT_CALLER_METHOD"/>
+        ///  - <see cref="LOG_CONTEXT_CALLER_LINE"/>
+        ///
+        /// Default: "({LOG_CONTEXT_CALLER_FILE}|{LOG_CONTEXT_CALLER_METHOD}:{LOG_CONTEXT_CALLER_LINE}) "
+        /// </summary>
+        /// <example>
+        /// The default format produces "(MyFile|MyCallingMethod:12) " for a log issued in the
+        /// file "MyFile" from method "MyCallingMethod" on line "12".
+        /// </example>
+        public string LogContextFormat { get; set; } = $"({LOG_CONTEXT_CALLER_FILE}|{LOG_CONTEXT_CALLER_METHOD}:{LOG_CONTEXT_CALLER_LINE}) ";
 
         /// <summary>
         /// Indicates the minimum message severity to handle. Logs below this level are ignored.
@@ -52,24 +74,29 @@ namespace Anvil.CSharp.Logging
             m_Writer.Dispose();
         }
 
-        public void HandleLog(LogLevel level, string message)
+        public void HandleLog(
+            LogLevel level,
+            string message,
+            string callerDerivedTypeName,
+            string callerPath,
+            string callerName,
+            int callerLine)
         {
             if ((int)level < (int)MinimumLevel)
             {
                 return;
             }
 
-            if (IncludeLogLevel)
-            {
-                message = $"[{level.ToString()[0]}] {message}";
-            }
+            string timestamp = IncludeTimestamp ? $"{DateTime.Now.ToString(TimestampFormat)} " : string.Empty;
+            string logLevel = IncludeLogLevel ? $"[{level.ToString()[0]}] " : string.Empty;
 
-            if (IncludeTimestamp)
-            {
-                message = $"{DateTime.Now.ToString(TimestampFormat)} {message}";
-            }
+            string filename = Path.GetFileNameWithoutExtension(callerPath);
+            string context = string.Format(
+                LogContextFormat, 
+                callerDerivedTypeName, filename, callerName, callerLine
+                );
 
-            m_Writer.WriteLine(message);
+            m_Writer.WriteLine($"{timestamp}{logLevel}{context}{message}");
         }
     }
 }

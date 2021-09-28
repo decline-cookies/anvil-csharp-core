@@ -54,7 +54,7 @@ namespace Anvil.CSharp.Command
     /// <summary>
     /// Concrete implementation of <see cref="ICommand"/>
     /// </summary>
-    public abstract class AbstractCommand : AbstractAnvilDisposable, ICommand
+    public abstract class AbstractCommand : AbstractAnvilBase, ICommand
     {
         /// <summary>
         /// <inheritdoc cref="ICommand.OnComplete"/>

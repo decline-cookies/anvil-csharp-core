@@ -10,7 +10,7 @@ namespace Anvil.CSharp.DelayedExecution
     /// for an "Update Loop" and allows the calling of specific functions later on in the future
     /// via <see cref="CallAfterHandle"/>
     /// </summary>
-    public class UpdateHandle : AbstractAnvilDisposable
+    public class UpdateHandle : AbstractAnvilBase
     {
         /// <summary>
         /// Use with <see cref="UpdateHandle.CallAfter"/> to allow a CallAfterHandle to repeat indefinitely.

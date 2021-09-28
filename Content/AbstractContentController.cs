@@ -33,7 +33,7 @@ namespace Anvil.CSharp.Content
     /// The Controller class for a given piece of content. Contains the logic and is instantiated before the
     /// <see cref="IContent"/> exists.
     /// </summary>
-    public abstract class AbstractContentController : AbstractAnvilDisposable
+    public abstract class AbstractContentController : AbstractAnvilBase
     {
         /// <summary>
         /// Dispatched before loading of the Content and any required assets starts.

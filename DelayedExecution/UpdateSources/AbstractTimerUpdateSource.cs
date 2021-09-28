@@ -47,13 +47,13 @@ namespace Anvil.CSharp.DelayedExecution
             base.DisposeSelf();
         }
 
-        private static void WarnIfInvalidInterval(int interval)
+        private void WarnIfInvalidInterval(int interval)
         {
             // Update interval less than 15ms will not work as expected.
             // https://docs.microsoft.com/en-us/dotnet/api/system.threading.timer?view=net-5.0#remarks
             if (interval < 15)
             {
-                Log.Warning($"Intervals less than 15ms will not work reliably. Consider using ({nameof(AbstractThreadSleepUpdateSource)})\n See https://docs.microsoft.com/en-us/dotnet/api/system.threading.timer?view=net-5.0#remarks");
+                Logger.Warning($"Intervals less than 15ms will not work reliably. Consider using ({nameof(AbstractThreadSleepUpdateSource)})\n See https://docs.microsoft.com/en-us/dotnet/api/system.threading.timer?view=net-5.0#remarks");
             }
         }
 

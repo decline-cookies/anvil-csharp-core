@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Anvil.CSharp.Logging
 {
@@ -10,6 +12,93 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public static class Log
     {
+        public readonly struct Logger
+        {
+            private readonly string m_DerivedTypeName;
+            private readonly string m_MessagePrefix;
+
+            public Logger(Type type, string messagePrefix = null) : this(type.Name, messagePrefix) { }
+            public Logger(in object instance, string messagePrefix = null) : this(instance.GetType().Name, messagePrefix) { }
+
+            private Logger(string derivedTypeName, string messagePrefix)
+            {
+                m_DerivedTypeName = derivedTypeName;
+                m_MessagePrefix = messagePrefix;
+            }
+
+            /// <summary>
+            /// Logs a message.
+            /// </summary>
+            /// <param name="message">The message object to log. The object is converting to a log by ToString().</param>
+            public void Debug(
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    LogLevel.Debug,
+                    m_MessagePrefix + (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine);
+
+            /// <summary>
+            /// Logs a warning message.
+            /// </summary>
+            /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
+            public void Warning(
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    LogLevel.Warning,
+                    m_MessagePrefix + (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine
+                    );
+
+            /// <summary>
+            /// Logs an error message.
+            /// </summary>
+            /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
+            public void Error(
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    LogLevel.Error,
+                    m_MessagePrefix + (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine
+                    );
+
+            /// <summary>
+            /// Logs a message to the level provided.
+            /// </summary>
+            /// <param name="level">The level to log at.</param>
+            /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
+            public void AtLevel(
+                LogLevel level,
+                object message,
+                [CallerFilePath] string callerPath = "",
+                [CallerMemberName] string callerName = "",
+                [CallerLineNumber] int callerLine = 0
+                ) => DispatchLog(
+                    level,
+                    m_MessagePrefix + (string)message,
+                    m_DerivedTypeName,
+                    callerPath,
+                    callerName,
+                    callerLine);
+        }
+
         private static readonly string[] IGNORE_ASSEMBLIES =
         {
             "System", "mscorlib", "Unity", "UnityEngine", "UnityEditor", "nunit"
@@ -46,7 +135,7 @@ namespace Anvil.CSharp.Logging
 
             if (IGNORE_ASSEMBLIES.Any())
             {
-                Debug($"Default logger search ignoring assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
+                GetStaticLogger(typeof(Log)).Debug($"Default logger search ignoring assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
             }
         }
 
@@ -70,66 +159,33 @@ namespace Anvil.CSharp.Logging
         /// </summary>
         public static void RemoveAllHandlers() => s_AdditionalHandlerList.Clear();
 
-        /// <summary>
-        /// Logs a message.
-        /// </summary>
-        /// <param name="message">The message object to log. The object is converting to a log by ToString().</param>
-        public static void Debug(object message) => DispatchLog(LogLevel.Debug, $"{message}");
-
-        /// <summary>
-        /// Logs a formatted message.
-        /// </summary>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void DebugFormat(string format, params object[] args) => Debug(string.Format(format, args));
-
-        /// <summary>
-        /// Logs a warning message.
-        /// </summary>
-        /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void Warning(object message) => DispatchLog(LogLevel.Warning, $"{message}");
-
-        /// <summary>
-        /// Logs a formatted warning message.
-        /// </summary>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void WarningFormat(string format, params object[] args) => Warning(string.Format(format, args));
-
-        /// <summary>
-        /// Logs an error message.
-        /// </summary>
-        /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void Error(object message) => DispatchLog(LogLevel.Error, $"{message}");
-
-        /// <summary>
-        /// Logs a formatted error message.
-        /// </summary>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void ErrorFormat(string format, params object[] args) => Error(string.Format(format, args));
-
-        /// <summary>
-        /// Logs a formatted message to the level provided.
-        /// </summary>
-        /// <param name="level">The level to log at.</param>
-        /// <param name="format">A format string.</param>
-        /// <param name="args">The format arguments.</param>
-        public static void AtLevel(LogLevel level, string format, params object[] args) => AtLevel(level, string.Format(format, args));
-
-        /// <summary>
-        /// Logs a message to the level provided.
-        /// </summary>
-        /// <param name="level">The level to log at.</param>
-        /// <param name="message">The message object to log. The object is converted to a log by ToString().</param>
-        public static void AtLevel(LogLevel level, object message) => DispatchLog(level, $"{message}");
-
-
-        private static void DispatchLog(LogLevel level, string message)
+        public static Logger GetStaticLogger(Type type, string messagePrefix = null)
         {
+            return new Logger(type, messagePrefix);
+        }
+
+        public static Logger GetLogger(in object instance, string messagePrefix = null)
+        {
+            return new Logger(in instance, messagePrefix);
+        }
+
+        private static void DispatchLog(
+            LogLevel level,
+            string message,
+            string callerDerivedTypeName,
+            string callerPath,
+            string callerName,
+            int callerLine)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(callerDerivedTypeName));
             foreach (ILogHandler handler in s_AdditionalHandlerList)
             {
-                handler.HandleLog(level, message);
+                handler.HandleLog(level,
+                message,
+                callerDerivedTypeName,
+                callerPath,
+                callerName,
+                callerLine);
             }
         }
     }

@@ -8,7 +8,7 @@ namespace Anvil.CSharp.DelayedExecution
     /// Encapsulates a function that will be called later at some point in the future.
     /// <see cref="UpdateHandle.CallAfter"/> for usage.
     /// </summary>
-    public class CallAfterHandle : AbstractAnvilDisposable
+    public class CallAfterHandle : AbstractAnvilBase
     {
         /// <summary>
         /// Dispatched whenever this CallAfterHandle is disposing so that the owning <see cref="UpdateHandle"/>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Anvil.CSharp.Logging
 {
@@ -10,8 +11,16 @@ namespace Anvil.CSharp.Logging
     {
         public const uint PRIORITY = 0;
 
-        public void HandleLog(LogLevel level, string message)
+        public void HandleLog(
+            LogLevel level, 
+            string message,
+            string callerDerivedTypeName,
+            string callerPath,
+            string callerName,
+            int callerLine)
         {
+            message = $"({Path.GetFileNameWithoutExtension(callerPath)}|{callerName}:{callerLine}) {message}";
+
             switch (level)
             {
                 case LogLevel.Debug:

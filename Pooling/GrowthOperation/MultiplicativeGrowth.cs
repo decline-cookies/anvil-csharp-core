@@ -16,7 +16,7 @@ namespace Anvil.CSharp.Pooling
         {
             if (multiplier < 1)
             {
-                Log.Error($"Multiplier must not be less than one: {multiplier}. Setting to 1.");
+                Log.GetLogger(this).Error($"Multiplier must not be less than one: {multiplier}. Setting to 1.");
                 multiplier = 1;
             }
 

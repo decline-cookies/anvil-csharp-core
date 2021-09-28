@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Anvil.CSharp.Logging;
+using System;
 
 namespace Anvil.CSharp.Core
 {
@@ -6,7 +7,7 @@ namespace Anvil.CSharp.Core
     /// The base class for anything disposable in the Anvil Framework.
     /// Adds some convenience flow and functionality for <see cref="IAnvilDisposable"/> implementations.
     /// </summary>
-    public abstract class AbstractAnvilDisposable : IAnvilDisposable
+    public abstract class AbstractAnvilBase : IAnvilDisposable
     {
         /// <summary>
         /// <inheritdoc cref="IAnvilDisposable.IsDisposed"/>
@@ -17,7 +18,18 @@ namespace Anvil.CSharp.Core
         /// <inheritdoc cref="IAnvilDisposable.IsDisposing"/>
         /// </summary>
         public bool IsDisposing { get; private set; }
-        
+
+        private Log.Logger? m_Logger;
+        /// <summary>
+        /// Returns a <see cref="Log.Logger"/> for this instance to emit log messages with.
+        /// Lazy instantiated.
+        /// </summary>
+        protected Log.Logger Logger
+        {
+            get => m_Logger ??= Log.GetLogger(this);
+            set => m_Logger = value;
+        }
+
         /// <summary>
         /// <inheritdoc cref="IDisposable.Dispose"/>
         /// Will early return if <see cref="IsDisposed"/> or <see cref="IsDisposing"/> is true.
