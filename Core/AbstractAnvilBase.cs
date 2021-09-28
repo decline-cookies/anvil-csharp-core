@@ -7,7 +7,7 @@ namespace Anvil.CSharp.Core
     /// The base class for anything disposable in the Anvil Framework.
     /// Adds some convenience flow and functionality for <see cref="IAnvilDisposable"/> implementations.
     /// </summary>
-    public abstract class AbstractAnvilDisposable : IAnvilDisposable
+    public abstract class AbstractAnvilBase : IAnvilDisposable
     {
         /// <summary>
         /// <inheritdoc cref="IAnvilDisposable.IsDisposed"/>

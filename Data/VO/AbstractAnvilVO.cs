@@ -6,7 +6,7 @@ namespace Anvil.CSharp.Data
     /// <summary>
     /// The base class for all VO data structures in the Anvil Framework
     /// </summary>
-    public abstract class AbstractAnvilVO : AbstractAnvilDisposable
+    public abstract class AbstractAnvilVO : AbstractAnvilBase
     {
         /// <summary>
         /// Default <see cref="EncodeOptions"/> set to <see cref="EncodeOptions.PrettyPrint"/>

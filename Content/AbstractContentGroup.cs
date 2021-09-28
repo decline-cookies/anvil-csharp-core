@@ -8,7 +8,7 @@ namespace Anvil.CSharp.Content
     /// A logical group of <see cref="AbstractContentController"/>/<see cref="IContent"/> pairs to be shown.
     /// Many <see cref="AbstractContentGroup"/> can be added to the controlling <see cref="AbstractContentManager"/>.
     /// </summary>
-    public abstract class AbstractContentGroup: AbstractAnvilDisposable
+    public abstract class AbstractContentGroup: AbstractAnvilBase
     {
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnLoadStart"/>

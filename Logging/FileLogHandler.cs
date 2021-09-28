@@ -8,7 +8,7 @@ namespace Anvil.CSharp.Logging
     /// <summary>
     /// Forwards logs to a given text file.
     /// </summary>
-    public class FileLogHandler : AbstractAnvilDisposable, ILogHandler
+    public class FileLogHandler : AbstractAnvilBase, ILogHandler
     {
         public const string LOG_CONTEXT_CALLER_DERIVED_TYPE = "{0}";
         public const string LOG_CONTEXT_CALLER_FILE = "{1}";

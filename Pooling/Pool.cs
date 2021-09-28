@@ -10,7 +10,7 @@ namespace Anvil.CSharp.Pooling
     /// then released when no longer needed. This avoids having to create and destroy those instances each time.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Pool<T> : AbstractAnvilDisposable where T : class
+    public class Pool<T> : AbstractAnvilBase where T : class
     {
         private readonly HashSet<T> m_InstanceSet = new HashSet<T>();
 

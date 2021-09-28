@@ -6,7 +6,7 @@ namespace Anvil.CSharp.DelayedExecution
     /// <summary>
     /// The base class for adding a new source to provide Update events from.
     /// </summary>
-    public abstract class AbstractUpdateSource : AbstractAnvilDisposable
+    public abstract class AbstractUpdateSource : AbstractAnvilBase
     {
         /// <summary>
         /// Dispatched whenever an Update event is emitted from the source.

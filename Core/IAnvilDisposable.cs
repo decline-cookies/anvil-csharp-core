@@ -5,7 +5,7 @@ namespace Anvil.CSharp.Core
     /// <summary>
     /// Interface to allow for a Disposable <see cref="IDisposable"/> object that also implements two state booleans.
     /// One for if the object has been disposed and one for if it is currently being disposed.
-    /// <see cref="AbstractAnvilDisposable"/>
+    /// <see cref="AbstractAnvilBase"/>
     /// </summary>
     public interface IAnvilDisposable : IDisposable
     {

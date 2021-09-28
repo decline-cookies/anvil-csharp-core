@@ -8,7 +8,7 @@ namespace Anvil.CSharp.Content
     /// A system that handles showing and clearing <see cref="AbstractContentController"/>/<see cref="IContent"/> pairs
     /// across logical <see cref="AbstractContentGroup"/> for Content.
     /// </summary>
-    public abstract class AbstractContentManager : AbstractAnvilDisposable
+    public abstract class AbstractContentManager : AbstractAnvilBase
     {
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnLoadStart"/>
