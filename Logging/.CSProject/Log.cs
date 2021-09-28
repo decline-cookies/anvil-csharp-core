@@ -37,7 +37,7 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     LogLevel.Debug,
-                    m_MessagePrefix + (string)message,
+                    string.Concat(m_MessagePrefix, message),
                     m_DerivedTypeName,
                     callerPath,
                     callerName,
@@ -54,7 +54,7 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     LogLevel.Warning,
-                    m_MessagePrefix + (string)message,
+                    string.Concat(m_MessagePrefix, message),
                     m_DerivedTypeName,
                     callerPath,
                     callerName,
@@ -72,7 +72,7 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     LogLevel.Error,
-                    m_MessagePrefix + (string)message,
+                    string.Concat(m_MessagePrefix, message),
                     m_DerivedTypeName,
                     callerPath,
                     callerName,
@@ -92,7 +92,7 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     level,
-                    m_MessagePrefix + (string)message,
+                    string.Concat(m_MessagePrefix, message),
                     m_DerivedTypeName,
                     callerPath,
                     callerName,
