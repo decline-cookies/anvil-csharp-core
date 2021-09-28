@@ -19,15 +19,15 @@ namespace Anvil.CSharp.Core
         /// </summary>
         public bool IsDisposing { get; private set; }
 
-        private Log.Logger? m_InternalLogger;
+        private Log.Logger? m_Logger;
         /// <summary>
         /// Returns a <see cref="Log.Logger"/> for this instance to emit log messages with.
         /// Lazy instantiated.
         /// </summary>
-        protected Log.Logger m_Logger
+        protected Log.Logger Logger
         {
-            get => m_InternalLogger ??= Log.GetLogger(this);
-            set => m_InternalLogger = value;
+            get => m_Logger ??= Log.GetLogger(this);
+            set => m_Logger = value;
         }
 
         /// <summary>
