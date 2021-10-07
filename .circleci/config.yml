@@ -47,7 +47,7 @@ jobs:
           working_directory: ~/project/Logging/.CSProject/
           name: Build
           command: |
-            mcs -target:library Anvil.CSharp.Logging.sln
+            xbuild Anvil.CSharp.Logging.sln
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
