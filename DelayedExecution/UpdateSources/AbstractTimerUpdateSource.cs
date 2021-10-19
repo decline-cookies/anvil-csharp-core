@@ -23,9 +23,9 @@ namespace Anvil.CSharp.DelayedExecution
             InitTimer(updateInterval, (state) => DispatchOnUpdateEvent());
         }
 
-        protected AbstractTimerUpdateSource(float updateInterval, Action<Action> onThreadMarshall)
+        protected AbstractTimerUpdateSource(float updateInterval, Action<AbstractTimerUpdateSource, Action> onThreadMarshall)
         {
-            InitTimer(updateInterval, (state) => onThreadMarshall(DispatchOnUpdateEvent));
+            InitTimer(updateInterval, (state) => onThreadMarshall(this, DispatchOnUpdateEvent));
         }
 
         private void InitTimer(float updateInterval, TimerCallback callback)
