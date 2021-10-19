@@ -296,7 +296,7 @@ namespace TinyJSON
 
                 if (type.IsAssignableFrom( makeType ))
                 {
-                    instance = (T) Activator.CreateInstance( makeType );
+                    instance = (T) Activator.CreateInstance( makeType, nonPublic: true );
                     type = makeType;
                 }
                 else
@@ -307,7 +307,7 @@ namespace TinyJSON
             else
             {
                 // We don't have a type hint, so just instantiate the type we have.
-                instance = Activator.CreateInstance<T>();
+                instance = (T) Activator.CreateInstance(typeof(T), nonPublic: true);
             }
 
             instanceType = type;
