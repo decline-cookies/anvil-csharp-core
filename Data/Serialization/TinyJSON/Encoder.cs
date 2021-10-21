@@ -24,6 +24,7 @@ namespace TinyJSON
         private static readonly Type excludeAttrType = typeof(Exclude);
         private static readonly Type encodeNameAttrType = typeof(EncodeName);
         private static readonly Type typeHintAttrType = typeof(TypeHint);
+        private static readonly Type retainAsJSONAttrType = typeof(RetainAsJSON);
 
         private StringBuilder builder;
         private EncodeOptions options;
@@ -57,11 +58,22 @@ namespace TinyJSON
         private bool EnforceHierarchyOrderEnabled => (options & EncodeOptions.EnforceHierarchyOrder) == EncodeOptions.EnforceHierarchyOrder;
 
 
-        protected virtual void EncodeValue( object value, bool forceTypeHint )
+        protected virtual void EncodeValue( object value, bool forceTypeHint, bool isRetainAsJSONMember = false )
         {
             if (value == null)
             {
                 builder.Append( "null" );
+                return;
+            }
+
+            if(isRetainAsJSONMember)
+            {
+                if (!RetainAsJSON.IsValidForTargetType(value.GetType()))
+                {
+                    throw new NotSupportedException($"{nameof(RetainAsJSON)} is not valid on members of type {value.GetType()}");
+                }
+
+                builder.Append(value);
                 return;
             }
 
@@ -262,6 +274,7 @@ namespace TinyJSON
                 string fieldName = field.Name;
                 bool shouldTypeHint = false;
                 bool shouldEncode = field.IsPublic;
+                bool isRetainAsJSONMember = false;
                 foreach (object attribute in field.GetCustomAttributes( true ))
                 {
                     if (excludeAttrType.IsInstanceOfType( attribute ))
@@ -288,6 +301,11 @@ namespace TinyJSON
                     {
                         fieldName = ((EncodeName) attribute).Name;
                     }
+
+                    if(retainAsJSONAttrType.IsInstanceOfType(attribute))
+                    {
+                        isRetainAsJSONMember = true;
+                    }
                 }
 
                 if (!shouldEncode)
@@ -298,7 +316,8 @@ namespace TinyJSON
                 AppendComma( firstItem );
                 EncodeString( fieldName );
                 AppendColon();
-                EncodeValue( field.GetValue( value ), shouldTypeHint );
+                EncodeValue(field.GetValue(value), shouldTypeHint, isRetainAsJSONMember);
+
                 firstItem = false;
             }
 
@@ -312,7 +331,7 @@ namespace TinyJSON
                 string propertyName = property.Name;
                 bool shouldTypeHint = false;
                 bool shouldEncode = includePublicProperties;
-
+                bool isRetainAsJSONMember = false;
                 foreach (object attribute in property.GetCustomAttributes( true ))
                 {
                     if (excludeAttrType.IsInstanceOfType( attribute ))
@@ -339,6 +358,11 @@ namespace TinyJSON
                     {
                         propertyName = ((EncodeName)attribute).Name;
                     }
+
+                    if (retainAsJSONAttrType.IsInstanceOfType(attribute))
+                    {
+                        isRetainAsJSONMember = true;
+                    }
                 }
 
                 if (!shouldEncode)
@@ -349,7 +373,7 @@ namespace TinyJSON
                 AppendComma( firstItem );
                 EncodeString( propertyName );
                 AppendColon();
-                EncodeValue( property.GetValue( value, null ), shouldTypeHint );
+                EncodeValue( property.GetValue( value, null ), shouldTypeHint, isRetainAsJSONMember);
                 firstItem = false;
             }
 
