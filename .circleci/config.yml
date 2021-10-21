@@ -28,7 +28,7 @@ jobs:
           working_directory: ~/project/Logging/.CSProject/
           name: Build
           command: |
-            dotnet build Anvil.CSharp.Logging.sln
+            dotnet build anvil-csharp-logging.sln
 
   build-logging-mono:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
@@ -47,7 +47,7 @@ jobs:
           working_directory: ~/project/Logging/.CSProject/
           name: Build
           command: |
-            msbuild Anvil.CSharp.Logging.sln
+            msbuild anvil-csharp-logging.sln
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
