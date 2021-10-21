@@ -70,7 +70,7 @@ namespace TinyJSON
             {
                 if (!RetainAsJSON.IsValidForTargetType(value.GetType()))
                 {
-                    throw new NotSupportedException("RetainAsJSON is not valid on this member type");
+                    throw new NotSupportedException($"{nameof(RetainAsJSON)} is not valid on members of type {value.GetType()}");
                 }
 
                 builder.Append(value);

@@ -436,7 +436,7 @@ namespace TinyJSON
             {
                 if (!RetainAsJSON.IsValidForTargetType(targetType))
                 {
-                    throw new NotSupportedException("RetainAsJSON is not valid on this member type");
+                    throw new NotSupportedException($"{nameof(RetainAsJSON)} is not valid on the member {targetMember.Name}({targetType})");
                 }
 
                 return data.Encode();
