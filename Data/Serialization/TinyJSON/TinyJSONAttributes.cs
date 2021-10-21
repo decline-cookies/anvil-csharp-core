@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace TinyJSON
 {
@@ -15,6 +16,20 @@ namespace TinyJSON
     /// </summary>
     [AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
     public class Exclude : Attribute {}
+
+    /// <summary>
+    /// Marks members with values that should be retained as a JSON string.
+    /// May only be applied to members of type <see cref="string"/>
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class RetainAsJSON : Attribute {
+        private static Type s_ValidTargetType { get => typeof(string); }
+
+        public static bool IsValidForTargetType(Type type)
+        {
+            return type == s_ValidTargetType;
+        }
+    }
 
     /// <summary>
     /// Mark methods to be called after an object is decoded.
