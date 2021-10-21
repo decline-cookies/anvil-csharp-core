@@ -356,9 +356,9 @@ namespace TinyJSON
             {
                 return;
             }
-
-            MethodInfo makeFunc = decodeTypeMethod.MakeGenericMethod( field.FieldType );
-            field.SetValue( instance, makeFunc.Invoke( this, new object[] { data } ) );
+            
+            object value = DTDecodeValueForInstanceMember(field, field.FieldType, data);
+            field.SetValue( instance, value);
         }
 
         private FieldInfo DTCheckFieldCustomAttributes(Type type, string name)
@@ -426,8 +426,24 @@ namespace TinyJSON
                 return;
             }
 
-            MethodInfo decodeTypeMakeFunc = decodeTypeMethod.MakeGenericMethod(property.PropertyType);
-            property.SetValue( instance, decodeTypeMakeFunc.Invoke( this, new object[] { data } ), null );
+            object value = DTDecodeValueForInstanceMember(property, property.PropertyType, data);
+            property.SetValue( instance, value, null );
+        }
+
+        private object DTDecodeValueForInstanceMember(MemberInfo targetMember, Type targetType, Variant data)
+        {
+            if (Attribute.IsDefined(targetMember, typeof(RetainAsJSON), true))
+            {
+                if (!RetainAsJSON.IsValidForTargetType(targetType))
+                {
+                    throw new NotSupportedException("RetainAsJSON is not valid on this member type");
+                }
+
+                return data.Encode();
+            }
+
+            MethodInfo decodeTypeMakeFunc = decodeTypeMethod.MakeGenericMethod(targetType);
+            return decodeTypeMakeFunc.Invoke(this, new object[] { data });
         }
 
         private PropertyInfo DTCheckPropertyCustomAttributes(Type type, string name)

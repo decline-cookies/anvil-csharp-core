@@ -110,7 +110,7 @@ namespace TinyJSON
 
         public virtual string ToString( IFormatProvider provider )
         {
-            return Encode();
+            throw new InvalidCastException( "Cannot convert " + GetType() + " to String" );
         }
 
 
