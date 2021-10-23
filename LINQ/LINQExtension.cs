@@ -7,8 +7,8 @@ using System.Threading;
 public static class LINQExtension
 {
     /// <summary>
-    /// Allows a syncronous query to be cancelled by a <see cref="CancellationToken"/>.
-    /// Typically used when a long running, non-PLINQ query is executed in a cancellable context.
+    /// Allows a synchronous query to be cancelled by a <see cref="CancellationToken"/>.
+    /// Typically used when a long running, LINQ (not PLINQ) query is executed in a cancellable context.
     /// (Ex: <see cref="System.Threading.Tasks.Task"/>)
     /// </summary>
     /// <remarks>
