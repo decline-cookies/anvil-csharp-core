@@ -19,10 +19,10 @@ namespace Anvil.CSharp.DelayedExecution
         internal readonly uint ID;
 
         private readonly float m_Target;
-        private readonly uint m_RepeatTarget;
+        private readonly uint m_CallLimit;
 
         private float m_Elapsed;
-        private uint m_RepeatCount;
+        private uint m_CallCount;
 
         private DeltaProvider m_DeltaProvider;
         private Action m_Callback;
@@ -33,15 +33,15 @@ namespace Anvil.CSharp.DelayedExecution
             Action callback,
             float target,
             DeltaProvider deltaProvider,
-            uint repeatTarget = UpdateHandle.CALL_AFTER_DEFAULT_CALL_LIMIT)
+            uint callLimit = UpdateHandle.CALL_AFTER_DEFAULT_CALL_LIMIT)
         {
             ID = id;
             m_Callback = callback;
             m_Target = target;
             m_DeltaProvider = deltaProvider;
-            m_RepeatTarget = repeatTarget;
+            m_CallLimit = callLimit;
             m_Elapsed = 0.0f;
-            m_RepeatCount = 0;
+            m_CallCount = 0;
         }
 
         protected override void DisposeSelf()
@@ -68,17 +68,18 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void Complete()
         {
-            m_RepeatCount++;
+            m_CallCount++;
             m_Callback?.Invoke();
 
-            if (m_RepeatCount < m_RepeatTarget)
+            Debug.Assert(m_CallCount <= m_CallLimit || m_CallLimit == UpdateHandle.CALL_AFTER_INFINITE_CALL_LIMIT, "Unless call limit is infinite call count should never exceed call limit");
+            if (m_CallCount == m_CallLimit)
             {
-                //Reset elapsed again accounting for any overages that might have happened.
-                m_Elapsed -= m_Target;
+                Dispose();
             }
             else
             {
-                Dispose();
+                //Reset elapsed again accounting for any overages that might have happened.
+                m_Elapsed -= m_Target;
             }
         }
 
