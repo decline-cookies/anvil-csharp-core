@@ -14,7 +14,30 @@ public static class LINQExtension
     /// <remarks>
     /// Take care where this is placed in a query. It is most effective in a section of 
     /// the iteration that is lazy evaluated and visited often.
+    /// `AsCancellable()` can be specified multiple times in a query. The only overhead is additional 
+    /// <see cref="CancellationToken.IsCancellationRequested"/> checks. In some situations this can help 
+    /// improve the responsiveness of a cancellation request.
     /// </remarks>
+    /// <example>
+    /// This is a poor placement of AsCancellable. The `ToArray()` instruction causes the myCollection to 
+    /// be iterated completely before getting into the expensive `Count()` condition. The `Count()` condition 
+    /// is where most of the time will be spent but will not respond to cancellation requests since the instructions up to `Count()` have already been evaluated.
+    /// myCollection
+    ///     .AsCancellable()
+    ///     .ToArray()
+    ///     .Count(someExpensiveCondition);
+    ///     
+    /// Ideally, remove `ToArray()` so that `AsCancellable()` is getting evaluated on each iteration.
+    /// myCollection
+    ///     .AsCancellable()
+    ///     .Count(someExpensiveCondition);
+    ///     
+    /// Alternatively, `AsCancelled()` can be moved below the `ToArray()` so that it is evaluated on each iteration.
+    /// myCollection
+    ///     .ToArray()
+    ///     .AsCancellable()
+    ///     .Count(someExpensiveCondition);
+    /// </example>
     /// <typeparam name="TSource">The type of the elements of source.</typeparam>
     /// <param name="source">A sequence of values to iterate.</param>
     /// <param name="token">The cancellation token to monitor.</param>
