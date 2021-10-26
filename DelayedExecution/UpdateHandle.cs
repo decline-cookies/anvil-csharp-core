@@ -161,16 +161,16 @@ namespace Anvil.CSharp.DelayedExecution
         /// <param name="deltaProvider">A <see cref="DeltaProvider"/> function to allow the <see cref="CallAfterHandle"/>
         ///  to calculate the amount of delta that has passed each between <see cref="OnUpdate"/> calls from this
         /// <see cref="UpdateHandle"/>.</param>
-        /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
+        /// <param name="callLimit">The amount of times this <see cref="CallAfterHandle"/> should be called. Defaults to
         /// <see cref="CALL_AFTER_DEFAULT_CALL_LIMIT"/></param>
         /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
-        public CallAfterHandle CallAfter(float targetDelta, Action callback, DeltaProvider deltaProvider, uint repeatCount = CALL_AFTER_DEFAULT_CALL_LIMIT)
+        public CallAfterHandle CallAfter(float targetDelta, Action callback, DeltaProvider deltaProvider, uint callLimit = CALL_AFTER_DEFAULT_CALL_LIMIT)
         {
             CallAfterHandle callAfterHandle = new CallAfterHandle(GetNextCallAfterHandleID(),
                 callback,
                 targetDelta,
                 deltaProvider,
-                repeatCount);
+                callLimit);
 
             FinalizeHandle(callAfterHandle);
 
@@ -184,12 +184,12 @@ namespace Anvil.CSharp.DelayedExecution
         /// </summary>
         /// <param name="updateCount">The number of <see cref="OnUpdate"/> ticks before the callback is fired.</param>
         /// <param name="callback">The callback function to fire.</param>
-        /// <param name="repeatCount">The amount of times this <see cref="CallAfterHandle"/> should repeat. Defaults to
+        /// <param name="callLimit">The amount of times this <see cref="CallAfterHandle"/> should be called. Defaults to
         /// <see cref="CALL_AFTER_DEFAULT_CALL_LIMIT"/></param>
         /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
-        public CallAfterHandle CallAfterUpdates(int updateCount, Action callback, uint repeatCount = CALL_AFTER_DEFAULT_CALL_LIMIT)
+        public CallAfterHandle CallAfterUpdates(int updateCount, Action callback, uint callLimit = CALL_AFTER_DEFAULT_CALL_LIMIT)
         {
-            return CallAfter(updateCount, callback, FixedDeltaProvider, repeatCount);
+            return CallAfter(updateCount, callback, FixedDeltaProvider, callLimit);
         }
 
         private void FinalizeHandle(CallAfterHandle callAfterHandle)
