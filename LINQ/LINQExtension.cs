@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 /// <summary>
@@ -56,6 +57,20 @@ public static class LINQExtension
             }
 
             yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Immediately executes an action on every item in a query.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of source.</typeparam>
+    /// <param name="source">A sequence of values to iterate.</param>
+    /// <param name="action">The action to perform on each query item</param>
+    public static void ForEach<TSource>(this IEnumerable<TSource> source, Action<TSource> action)
+    {
+        foreach (TSource item in source)
+        {
+            action(item);
         }
     }
 }
