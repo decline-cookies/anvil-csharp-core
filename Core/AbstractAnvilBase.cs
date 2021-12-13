@@ -26,7 +26,15 @@ namespace Anvil.CSharp.Core
         /// </summary>
         protected Log.Logger Logger
         {
-            get => m_Logger ??= Log.GetLogger(this);
+            get
+            {
+                if (m_Logger == null)
+                {
+                    m_Logger = Log.GetLogger(this);
+                }
+
+                return (Log.Logger)m_Logger;
+            }
             set => m_Logger = value;
         }
 
