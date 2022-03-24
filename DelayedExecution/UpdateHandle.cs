@@ -33,7 +33,7 @@ namespace Anvil.CSharp.DelayedExecution
         /// </summary>
         /// <typeparam name="T">The type of <see cref="AbstractUpdateSource"/> to use.</typeparam>
         /// <returns>The instance of the Update Handle</returns>
-        public static UpdateHandle Create<T>() where T:AbstractUpdateSource
+        public static UpdateHandle Create<T>() where T : AbstractUpdateSource
         {
             UpdateHandle updateHandle = new UpdateHandle(typeof(T));
             return updateHandle;
@@ -79,6 +79,14 @@ namespace Anvil.CSharp.DelayedExecution
                 m_OnUpdate -= value;
                 ValidateUpdateSourceHook();
             }
+        }
+
+        /// <summary>
+        /// Indicates whether the handle is currently executing its OnUpdate phase.
+        /// </summary>
+        public bool IsSourceUpdating
+        {
+            get => m_UpdateSource != null && m_UpdateSource.IsUpdating;
         }
 
         private UpdateHandle(Type updateSourceType)
