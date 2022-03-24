@@ -13,7 +13,7 @@ namespace Anvil.CSharp.Core
         /// <inheritdoc cref="IAnvilDisposable.IsDisposed"/>
         /// </summary>
         public bool IsDisposed { get; private set; }
-        
+
         /// <summary>
         /// <inheritdoc cref="IAnvilDisposable.IsDisposing"/>
         /// </summary>
@@ -26,15 +26,7 @@ namespace Anvil.CSharp.Core
         /// </summary>
         protected Log.Logger Logger
         {
-            get
-            {
-                if (m_Logger == null)
-                {
-                    m_Logger = Log.GetLogger(this);
-                }
-
-                return (Log.Logger)m_Logger;
-            }
+            get => m_Logger ?? (m_Logger = Log.GetLogger(this)).Value;
             set => m_Logger = value;
         }
 
@@ -55,14 +47,11 @@ namespace Anvil.CSharp.Core
             IsDisposing = false;
             IsDisposed = true;
         }
-        
+
         /// <summary>
         /// Override to implement specific Dispose logic.
         /// </summary>
-        protected virtual void DisposeSelf()
-        {
-            
-        }
-    } 
+        protected virtual void DisposeSelf() { }
+    }
 }
 
