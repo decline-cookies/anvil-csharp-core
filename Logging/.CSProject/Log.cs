@@ -106,11 +106,27 @@ namespace Anvil.CSharp.Logging
 
         private static readonly HashSet<ILogHandler> s_AdditionalHandlerList = new HashSet<ILogHandler>();
 
+        public static bool SupressLogging { get; set; } = false;
+        public static bool IsHandlingLog { get; private set; } = false;
+
         static Log()
         {
-            Type defaultLogHandlerType = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !ShouldIgnore(a))
-                .SelectMany(a => a.GetTypes())
+            IEnumerable<Type> candidateTypes = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !ShouldIgnoreAssembly(a))
+                .SelectMany(a => a.GetTypes());
+
+            InitLogHandlers(candidateTypes);
+            InitLogListeners(candidateTypes);
+
+            if (IGNORE_ASSEMBLIES.Any())
+            {
+                GetStaticLogger(typeof(Log)).Debug($"Default log handler and listener search ignored assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
+            }
+        }
+
+        private static void InitLogHandlers(IEnumerable<Type> candidateTypes)
+        {
+            Type defaultLogHandlerType = candidateTypes
                 .Where(t => t.IsDefined(typeof(DefaultLogHandlerAttribute)))
                 .OrderByDescending(t => t.GetCustomAttribute<DefaultLogHandlerAttribute>().Priority)
                 .FirstOrDefault();
@@ -126,17 +142,31 @@ namespace Anvil.CSharp.Logging
             }
 
             AddHandler((ILogHandler)Activator.CreateInstance(defaultLogHandlerType));
+        }
 
-            bool ShouldIgnore(Assembly assembly)
+        private static void InitLogListeners(IEnumerable<Type> candidateTypes)
+        {
+            candidateTypes = candidateTypes
+                .Where(t => t.IsDefined(typeof(DefaultLogListenerAttribute)))
+                .Where(t => t.GetInterfaces().Contains(typeof(ILogListener)));
+
+            if (!candidateTypes.Any())
             {
-                string name = assembly.GetName().Name;
-                return IGNORE_ASSEMBLIES.Any(ignore => name == ignore || name.StartsWith($"{ignore}."));
+                return;
             }
 
-            if (IGNORE_ASSEMBLIES.Any())
-            {
-                GetStaticLogger(typeof(Log)).Debug($"Default logger search ignoring assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
+            var logger = GetStaticLogger(typeof(Log));
+            foreach (Type listener in candidateTypes)
+            {   
+                Activator.CreateInstance(listener);
+                logger.Debug($"Default Log listener {listener.Name} initialized. Source: {listener.AssemblyQualifiedName}");
             }
+        }
+
+        private static bool ShouldIgnoreAssembly(Assembly assembly)
+        {
+            string name = assembly.GetName().Name;
+            return IGNORE_ASSEMBLIES.Any(ignore => name == ignore || name.StartsWith($"{ignore}."));
         }
 
         /// <summary>
@@ -177,7 +207,15 @@ namespace Anvil.CSharp.Logging
             string callerName,
             int callerLine)
         {
+            if (SupressLogging)
+            {
+                return;
+            }
+
             Debug.Assert(!string.IsNullOrEmpty(callerDerivedTypeName));
+            Debug.Assert(!IsHandlingLog);
+
+            IsHandlingLog = true;
             foreach (ILogHandler handler in s_AdditionalHandlerList)
             {
                 handler.HandleLog(level,
@@ -187,6 +225,7 @@ namespace Anvil.CSharp.Logging
                 callerName,
                 callerLine);
             }
+            IsHandlingLog = false;
         }
     }
 }
