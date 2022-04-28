@@ -4,7 +4,7 @@ using System.IO;
 namespace Anvil.CSharp.Logging
 {
     /// <summary>
-    /// Forwards logs to System.Console.
+    /// Forwards logs to <see cref="Console"/>.
     /// </summary>
     [DefaultLogHandler(PRIORITY)]
     public class ConsoleLogHandler : ILogHandler
