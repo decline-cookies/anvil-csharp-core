@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 
+/// <summary>
+/// Extension methods for use with an <see cref="IList{T}"/> instance.
+/// </summary>
 public static class ListExtension
 {
     /// <summary>
