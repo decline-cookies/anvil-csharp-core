@@ -1,23 +1,26 @@
 ﻿using System.Collections.Generic;
 
-/// <summary>
-/// Extension methods for use with an <see cref="IList{T}"/> instance.
-/// </summary>
-public static class ListExtension
+namespace Anvil.CSharp.Collections
 {
     /// <summary>
-    /// Uniquely adds a collection of items to an <see cref="IList{T}"/>.
-    /// Useful for when LINQ can't be used or the underlying list instance must remain the same.
+    /// Extension methods for use with <see cref="IList{T}"/> and <see cref="List{T}"/> instances.
     /// </summary>
-    /// <param name="list">The list to add to.</param>
-    /// <param name="items">The items to attempt to add.</param>
-    public static void AddUnique<T>(this IList<T> list, IEnumerable<T> items)
+    public static class ListExtension
     {
-        foreach (var item in items)
+        /// <summary>
+        /// Uniquely adds a collection of items to an <see cref="IList{T}"/>.
+        /// Useful for when LINQ can't be used or the underlying list instance must remain the same.
+        /// </summary>
+        /// <param name="list">The list to add to.</param>
+        /// <param name="items">The items to attempt to add.</param>
+        public static void AddUnique<T>(this IList<T> list, IEnumerable<T> items)
         {
-            if (!list.Contains(item))
+            foreach (var item in items)
             {
-                list.Add(item);
+                if (!list.Contains(item))
+                {
+                    list.Add(item);
+                }
             }
         }
     }
