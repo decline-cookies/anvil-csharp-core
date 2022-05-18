@@ -15,7 +15,7 @@ namespace Anvil.CSharp.Collections
         /// <param name="items">The items to attempt to add.</param>
         public static void AddUnique<T>(this IList<T> list, IEnumerable<T> items)
         {
-            foreach (var item in items)
+            foreach (T item in items)
             {
                 if (!list.Contains(item))
                 {
