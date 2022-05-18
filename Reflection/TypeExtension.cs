@@ -1,4 +1,6 @@
-﻿namespace System.Reflection
+﻿using System;
+
+namespace Anvil.CSharp.Reflection
 {
     /// <summary>
     /// A set of convenience extensions for <see cref="Type"/>
