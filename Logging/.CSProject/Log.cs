@@ -23,8 +23,14 @@ namespace Anvil.CSharp.Logging
         /// </summary>
         public readonly struct Logger
         {
-            private readonly string m_DerivedTypeName;
-            private readonly string m_MessagePrefix;
+            /// <summary>
+            /// The name of the type this <see cref="Logger"/> represents.
+            /// </summary>
+            public readonly string DerivedTypeName;
+            /// <summary>
+            /// The custom prefix to prepend to all messages sent through this <see cref="Logger"/>.
+            /// </summary>
+            public readonly string MessagePrefix;
 
             /// <summary>
             /// Creates an instance of <see cref="Logger"/> from a <see cref="Type"/>.
@@ -47,8 +53,8 @@ namespace Anvil.CSharp.Logging
 
             private Logger(string derivedTypeName, string messagePrefix)
             {
-                m_DerivedTypeName = derivedTypeName;
-                m_MessagePrefix = messagePrefix;
+                DerivedTypeName = derivedTypeName;
+                MessagePrefix = messagePrefix;
             }
 
             /// <summary>
@@ -64,8 +70,8 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     LogLevel.Debug,
-                    string.Concat(m_MessagePrefix, message),
-                    m_DerivedTypeName,
+                    string.Concat(MessagePrefix, message),
+                    DerivedTypeName,
                     callerPath,
                     callerName,
                     callerLine);
@@ -83,8 +89,8 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     LogLevel.Warning,
-                    string.Concat(m_MessagePrefix, message),
-                    m_DerivedTypeName,
+                    string.Concat(MessagePrefix, message),
+                    DerivedTypeName,
                     callerPath,
                     callerName,
                     callerLine
@@ -103,8 +109,8 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     LogLevel.Error,
-                    string.Concat(m_MessagePrefix, message),
-                    m_DerivedTypeName,
+                    string.Concat(MessagePrefix, message),
+                    DerivedTypeName,
                     callerPath,
                     callerName,
                     callerLine
@@ -125,8 +131,8 @@ namespace Anvil.CSharp.Logging
                 [CallerLineNumber] int callerLine = 0
                 ) => DispatchLog(
                     level,
-                    string.Concat(m_MessagePrefix, message),
-                    m_DerivedTypeName,
+                    string.Concat(MessagePrefix, message),
+                    DerivedTypeName,
                     callerPath,
                     callerName,
                     callerLine);
@@ -204,7 +210,7 @@ namespace Anvil.CSharp.Logging
 
             var logger = GetStaticLogger(typeof(Log));
             foreach (Type listener in candidateTypes)
-            {   
+            {
                 Activator.CreateInstance(listener);
                 logger.Debug($"Default Log listener {listener.Name} initialized. Source: {listener.AssemblyQualifiedName}");
             }
