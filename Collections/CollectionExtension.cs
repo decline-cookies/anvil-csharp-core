@@ -9,9 +9,9 @@ namespace Anvil.CSharp.Collections
     public static class CollectionExtension
     {
         /// <summary>
-        /// Dispose all elements of a <see cref="ICollection{T}"/> then clear.
+        /// Dispose all elements of a <see cref="ICollection{T}"/> and then clear the collection.
         /// </summary>
-        /// <param name="collection">A collection of elements to dispose then clear.</param>
+        /// <param name="collection">The <see cref="ICollection{T}"/> to operate on.</param>
         /// <typeparam name="T">The element type</typeparam>
         public static void DisposeAllAndClear<T>(this ICollection<T> collection) where T : IDisposable
         {
