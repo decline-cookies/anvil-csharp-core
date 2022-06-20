@@ -31,7 +31,7 @@ namespace Anvil.CSharp.IO
 
         // Used for APIs that require a buffer. All single length;
         private readonly byte[] m_SingleByteBuffer = new byte[1];
-        private readonly char[] m_charBuffer = new char[1];
+        private readonly char[] m_CharBuffer = new char[1];
 
         private bool m_IsPreambleHandled;
 
@@ -67,7 +67,7 @@ namespace Anvil.CSharp.IO
             finally
             {
                 m_StringBuilder.Clear();
-                
+
                 base.DisposeSelf();
             }
         }
@@ -106,7 +106,7 @@ namespace Anvil.CSharp.IO
 
                 if (character == default || character == '\r' || character == '\n')
                 {
-                    return RenderAndClearStringBuilder();
+                    return ResolveAndClearStringBuilder();
                 }
 
                 m_StringBuilder.Append(character);
@@ -130,7 +130,7 @@ namespace Anvil.CSharp.IO
 
                 if (character == default)
                 {
-                    return RenderAndClearStringBuilder();
+                    return ResolveAndClearStringBuilder();
                 }
 
                 m_StringBuilder.Append(character);
@@ -171,13 +171,13 @@ namespace Anvil.CSharp.IO
                     return default;
                 }
 
-                decodedCharCount = m_Decoder.GetChars(m_SingleByteBuffer, 0, 1, m_charBuffer, 0);
+                decodedCharCount = m_Decoder.GetChars(m_SingleByteBuffer, 0, 1, m_CharBuffer, 0);
             } while (decodedCharCount < 1);
 
-            return m_charBuffer[0];
+            return m_CharBuffer[0];
         }
 
-        private string RenderAndClearStringBuilder()
+        private string ResolveAndClearStringBuilder()
         {
             string result = m_StringBuilder.ToString();
             m_StringBuilder.Clear();
