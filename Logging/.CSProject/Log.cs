@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Anvil.CSharp.Logging
 {
@@ -12,132 +11,6 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public static class Log
     {
-        /// <summary>
-        /// A context specific instance that provides a mechanism to emit logs through <see cref="Log"/>.
-        /// Automatically provides contextual information to <see cref="Log"/> about caller context including:
-        ///  - Optional, per instance, message prefix
-        ///  - Caller type name
-        ///  - Caller file path
-        ///  - Caller name
-        ///  - Caller line number
-        /// </summary>
-        public readonly struct Logger
-        {
-            /// <summary>
-            /// The name of the type this <see cref="Logger"/> represents.
-            /// </summary>
-            public readonly string DerivedTypeName;
-            /// <summary>
-            /// The custom prefix to prepend to all messages sent through this <see cref="Logger"/>.
-            /// </summary>
-            public readonly string MessagePrefix;
-
-            /// <summary>
-            /// Creates an instance of <see cref="Logger"/> from a <see cref="Type"/>.
-            /// </summary>
-            /// <param name="type">The <see cref="Type"/> to create the <see cref="Logger"/> instance for.</param>
-            /// <param name="messagePrefix">
-            /// An optional <see cref="string"/> to prefix to all messages through this logger.
-            /// Useful when there are multiple types that share the same name which need to be differentiated.
-            /// </param>
-            public Logger(Type type, string messagePrefix = null) : this(type.Name, messagePrefix) { }
-            /// <summary>
-            /// Creates an instance of <see cref="Logger"/> from an instance.
-            /// </summary>
-            /// <param name="instance">The instance to create the <see cref="Logger"/> instance for.</param>
-            /// <param name="messagePrefix">
-            /// An optional <see cref="string"/> to prefix to all messages through this logger.
-            /// Useful when there are multiple instances or types that share the same name which need to be differentiated.
-            /// </param>
-            public Logger(in object instance, string messagePrefix = null) : this(instance.GetType().Name, messagePrefix) { }
-
-            private Logger(string derivedTypeName, string messagePrefix)
-            {
-                DerivedTypeName = derivedTypeName;
-                MessagePrefix = messagePrefix;
-            }
-
-            /// <summary>
-            /// Logs a message.
-            /// </summary>
-            /// <param name="message">
-            /// The message object to log. The object is converted to a <see cref="string"/> by <see cref="object.ToString"/>.
-            /// </param>
-            public void Debug(
-                object message,
-                [CallerFilePath] string callerPath = "",
-                [CallerMemberName] string callerName = "",
-                [CallerLineNumber] int callerLine = 0
-                ) => DispatchLog(
-                    LogLevel.Debug,
-                    string.Concat(MessagePrefix, message),
-                    DerivedTypeName,
-                    callerPath,
-                    callerName,
-                    callerLine);
-
-            /// <summary>
-            /// Logs a warning message.
-            /// </summary>
-            /// <param name="message">
-            /// The message object to log. The object is converted to a <see cref="string"/> by <see cref="object.ToString"/>.
-            /// </param>
-            public void Warning(
-                object message,
-                [CallerFilePath] string callerPath = "",
-                [CallerMemberName] string callerName = "",
-                [CallerLineNumber] int callerLine = 0
-                ) => DispatchLog(
-                    LogLevel.Warning,
-                    string.Concat(MessagePrefix, message),
-                    DerivedTypeName,
-                    callerPath,
-                    callerName,
-                    callerLine
-                    );
-
-            /// <summary>
-            /// Logs an error message.
-            /// </summary>
-            /// <param name="message">
-            /// The message object to log. The object is converted to a <see cref="string"/> by <see cref="object.ToString"/>.
-            /// </param>
-            public void Error(
-                object message,
-                [CallerFilePath] string callerPath = "",
-                [CallerMemberName] string callerName = "",
-                [CallerLineNumber] int callerLine = 0
-                ) => DispatchLog(
-                    LogLevel.Error,
-                    string.Concat(MessagePrefix, message),
-                    DerivedTypeName,
-                    callerPath,
-                    callerName,
-                    callerLine
-                    );
-
-            /// <summary>
-            /// Logs a message to the level provided.
-            /// </summary>
-            /// <param name="level">The level to log at.</param>
-            /// <param name="message">
-            /// The message object to log. The object is converted to a <see cref="string"/> by <see cref="object.ToString"/>.
-            /// </param>
-            public void AtLevel(
-                LogLevel level,
-                object message,
-                [CallerFilePath] string callerPath = "",
-                [CallerMemberName] string callerName = "",
-                [CallerLineNumber] int callerLine = 0
-                ) => DispatchLog(
-                    level,
-                    string.Concat(MessagePrefix, message),
-                    DerivedTypeName,
-                    callerPath,
-                    callerName,
-                    callerLine);
-        }
-
         private static readonly string[] IGNORE_ASSEMBLIES =
         {
             "System", "mscorlib", "Unity", "UnityEngine", "UnityEditor", "nunit"
@@ -266,7 +139,7 @@ namespace Anvil.CSharp.Logging
         /// <returns>The configured <see cref="Logger"/> instance</returns>
         public static Logger GetLogger(in object instance, string messagePrefix = null) => new Logger(in instance, messagePrefix);
 
-        private static void DispatchLog(
+        internal static void DispatchLog(
             LogLevel level,
             string message,
             string callerDerivedTypeName,
