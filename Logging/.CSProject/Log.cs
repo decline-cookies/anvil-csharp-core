@@ -22,7 +22,7 @@ namespace Anvil.CSharp.Logging
         /// Returns true while a log is being evaluated by handlers.
         /// Returns false at all other times.
         /// </summary>
-        public static bool SupressLogging { get; set; } = false;
+        public static bool SuppressLogging { get; set; } = false;
 
         /// <summary>
         /// While set to true handling of any incoming log messages is skipped.
@@ -147,7 +147,7 @@ namespace Anvil.CSharp.Logging
             string callerName,
             int callerLine)
         {
-            if (SupressLogging)
+            if (SuppressLogging)
             {
                 return;
             }
