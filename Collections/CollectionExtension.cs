@@ -13,14 +13,17 @@ namespace Anvil.CSharp.Collections
         /// </summary>
         /// <param name="collection">The <see cref="ICollection{T}"/> to operate on.</param>
         /// <typeparam name="T">The element type</typeparam>
-        public static void DisposeAllAndClear<T>(this ICollection<T> collection) where T : IDisposable
+        public static void DisposeAllAndTryClear<T>(this ICollection<T> collection) where T : IDisposable
         {
             foreach (T item in collection)
             {
                 item.Dispose();
             }
 
-            collection.Clear();
+            if (!collection.IsReadOnly)
+            {
+                collection.Clear();
+            }
         }
     }
 }
