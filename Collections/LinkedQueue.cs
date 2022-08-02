@@ -1,52 +1,60 @@
-﻿namespace ScratchGames.StationX.Game
+﻿namespace Anvil.CSharp.Collections
 {
+    /// <summary>
+    /// A queue implementation that is backed by a linked list.
+    /// Behaves the same as <see cref="Queue{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of items to store.</typeparam>
     public class LinkedQueue<T>
     {
-        private readonly LinkedQueueLink<T> m_First = new LinkedQueueLink<T>(default);
-        private readonly LinkedQueueLink<T> m_Last = new LinkedQueueLink<T>(default);
+        private readonly LinkedQueueNode<T> m_First = new LinkedQueueNode<T>(default);
+        private readonly LinkedQueueNode<T> m_Last = new LinkedQueueNode<T>(default);
 
         /// <summary>
-        /// Is this LinkedQueue Empty?
+        /// Is true if the queue is empty.
         /// </summary>
         public bool IsEmpty
         {
-            get => m_First.NextLink == m_Last;
+            get => m_First.NextNode == m_Last;
         }
 
+        /// <summary>
+        /// Create a new <see cref="LinkedQueue{T}"/> instance.
+        /// </summary>
         public LinkedQueue()
         {
             Reset();
         }
 
         /// <summary>
-        /// Queues a <see cref="LinkedQueueLink{T}"/> in the list.
+        /// Queues a <see cref="LinkedQueueNode{T}"/> in the list.
         /// </summary>
-        /// <param name="link">The <see cref="LinkedQueueLink{T}"/> to append.</param>
-        public void Enqueue(LinkedQueueLink<T> link)
+        /// <param name="node">The <see cref="LinkedQueueNode{T}"/> to append.</param>
+        public void Enqueue(LinkedQueueNode<T> node)
         {
-            LinkedQueueLink<T> prevLink = m_Last.PrevLink;
+            LinkedQueueNode<T> prevNode = m_Last.PrevNode;
 
-            prevLink.NextLink = link;
-            link.PrevLink = prevLink;
+            prevNode.NextNode = node;
+            node.PrevNode = prevNode;
 
-            m_Last.PrevLink = link;
-            link.NextLink = m_Last;
+            m_Last.PrevNode = node;
+            node.NextNode = m_Last;
         }
 
         /// <summary>
-        /// Dequeues a <see cref="LinkedQueueLink{T}"/> from the list.
+        /// Dequeues a <see cref="LinkedQueueNode{T}"/> from the list.
         /// </summary>
-        /// <returns>The <see cref="LinkedQueueLink{T}"/> that was removed from the list.</returns>
+        /// <returns>The <see cref="LinkedQueueNode{T}"/> that was removed from the list.</returns>
         public T Dequeue()
         {
-            LinkedQueueLink<T> link = m_First.NextLink;
-            T data = link.Data;
+            LinkedQueueNode<T> node = m_First.NextNode;
+            T data = node.Data;
 
             //Stitch the list together by taking this link out
-            m_First.NextLink = link.NextLink;
+            m_First.NextNode = node.NextNode;
 
-            link.NextLink = null;
-            link.PrevLink = null;
+            node.NextNode = null;
+            node.PrevNode = null;
 
             return data;
         }
@@ -57,9 +65,8 @@
         /// </summary>
         public void Reset()
         {
-            m_First.NextLink = m_Last;
-            m_Last.PrevLink = m_First;
+            m_First.NextNode = m_Last;
+            m_Last.PrevNode = m_First;
         }
     }
 }
-
