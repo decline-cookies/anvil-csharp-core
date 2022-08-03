@@ -65,11 +65,6 @@ namespace Anvil.CSharp.Content
         /// <param name="configVO">The configuration data structure to aid in construction. <see cref="ContentGroupConfigVO"/>"/></param>
         /// <returns>The created <see cref="AbstractContentGroup"/></returns>
         protected abstract AbstractContentGroup CreateGroup(ContentGroupConfigVO configVO);
-        /// <summary>
-        /// Implement this function to allow a warning to be displayed to whatever is appropriate for the application.
-        /// </summary>
-        /// <param name="message">The message to be displayed as a warning.</param>
-        protected abstract void LogWarning(string message);
 
         /// <summary>
         /// Creates a new <see cref="AbstractContentGroup"/> based on a passed in <see cref="ContentGroupConfigVO"/>
@@ -163,12 +158,12 @@ namespace Anvil.CSharp.Content
         /// Clears a specific <see cref="AbstractContentGroup"/> to show nothing.
         /// </summary>
         /// <param name="contentGroupID">The ID lookup the <see cref="AbstractContentGroup"/></param>
-        /// <returns>true if found and cleared, false if not found. A warning will be issued via <see cref="LogWarning"/></returns>
+        /// <returns>true if found and cleared, false if not found. A warning will be logged</returns>
         public bool ClearGroup(string contentGroupID)
         {
             if (!m_ContentGroups.ContainsKey(contentGroupID))
             {
-                LogWarning($"[CONTENT MANAGER] - ContentGroupID of {contentGroupID} does not exist in the Content Manager. Did you add the Content Group?");
+                Logger.Warning($"ContentGroupID of {contentGroupID} does not exist in the Content Manager. Did you add the Content Group?");
                 return false;
             }
 
@@ -219,4 +214,3 @@ namespace Anvil.CSharp.Content
         }
     }
 }
-
