@@ -37,6 +37,7 @@ namespace Anvil.CSharp.Iteration
 
         private YieldedMethodRunner(IEnumerator methodContext)
         {
+            // Pre-allocate a capacity of 3 since most yield stacks will likely never go deeper.
             m_MethodContextStack = new Stack<IEnumerator>(3);
             m_CurrentMethodContext = methodContext;
         }
