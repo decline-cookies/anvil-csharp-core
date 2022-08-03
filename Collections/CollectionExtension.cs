@@ -13,6 +13,9 @@ namespace Anvil.CSharp.Collections
         /// </summary>
         /// <param name="collection">The <see cref="ICollection{T}"/> to operate on.</param>
         /// <typeparam name="T">The element type</typeparam>
+        /// <remarks>
+        /// This method will only clear the <see cref="collection"/> if <see cref="ICollection{T}.IsReadOnly"/> is false.
+        /// </remarks>
         public static void DisposeAllAndTryClear<T>(this ICollection<T> collection) where T : IDisposable
         {
             foreach (T item in collection)
