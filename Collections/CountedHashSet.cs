@@ -34,9 +34,8 @@ namespace Anvil.CSharp.Collections
         /// <returns>True if the item is new to the set.</returns>
         public bool Add(T item)
         {
-            if (!m_Items.ContainsKey(item))
+            if (m_Items.TryAdd(item, 1))
             {
-                m_Items.Add(item, 1);
                 return true;
             }
 
@@ -54,8 +53,9 @@ namespace Anvil.CSharp.Collections
             int count = m_Items[item];
             count--;
 
-            if (count == 0)
+            if (count <= 0)
             {
+                System.Diagnostics.Debug.Assert(count == 0);
                 m_Items.Remove(item);
                 return true;
             }
