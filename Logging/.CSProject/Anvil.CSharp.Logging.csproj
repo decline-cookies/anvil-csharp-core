@@ -40,6 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Log.cs" />
+    <Compile Include="Logger\ILogger.cs" />
+    <Compile Include="Logger\Logger.cs" />
+    <Compile Include="Logger\OneTimeLogger.cs" />
     <Compile Include="LogHandler\ConsoleLogHandler.cs" />
     <Compile Include="LogHandler\ILogHandler.cs" />
     <Compile Include="LogLevel.cs" />
