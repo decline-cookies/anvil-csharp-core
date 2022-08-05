@@ -153,8 +153,8 @@ namespace Anvil.CSharp.DelayedExecution
         /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
         /// </summary>
         /// <remarks>
-        /// CallAfterHandles usually operate on delta time but can easily be used to call after any type of delta. 
-        /// Example: <see cref="CallAfterUpdates(int, Action, uint)"/> is a convenience method that calls after a 
+        /// CallAfterHandles usually operate on delta time but can easily be used to call after any type of delta.
+        /// Example: <see cref="CallAfterUpdates(int, Action, uint)"/> is a convenience method that calls after a
         /// number of updates (usually frames).
         /// </remarks>
         /// <param name="targetDelta">The amount of delta (usually time) to wait until firing the callback function.</param>
@@ -212,4 +212,3 @@ namespace Anvil.CSharp.DelayedExecution
 
     }
 }
-
