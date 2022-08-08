@@ -5,7 +5,7 @@ using Anvil.CSharp.Logging;
 namespace Anvil.CSharp.Data
 {
     /// <summary>
-    /// An instance that provides a unique IDs each time requested.
+    /// An instance that provides a unique ID each time it is requested.
     /// Includes a mechanism to detect when ID supply is near exhaustion.
     /// </summary>
     public class IDProvider
