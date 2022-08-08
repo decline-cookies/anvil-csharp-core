@@ -45,7 +45,7 @@ namespace Anvil.CSharp.Data
         /// (default: <see cref="uint.MaxValue"/>) The threshold which, when passed, triggers
         /// <see cref="OnIDLimitImminent"/>.
         /// </param>
-        public IDProvider(uint supplyWarningThreshold = uint.MaxValue-1)
+        public IDProvider(uint supplyWarningThreshold = uint.MaxValue - 1_000_000)
         {
             SupplyWarningThreshold = supplyWarningThreshold;
         }

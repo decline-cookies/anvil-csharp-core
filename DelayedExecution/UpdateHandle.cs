@@ -42,7 +42,7 @@ namespace Anvil.CSharp.DelayedExecution
         // Seems likely that an application wouldn't need more than 100 more delayed calls before it can
         // create a new UpdateHandle to work with.
         // If this is an issue there's no risk to having the threshold trigger sooner.
-        private readonly IDProvider m_IDProvider = new IDProvider(uint.MaxValue-100);
+        private readonly IDProvider m_IDProvider = new IDProvider();
         private readonly Dictionary<uint, CallAfterHandle> m_CallAfterHandles = new Dictionary<uint, CallAfterHandle>();
         private readonly List<Action> m_UpdateListeners = new List<Action>();
         private readonly List<CallAfterHandle> m_UpdateIterator = new List<CallAfterHandle>();
