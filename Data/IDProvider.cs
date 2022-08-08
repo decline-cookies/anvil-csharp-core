@@ -29,6 +29,9 @@ namespace Anvil.CSharp.Data
         /// </summary>
         public event Action OnIDLimitWarning;
 
+        /// <summary>
+        /// The threshold which, when passed, triggers <seealso cref="OnIDLimitWarning"/>.
+        /// </summary>
         public readonly uint SupplyWarningThreshold;
 
         private bool m_HasIDWarningTriggered = false;
