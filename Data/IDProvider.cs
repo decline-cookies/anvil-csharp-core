@@ -21,7 +21,7 @@ namespace Anvil.CSharp.Data
         /// A reserved ID to represent "No ID".
         /// <see cref="GetNextID"/> will never return this value even when IDs roll over and are no longer unique.
         /// </summary>
-        public const int UNSET_ID = 0;
+        public const uint UNSET_ID = 0;
 
         /// <summary>
         /// Triggers the first time that <see cref="SupplyWarningThreshold"/> is passed.
