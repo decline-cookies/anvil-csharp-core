@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
@@ -13,6 +14,11 @@ namespace Anvil.CSharp.DelayedExecution
         /// </summary>
         public event Action OnUpdate;
 
+        /// <summary>
+        /// Indicates whether the source is currently executing its OnUpdate phase.
+        /// </summary>
+        public bool IsUpdating { get; private set; }
+
         protected AbstractUpdateSource()
         {
         }
@@ -21,12 +27,19 @@ namespace Anvil.CSharp.DelayedExecution
         {
             UpdateHandleSourcesManager.RemoveUpdateSource(this);
             OnUpdate = null;
+
             base.DisposeSelf();
         }
 
         protected void DispatchOnUpdateEvent()
         {
+            Debug.Assert(!IsUpdating);
+            IsUpdating = true;
+
             OnUpdate?.Invoke();
+
+            Debug.Assert(IsUpdating);
+            IsUpdating = false;
         }
     }
 }
