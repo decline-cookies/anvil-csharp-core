@@ -1,5 +1,6 @@
 {
     "name": "anvil-csharp-core",
+    "rootNamespace": "Anvil.CSharp",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

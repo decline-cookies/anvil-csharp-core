@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Anvil.CSharp.Core;
+using Anvil.CSharp.Data;
 
 namespace Anvil.CSharp.DelayedExecution
 {
@@ -21,8 +22,6 @@ namespace Anvil.CSharp.DelayedExecution
         /// </summary>
         public const uint CALL_AFTER_DEFAULT_CALL_LIMIT = 1;
 
-        private const uint CALL_AFTER_HANDLE_INITIAL_ID = 0;
-
         /// <summary>
         /// A <see cref="DeltaProvider"/> that provides a fixed delta of 1.
         /// </summary>
@@ -39,9 +38,11 @@ namespace Anvil.CSharp.DelayedExecution
             return updateHandle;
         }
 
-
-        private uint m_CallAfterHandleCurrentID = CALL_AFTER_HANDLE_INITIAL_ID;
-
+        // Arbitrary choice to warn when there are only 100 IDs left to provide.
+        // Seems likely that an application wouldn't need more than 100 more delayed calls before it can
+        // create a new UpdateHandle to work with.
+        // If this is an issue there's no risk to having the threshold trigger sooner.
+        private readonly IDProvider m_IDProvider = new IDProvider();
         private readonly Dictionary<uint, CallAfterHandle> m_CallAfterHandles = new Dictionary<uint, CallAfterHandle>();
         private readonly List<Action> m_UpdateListeners = new List<Action>();
         private readonly List<CallAfterHandle> m_UpdateIterator = new List<CallAfterHandle>();
@@ -146,22 +147,14 @@ namespace Anvil.CSharp.DelayedExecution
             m_OnUpdate?.Invoke();
         }
 
-        private uint GetNextCallAfterHandleID()
-        {
-            uint id = m_CallAfterHandleCurrentID;
-            m_CallAfterHandleCurrentID++;
-
-            return id;
-        }
-
         /// <summary>
         /// Calls the provided callback after an arbitrary delta (usually time) via a <see cref="CallAfterHandle"/>.
         /// Delta is measured on each <see cref="OnUpdate"/> tick and the callback is called if the aggregated delta is >= the targetDelta.
         /// CallAfterHandles are managed by the UpdateHandle and will be disposed if the UpdateHandle is disposed.
         /// </summary>
         /// <remarks>
-        /// CallAfterHandles usually operate on delta time but can easily be used to call after any type of delta. 
-        /// Example: <see cref="CallAfterUpdates(int, Action, uint)"/> is a convenience method that calls after a 
+        /// CallAfterHandles usually operate on delta time but can easily be used to call after any type of delta.
+        /// Example: <see cref="CallAfterUpdates(int, Action, uint)"/> is a convenience method that calls after a
         /// number of updates (usually frames).
         /// </remarks>
         /// <param name="targetDelta">The amount of delta (usually time) to wait until firing the callback function.</param>
@@ -174,11 +167,13 @@ namespace Anvil.CSharp.DelayedExecution
         /// <returns>A reference to the <see cref="CallAfterHandle"/> to store for use later. (Complete, Dispose)</returns>
         public CallAfterHandle CallAfter(float targetDelta, Action callback, DeltaProvider deltaProvider, uint callLimit = CALL_AFTER_DEFAULT_CALL_LIMIT)
         {
-            CallAfterHandle callAfterHandle = new CallAfterHandle(GetNextCallAfterHandleID(),
+            CallAfterHandle callAfterHandle = new CallAfterHandle(
+                m_IDProvider.GetNextID(),
                 callback,
                 targetDelta,
                 deltaProvider,
-                callLimit);
+                callLimit
+                );
 
             FinalizeHandle(callAfterHandle);
 
@@ -217,4 +212,3 @@ namespace Anvil.CSharp.DelayedExecution
 
     }
 }
-
