@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net471</TargetFramework>
-        <RootNamespace>anvil_csharp_logging</RootNamespace>
+        <RootNamespace>Anvil.CSharp.Logging</RootNamespace>
         <AssemblyName>anvil-csharp-logging</AssemblyName>
         <LangVersion>8</LangVersion>
     </PropertyGroup>
