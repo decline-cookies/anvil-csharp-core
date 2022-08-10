@@ -55,7 +55,7 @@ namespace Anvil.CSharp.DelayedExecution
             m_CancellationTokenSource.Cancel();
         }
 
-        private static float SecondsToMilliseconds(float seconds) => MathF.Round(seconds * 1000);
+        private static float SecondsToMilliseconds(float seconds) => (float)Math.Round(seconds * 1000);
 
         private static void RunUpdateLoop(int updateInterval, Action onInterval, CancellationToken cancelToken)
         {

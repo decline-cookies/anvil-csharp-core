@@ -134,14 +134,30 @@ namespace Anvil.CSharp.Command
         /// Clears all commands in the <see cref="BufferCommand"/> and disposes them.
         /// Will not dispatch <see cref="OnBufferIdle"/>.
         /// </summary>
-        public void Clear()
+        /// <param name="excludeCurrentChild">
+        /// If true, the currently executing child will not be cleared/disposed and it will continue to execute.
+        /// </param>
+        public void Clear(bool excludeCurrentChild = false)
         {
+            if (excludeCurrentChild && m_CurrentChild != null)
+            {
+                m_ChildCommands.Dequeue();
+            }
+
             foreach (T childCommand in m_ChildCommands)
             {
                 childCommand.Dispose();
             }
-
             m_ChildCommands.Clear();
+
+            if (excludeCurrentChild && m_CurrentChild != null)
+            {
+                m_ChildCommands.Enqueue(m_CurrentChild);
+            }
+            else
+            {
+                m_CurrentChild = null;
+            }
         }
 
         protected override void ExecuteCommand()

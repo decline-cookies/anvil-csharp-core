@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace Anvil.CSharp.Debugging
 {
     /// <summary>
-    /// A collection of convenient checks to make it easier/clearner for developers to assert
+    /// A collection of convenient checks to make it easier/cleaner for developers to assert
     /// complex conditions.
     /// </summary>
     public static class AssertUtil

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Anvil.CSharp.Logging</RootNamespace>
     <AssemblyName>Anvil.CSharp.Logging</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -39,12 +39,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DefaultLogHandlerAttribute.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="Logger\ILogger.cs" />
+    <Compile Include="Logger\Logger.cs" />
+    <Compile Include="Logger\OneTimeLogger.cs" />
     <Compile Include="LogHandler\ConsoleLogHandler.cs" />
     <Compile Include="LogHandler\ILogHandler.cs" />
     <Compile Include="LogLevel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="LogHandler\DefaultLogHandlerAttribute.cs" />
+    <Compile Include="LogListener\DefaultLogListenerAttribute.cs" />
+    <Compile Include="LogListener\ILogListener.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="LogListener\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

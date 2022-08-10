@@ -57,6 +57,6 @@ namespace Anvil.CSharp.DelayedExecution
             }
         }
 
-        private static float SecondsToMilliseconds(float seconds) => MathF.Round(seconds * 1000);
+        private static float SecondsToMilliseconds(float seconds) => (float)Math.Round(seconds * 1000);
     }
 }
