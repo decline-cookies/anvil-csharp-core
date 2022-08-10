@@ -37,7 +37,7 @@ namespace Anvil.CSharp.Logging
 
         /// <summary>
         /// Defines the format of the context added to log messages.
-        /// The following wraped in {} are substituted at runtime
+        /// The following wrapped in {} are substituted at runtime
         ///  - <see cref="LOG_CONTEXT_CALLER_DERIVED_TYPE"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_FILE"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_METHOD"/>
@@ -92,7 +92,7 @@ namespace Anvil.CSharp.Logging
 
             string filename = Path.GetFileNameWithoutExtension(callerPath);
             string context = string.Format(
-                LogContextFormat, 
+                LogContextFormat,
                 callerDerivedTypeName, filename, callerName, callerLine
                 );
 
