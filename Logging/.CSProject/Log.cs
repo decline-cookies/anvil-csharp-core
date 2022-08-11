@@ -11,11 +11,6 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public static class Log
     {
-        private static readonly string[] IGNORE_ASSEMBLIES =
-        {
-            "System", "mscorlib", "Unity", "UnityEngine", "UnityEditor", "nunit"
-        };
-
         private static readonly HashSet<ILogHandler> s_AdditionalHandlerList = new HashSet<ILogHandler>();
 
         /// <summary>
@@ -35,6 +30,7 @@ namespace Anvil.CSharp.Logging
         /// </remarks>
         public static bool IsHandlingLog { get; private set; } = false;
 
+
         static Log()
         {
             IEnumerable<Type> candidateTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -43,11 +39,6 @@ namespace Anvil.CSharp.Logging
 
             InitLogHandlers(candidateTypes);
             InitLogListeners(candidateTypes);
-
-            if (IGNORE_ASSEMBLIES.Any())
-            {
-                GetStaticLogger(typeof(Log)).Debug($"Default log handler and listener search ignored assemblies: {IGNORE_ASSEMBLIES.Aggregate((a, b) => $"{a}, {b}")}");
-            }
         }
 
         private static void InitLogHandlers(IEnumerable<Type> candidateTypes)
@@ -81,7 +72,7 @@ namespace Anvil.CSharp.Logging
                 return;
             }
 
-            var logger = GetStaticLogger(typeof(Log));
+            Logger logger = GetStaticLogger(typeof(Log));
             foreach (Type listener in candidateTypes)
             {
                 Activator.CreateInstance(listener);
@@ -89,10 +80,28 @@ namespace Anvil.CSharp.Logging
             }
         }
 
+        /// <summary>
+        /// Determines if an assembly should be ignored based on whether it references this logging assembly or not.
+        /// </summary>
+        /// <param name="assembly">The assembly to evaluate.</param>
+        /// <returns>true if the assembly should be ignored.</returns>
+        /// <remarks>If the assembly provided is the logging assembly this method will return false.</remarks>
         private static bool ShouldIgnoreAssembly(Assembly assembly)
         {
-            string name = assembly.GetName().Name;
-            return IGNORE_ASSEMBLIES.Any(ignore => name == ignore || name.StartsWith($"{ignore}."));
+            Assembly currentAssembly = Assembly.GetExecutingAssembly();
+            // If the assembly is referencing this assembly (logging) then we shouldn't ignore it.
+            if (currentAssembly == assembly)
+            {
+                return false;
+            }
+
+            // With strongly typed assemblies the best effort check is to compare Assembly.ToString().
+            // Discussion: https://stackoverflow.com/a/3459277/640196
+            string currentAssemblyName = currentAssembly.GetName().ToString();
+            bool isAssemblyReferenceLogging = assembly.GetReferencedAssemblies()
+                .Any(referencedAssemblyName => referencedAssemblyName.ToString() == currentAssemblyName);
+
+            return !isAssemblyReferenceLogging;
         }
 
         /// <summary>
