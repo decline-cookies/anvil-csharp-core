@@ -1,3 +1,4 @@
+![GitHub](https://img.shields.io/github/license/decline-cookies/anvil-csharp-core)
 [![CircleCI](https://circleci.com/gh/decline-cookies/anvil-csharp-core/tree/main.svg?style=shield&circle-token=75e18a1354e8eb105cb7601a6f640b23e6975da4)](https://circleci.com/gh/decline-cookies/anvil-csharp-core/tree/main)
 # anvil-csharp-core
 An opinionated collection of systems and utilities that help you build applications in C# quickly, coherently and ready to scale. While Anvil is designed with realtime interactive experiences in mind it's well suited as the foundation for any application or platform where flexibility is key.
