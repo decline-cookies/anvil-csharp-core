@@ -65,13 +65,13 @@ jobs:
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
 
     - name: Build Logging
-    - run: |
+      working-directory: ./Logging/.CSProject
+      run: |
         echo "Building logging project"
         dotnet build anvil-csharp-logging.sln
-    - working-directory: ./Logging/.CSProject
         
     - name: Build Core
-    - run: |
+      run: |
         echo "Building core project"
         dotnet build anvil-csharp-core.csproj
 
