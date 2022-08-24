@@ -39,7 +39,7 @@ namespace Anvil.CSharp.Data
         /// </param>
         /// <typeparam name="T">The type of the array.</typeparam>
         /// <returns>The first index that satisfied the predicate.</returns>
-        public static (int,int) IndexOf<T>(this T[,] array, Predicate<T> predicate)
+        public static (int,int) FindIndex<T>(this T[,] array, Predicate<T> predicate)
         {
             for (int y = 0; y < array.GetLength(1); y++)
             {
