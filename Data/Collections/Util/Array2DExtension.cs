@@ -14,16 +14,17 @@ namespace Anvil.CSharp.Data
         /// <param name="array">The array to query.</param>
         /// <param name="x">The first order index</param>
         /// <param name="y">The second order index</param>
+        /// <param name="defaultValue">(optional)The default value to use if the index is out of range</param>
         /// <typeparam name="T">The type of the array.</typeparam>
         /// <returns>The value at the specified index or default.</returns>
-        public static T GetElementOrDefaultAt<T>(this T[,] array, int x, int y)
+        public static T GetElementOrDefaultAt<T>(this T[,] array, int x, int y, T defaultValue = default)
         {
             int limitX = array.GetLength(0);
             int limitY = array.GetLength(1);
 
             if (x >= limitX || y >= limitY || x < 0 || y < 0)
             {
-                return default;
+                return defaultValue;
             }
 
             return array[x, y];
