@@ -37,11 +37,7 @@ namespace Anvil.CSharp.DelayedExecution
             UpdateHandle updateHandle = new UpdateHandle(typeof(T));
             return updateHandle;
         }
-
-        // Arbitrary choice to warn when there are only 100 IDs left to provide.
-        // Seems likely that an application wouldn't need more than 100 more delayed calls before it can
-        // create a new UpdateHandle to work with.
-        // If this is an issue there's no risk to having the threshold trigger sooner.
+        
         private readonly UintIDProvider m_IDProvider = new UintIDProvider();
         private readonly Dictionary<uint, CallAfterHandle> m_CallAfterHandles = new Dictionary<uint, CallAfterHandle>();
         private readonly List<Action> m_UpdateListeners = new List<Action>();
