@@ -16,7 +16,7 @@ The code is reasonably clean but documentation and examples are sparse. Feel fre
 ⚠️ We welcome PRs and bug reports but making this repo a public success is not our priority. No promises on when it will be addressed!
 
 # Dependencies
- - .NET Framework 4.5+
+ - [.NET Standard 2.1+](https://docs.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-1)
 
 # Features
- - [ ] TODO: [#49](https://github.com/decline-cookies/anvil-csharp-core/issues/75)
+ - [ ] TODO: [Issue #75](https://github.com/decline-cookies/anvil-csharp-core/issues/75)
