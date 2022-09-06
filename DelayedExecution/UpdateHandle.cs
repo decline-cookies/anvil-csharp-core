@@ -37,8 +37,8 @@ namespace Anvil.CSharp.DelayedExecution
             UpdateHandle updateHandle = new UpdateHandle(typeof(T));
             return updateHandle;
         }
-        
-        private readonly UintIDProvider m_IDProvider = new UintIDProvider();
+
+        private readonly IDProvider m_IDProvider = ID.CreateIDProvider();
         private readonly Dictionary<uint, CallAfterHandle> m_CallAfterHandles = new Dictionary<uint, CallAfterHandle>();
         private readonly List<Action> m_UpdateListeners = new List<Action>();
         private readonly List<CallAfterHandle> m_UpdateIterator = new List<CallAfterHandle>();
