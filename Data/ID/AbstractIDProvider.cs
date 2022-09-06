@@ -1,3 +1,4 @@
+using Anvil.CSharp.Core;
 using Anvil.CSharp.Logging;
 using System;
 using System.Diagnostics;
@@ -31,7 +32,7 @@ namespace Anvil.CSharp.Data
         /// The threshold which, when passed, triggers
         /// <see cref="AbstractIDProvider.OnIDLimitWarning"/>.
         /// </param>
-        protected AbstractIDProvider(T supplyWarningThreshold)
+        protected AbstractIDProvider(T supplyWarningThreshold) : base()
         {
             SupplyWarningThreshold = supplyWarningThreshold;
         }
@@ -80,13 +81,25 @@ namespace Anvil.CSharp.Data
     /// An instance that provides a unique ID each time it is requested.
     /// Includes a mechanism to detect when ID supply is near exhaustion.
     /// </summary>
-    public class AbstractIDProvider
+    public class AbstractIDProvider : AbstractAnvilBase
     {
         /// <summary>
         /// Triggers the first time that <see cref="AbstractIDProvider{T}.SupplyWarningThreshold"/> is passed.
         /// This gives the consumer the opportunity to react before IDs are exhausted.
         /// </summary>
         public event EventHandler<ID.IDLimitWarningEventArgs> OnIDLimitWarning;
+
+        protected AbstractIDProvider()
+        {
+            ID.RegisterIDProvider(this);
+        }
+
+        protected override void DisposeSelf()
+        {
+            ID.UnregisterIDProvider(this);
+            OnIDLimitWarning = null;
+            base.DisposeSelf();
+        }
 
         protected void DispatchIDLimitWarning()
         {

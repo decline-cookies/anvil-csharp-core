@@ -1,5 +1,7 @@
 using Anvil.CSharp.Logging;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Anvil.CSharp.Data
 {
@@ -49,93 +51,43 @@ namespace Anvil.CSharp.Data
         /// This gives the application the opportunity to react before IDs are exhausted.
         /// </summary>
         public static event EventHandler<IDLimitWarningEventArgs> OnIDLimitGlobalWarning;
-        
+
+        private static readonly HashSet<AbstractIDProvider> ID_PROVIDERS = new HashSet<AbstractIDProvider>();
+
         /// <summary>
-        /// Creates a new <see cref="IDProvider"/> which uses a <see cref="uint"/> as the backing type for
-        /// creating IDs.
-        /// <seealso cref="AbstractIDProvider"/>
+        /// Removes all reference to any <see cref="AbstractIDProvider"/>s that were created and resets
+        /// the <see cref="OnIDLimitGlobalWarning"/> event.
         /// </summary>
-        /// <param name="supplyWarningThreshold">
-        /// The threshold which, when passed, triggers
-        /// <see cref="AbstractIDProvider.OnIDLimitWarning"/> and <see cref="OnIDLimitGlobalWarning"/>
-        /// </param>
-        /// <returns>The instance of <see cref="IDProvider"/></returns>
-        public static IDProvider CreateIDProvider(uint supplyWarningThreshold = uint.MaxValue - 1_000_000)
+        /// <remarks>
+        /// Useful for when the application is soft-reloaded from inside.
+        /// </remarks>
+        public static void Dispose()
         {
-            IDProvider provider = new IDProvider(supplyWarningThreshold);
-            provider.OnIDLimitWarning += Provider_OnIDLimitWarning;
-            return provider;
+            foreach (AbstractIDProvider provider in ID_PROVIDERS)
+            {
+                provider.OnIDLimitWarning -= Provider_OnIDLimitWarning;
+            }
+            ID_PROVIDERS.Clear();
+            OnIDLimitGlobalWarning = null;
         }
-        
-        /// <summary>
-        /// Creates a new <see cref="ByteIDProvider"/> which uses a <see cref="byte"/> as the backing type for
-        /// creating IDs.
-        /// <seealso cref="AbstractIDProvider"/>
-        /// </summary>
-        /// <param name="supplyWarningThreshold">
-        /// The threshold which, when passed, triggers
-        /// <see cref="AbstractIDProvider.OnIDLimitWarning"/> and <see cref="OnIDLimitGlobalWarning"/>
-        /// </param>
-        /// <returns>The instance of <see cref="ByteIDProvider"/></returns>
-        public static ByteIDProvider CreateByteIDProvider(byte supplyWarningThreshold = byte.MaxValue - 32)
+
+        internal static void RegisterIDProvider(AbstractIDProvider provider)
         {
-            ByteIDProvider provider = new ByteIDProvider(supplyWarningThreshold);
+            Debug.Assert(!ID_PROVIDERS.Contains(provider), $"{provider} is being registered with {nameof(ID)} but it already is registered!");
+            ID_PROVIDERS.Add(provider);
             provider.OnIDLimitWarning += Provider_OnIDLimitWarning;
-            return provider;
         }
-        
-        internal static void Provider_OnIDLimitWarning(object sender, IDLimitWarningEventArgs args)
+
+        internal static void UnregisterIDProvider(AbstractIDProvider provider)
+        {
+            Debug.Assert(ID_PROVIDERS.Contains(provider), $"{provider} is being unregistered from {nameof(ID)} but it wasn't registered!");
+            ID_PROVIDERS.Remove(provider);
+            provider.OnIDLimitWarning -= Provider_OnIDLimitWarning;
+        }
+
+        private static void Provider_OnIDLimitWarning(object sender, IDLimitWarningEventArgs args)
         {
             OnIDLimitGlobalWarning?.Invoke(sender, args);
-        }
-    }
-    
-    //*************************************************************************************************************
-    // PROVIDER IMPLEMENTATIONS
-    //*************************************************************************************************************
-    
-    /// <summary>
-    /// Specific implementation of <see cref="AbstractIDProvider{T}"/> for <see cref="uint"/>
-    /// </summary>
-    /// <inheritdoc cref="AbstractIDProvider{T}"/>
-    public class IDProvider : AbstractIDProvider<uint>
-    {
-        /// <inheritdoc cref="AbstractIDProvider{T}"/>
-        internal IDProvider(uint supplyWarningThreshold) : base(supplyWarningThreshold)
-        {
-        }
-
-        protected override uint IncrementID(uint currentID)
-        {
-            return ++currentID;
-        }
-
-        protected override bool HasIDExceededSupplyWarningThreshold(uint currentID)
-        {
-            return currentID > SupplyWarningThreshold;
-        }
-    }
-    
-    /// <summary>
-    /// Specific implementation of <see cref="AbstractIDProvider{T}"/> for <see cref="byte"/>
-    /// </summary>
-    /// <inheritdoc cref="AbstractIDProvider{T}"/>
-    public class ByteIDProvider : AbstractIDProvider<byte>
-    {
-        /// <inheritdoc cref="AbstractIDProvider{T}"/>
-        internal ByteIDProvider(byte supplyWarningThreshold) : base(supplyWarningThreshold)
-        {
-            OnIDLimitWarning += ID.Provider_OnIDLimitWarning;
-        }
-
-        protected override byte IncrementID(byte currentID)
-        {
-            return ++currentID;
-        }
-
-        protected override bool HasIDExceededSupplyWarningThreshold(byte currentID)
-        {
-            return currentID > SupplyWarningThreshold;
         }
     }
 }
