@@ -1,7 +1,5 @@
 using Anvil.CSharp.Logging;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Anvil.CSharp.Data
 {
@@ -51,41 +49,8 @@ namespace Anvil.CSharp.Data
         /// This gives the application the opportunity to react before IDs are exhausted.
         /// </summary>
         public static event EventHandler<IDLimitWarningEventArgs> OnIDLimitGlobalWarning;
-
-        private static readonly HashSet<AbstractIDProvider> ID_PROVIDERS = new HashSet<AbstractIDProvider>();
-
-        /// <summary>
-        /// Removes all reference to any <see cref="AbstractIDProvider"/>s that were created and resets
-        /// the <see cref="OnIDLimitGlobalWarning"/> event.
-        /// </summary>
-        /// <remarks>
-        /// Useful for when the application is soft-reloaded from inside.
-        /// </remarks>
-        public static void Dispose()
-        {
-            foreach (AbstractIDProvider provider in ID_PROVIDERS)
-            {
-                provider.OnIDLimitWarning -= Provider_OnIDLimitWarning;
-            }
-            ID_PROVIDERS.Clear();
-            OnIDLimitGlobalWarning = null;
-        }
-
-        internal static void RegisterIDProvider(AbstractIDProvider provider)
-        {
-            Debug.Assert(!ID_PROVIDERS.Contains(provider), $"{provider} is being registered with {nameof(ID)} but it already is registered!");
-            ID_PROVIDERS.Add(provider);
-            provider.OnIDLimitWarning += Provider_OnIDLimitWarning;
-        }
-
-        internal static void UnregisterIDProvider(AbstractIDProvider provider)
-        {
-            Debug.Assert(ID_PROVIDERS.Contains(provider), $"{provider} is being unregistered from {nameof(ID)} but it wasn't registered!");
-            ID_PROVIDERS.Remove(provider);
-            provider.OnIDLimitWarning -= Provider_OnIDLimitWarning;
-        }
-
-        private static void Provider_OnIDLimitWarning(object sender, IDLimitWarningEventArgs args)
+        
+        internal static void DispatchOnIDLimitGlobalWarning(object sender, IDLimitWarningEventArgs args)
         {
             OnIDLimitGlobalWarning?.Invoke(sender, args);
         }

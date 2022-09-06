@@ -72,8 +72,10 @@ namespace Anvil.CSharp.Data
 
             Log.GetLogger(this).Warning($"{GetType().Name} has passed its supply warning threshold. Threshold: {SupplyWarningThreshold:N0}");
             m_HasIDWarningTriggered = true;
-
-            DispatchIDLimitWarning();
+    
+            ID.IDLimitWarningEventArgs args = new ID.IDLimitWarningEventArgs();
+            DispatchIDLimitWarning(args);
+            ID.DispatchOnIDLimitGlobalWarning(this, args);
         }
     }
 
@@ -89,21 +91,14 @@ namespace Anvil.CSharp.Data
         /// </summary>
         public event EventHandler<ID.IDLimitWarningEventArgs> OnIDLimitWarning;
 
-        protected AbstractIDProvider()
-        {
-            ID.RegisterIDProvider(this);
-        }
-
         protected override void DisposeSelf()
         {
-            ID.UnregisterIDProvider(this);
             OnIDLimitWarning = null;
             base.DisposeSelf();
         }
 
-        protected void DispatchIDLimitWarning()
+        protected void DispatchIDLimitWarning(ID.IDLimitWarningEventArgs args)
         {
-            ID.IDLimitWarningEventArgs args = new ID.IDLimitWarningEventArgs();
             OnIDLimitWarning?.Invoke(this, args);
         }
     }
