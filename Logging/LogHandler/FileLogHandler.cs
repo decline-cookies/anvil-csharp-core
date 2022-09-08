@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Logging
@@ -10,12 +9,30 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public class FileLogHandler : AbstractAnvilBase, ILogHandler
     {
+        /// <summary>
+        /// The type of log files the handler should generate.
+        /// </summary>
+        public enum LogType
+        {
+            /// <summary>
+            /// New logs are appended to the existing log file.
+            /// </summary>
+            Append,
+            /// <summary>
+            /// A new log file is created each session, overwriting the previous one if it exists.
+            /// </summary>
+            Replace,
+        }
+
         public const string LOG_CONTEXT_CALLER_DERIVED_TYPE = "{0}";
         public const string LOG_CONTEXT_CALLER_FILE = "{1}";
         public const string LOG_CONTEXT_CALLER_METHOD = "{2}";
         public const string LOG_CONTEXT_CALLER_LINE = "{3}";
 
-        private readonly StreamWriter m_Writer;
+        private StreamWriter m_Writer;
+        private readonly string m_Path;
+        private readonly LogType m_LogType;
+        private readonly bool m_Rotate;
 
         /// <summary>
         /// Indicates whether to prefix logs with a timestamp.
@@ -57,13 +74,57 @@ namespace Anvil.CSharp.Logging
         public LogLevel MinimumLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
+        /// The maximum file size in bytes before the file is rotated. Default is 10MB.
+        /// </summary>
+        public long RotateFileSizeLimit { get; set; } = 10L * 1024 * 1024;
+
+        /// <summary>
+        /// The maximum number of rotated files to keep before deleting the oldest. Default is 5.
+        /// Ex. If the limit is 5, up to 5 rotated files in addition to the original log file, will be kept. After reaching this limit,
+        /// the next time the log file is rotated, the oldest file will be deleted. If the limit is 0, no rotated files are kept,
+        /// i.e. when the log file is rotated, it is simply erased and starts over.
+        /// </summary>
+        public int RotateFileCountLimit { get; set; } = 5;
+
+        /// <summary>
         /// Creates a `FileLogHandler` that can write to the given file path.
         /// </summary>
         /// <param name="path">The text file to output messages to.</param>
-        /// <param name="append">If true, the file will have new logs appended to it, otherwise the file is replaced.</param>
-        public FileLogHandler(string path, bool append = true)
+        /// <param name="logType">The <see cref="LogType"/> to use.</param>
+        /// <param name="rotate">
+        /// If true, the file will be rotated when the size limit is reached. When a file is rotated, it has an index appended to it,
+        /// i.e. "log.txt" is renamed "log.1.txt", and a new "log.txt" is opened. If "log.1.txt" already exists, it is first renamed
+        /// "log.2.txt", and so on, rotating through log files. Once the file count limit is reached, the oldest file is deleted.
+        /// </param>
+        public FileLogHandler(string path, LogType logType = LogType.Append, bool rotate = true)
         {
-            m_Writer = new StreamWriter(path, append)
+            m_Path = path;
+            m_LogType = logType;
+            m_Rotate = rotate;
+
+            string directory = Path.GetDirectoryName(m_Path);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            CreateWriter();
+
+            if (logType == LogType.Replace && rotate)
+            {
+                int index = 1;
+                string rotatedFilePath = GetRotatedFilePath(index);
+                while (File.Exists(rotatedFilePath))
+                {
+                    File.Delete(rotatedFilePath);
+                    rotatedFilePath = GetRotatedFilePath(++index);
+                }
+            }
+        }
+
+        private void CreateWriter()
+        {
+            m_Writer = new StreamWriter(m_Path, append: (m_LogType == LogType.Append))
             {
                 AutoFlush = true
             };
@@ -97,6 +158,56 @@ namespace Anvil.CSharp.Logging
                 );
 
             m_Writer.WriteLine($"{timestamp}{logLevel}{context}{message}");
+
+            if (m_Rotate && m_Writer.BaseStream.Length > RotateFileSizeLimit)
+            {
+                this.RotateFiles();
+            }
+        }
+
+        private void RotateFiles()
+        {
+            m_Writer.Close();
+            m_Writer = null;
+
+            // Determine how many rotated log files already exist
+            int index = 1;
+            string rotatedFilePath = GetRotatedFilePath(index);
+            while (File.Exists(rotatedFilePath))
+            {
+                rotatedFilePath = GetRotatedFilePath(++index);
+            }
+            --index;
+
+            // Delete any files in excess of the file count limit
+            while (index >= RotateFileCountLimit)
+            {
+                File.Delete(GetRotatedFilePath(index));
+                --index;
+            }
+
+            // Rotate remaining files
+            while (index >= 0)
+            {
+                File.Move(GetRotatedFilePath(index), GetRotatedFilePath(index + 1));
+                --index;
+            }
+
+            CreateWriter();
+        }
+
+        private string GetRotatedFilePath(int index)
+        {
+            if (index == 0)
+            {
+                return m_Path;
+            }
+
+            string directory = Path.GetDirectoryName(m_Path);
+            string fileName = Path.GetFileNameWithoutExtension(m_Path);
+            string extension = Path.GetExtension(m_Path);
+            
+            return Path.Combine(directory, $"{fileName}.{index}{extension}");
         }
     }
 }
