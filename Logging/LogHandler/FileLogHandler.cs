@@ -19,7 +19,7 @@ namespace Anvil.CSharp.Logging
             /// </summary>
             Append,
             /// <summary>
-            /// A new log file is created each session, overwriting the previous one if it exists.
+            /// A new log file is created, overwriting the previous one if it exists.
             /// </summary>
             Replace,
         }
