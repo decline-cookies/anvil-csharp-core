@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Diagnostics;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Logging
@@ -31,8 +32,12 @@ namespace Anvil.CSharp.Logging
 
         private StreamWriter m_Writer;
         private readonly string m_Path;
+        private readonly string m_Directory;
+        private readonly string m_FileName;
+        private readonly string m_Extension;
+
         private readonly LogType m_LogType;
-        private readonly bool m_Rotate;
+        private readonly bool m_ShouldRotate;
 
         /// <summary>
         /// Indicates whether to prefix logs with a timestamp.
@@ -91,26 +96,29 @@ namespace Anvil.CSharp.Logging
         /// </summary>
         /// <param name="path">The text file to output messages to.</param>
         /// <param name="logType">The <see cref="LogType"/> to use.</param>
-        /// <param name="rotate">
+        /// <param name="shouldRotate">
         /// If true, the file will be rotated when the size limit is reached. When a file is rotated, it has an index appended to it,
         /// i.e. "log.txt" is renamed "log.1.txt", and a new "log.txt" is opened. If "log.1.txt" already exists, it is first renamed
         /// "log.2.txt", and so on, rotating through log files. Once the file count limit is reached, the oldest file is deleted.
         /// </param>
-        public FileLogHandler(string path, LogType logType = LogType.Append, bool rotate = true)
+        public FileLogHandler(string path, LogType logType = LogType.Append, bool shouldRotate = true)
         {
             m_Path = path;
             m_LogType = logType;
-            m_Rotate = rotate;
+            m_ShouldRotate = shouldRotate;
 
-            string directory = Path.GetDirectoryName(m_Path);
-            if (!Directory.Exists(directory))
+            m_Directory = Path.GetDirectoryName(m_Path);
+            m_FileName = Path.GetFileNameWithoutExtension(m_Path);
+            m_Extension = Path.GetExtension(m_Path);
+
+            if (!Directory.Exists(m_Directory))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(m_Directory);
             }
 
             CreateWriter();
 
-            if (logType == LogType.Replace && rotate)
+            if (logType == LogType.Replace && shouldRotate)
             {
                 int index = 1;
                 string rotatedFilePath = GetRotatedFilePath(index);
@@ -155,11 +163,11 @@ namespace Anvil.CSharp.Logging
             string context = string.Format(
                 LogContextFormat,
                 callerDerivedTypeName, filename, callerName, callerLine
-                );
+            );
 
             m_Writer.WriteLine($"{timestamp}{logLevel}{context}{message}");
 
-            if (m_Rotate && m_Writer.BaseStream.Length > RotateFileSizeLimit)
+            if (m_ShouldRotate && m_Writer.BaseStream.Length > RotateFileSizeLimit)
             {
                 this.RotateFiles();
             }
@@ -167,6 +175,9 @@ namespace Anvil.CSharp.Logging
 
         private void RotateFiles()
         {
+            Debug.Assert(RotateFileSizeLimit >= 0, $"Expected positive integer for file size limit, but got {RotateFileSizeLimit}");
+            Debug.Assert(RotateFileCountLimit >= 0, $"Expected positive integer for file count limit, but got {RotateFileCountLimit}");
+
             m_Writer.Close();
             m_Writer = null;
 
@@ -198,16 +209,8 @@ namespace Anvil.CSharp.Logging
 
         private string GetRotatedFilePath(int index)
         {
-            if (index == 0)
-            {
-                return m_Path;
-            }
-
-            string directory = Path.GetDirectoryName(m_Path);
-            string fileName = Path.GetFileNameWithoutExtension(m_Path);
-            string extension = Path.GetExtension(m_Path);
-            
-            return Path.Combine(directory, $"{fileName}.{index}{extension}");
+            Debug.Assert(index >= 0, $"Failed to get rotated file path, invalid index {index}");
+            return (index == 0 ? m_Path : Path.Combine(m_Directory, $"{m_FileName}.{index}{m_Extension}"));
         }
     }
 }
