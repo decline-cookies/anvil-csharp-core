@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Logging
@@ -13,7 +16,7 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// The type of log files the handler should generate.
         /// </summary>
-        public enum LogType
+        public enum WriteMode
         {
             /// <summary>
             /// New logs are appended to the existing log file.
@@ -36,8 +39,10 @@ namespace Anvil.CSharp.Logging
         private readonly string m_FileName;
         private readonly string m_Extension;
 
-        private readonly LogType m_LogType;
-        private readonly bool m_ShouldRotate;
+        private readonly WriteMode m_WriteMode;
+        
+        private readonly long? m_RotateFileSizeLimit;
+        private readonly int? m_RotateFileCountLimit;
 
         /// <summary>
         /// Indicates whether to prefix logs with a timestamp.
@@ -79,33 +84,42 @@ namespace Anvil.CSharp.Logging
         public LogLevel MinimumLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
-        /// The maximum file size in bytes before the file is rotated. Default is 10MB.
-        /// </summary>
-        public long RotateFileSizeLimit { get; set; } = 10L * 1024 * 1024;
-
-        /// <summary>
-        /// The maximum number of rotated files to keep before deleting the oldest. Default is 5.
-        /// Ex. If the limit is 5, up to 5 rotated files in addition to the original log file, will be kept. After reaching this limit,
-        /// the next time the log file is rotated, the oldest file will be deleted. If the limit is 0, no rotated files are kept,
-        /// i.e. when the log file is rotated, it is simply erased and starts over.
-        /// </summary>
-        public int RotateFileCountLimit { get; set; } = 5;
-
-        /// <summary>
         /// Creates a `FileLogHandler` that can write to the given file path.
         /// </summary>
         /// <param name="path">The text file to output messages to.</param>
-        /// <param name="logType">The <see cref="LogType"/> to use.</param>
-        /// <param name="shouldRotate">
-        /// If true, the file will be rotated when the size limit is reached. When a file is rotated, it has an index appended to it,
-        /// i.e. "log.txt" is renamed "log.1.txt", and a new "log.txt" is opened. If "log.1.txt" already exists, it is first renamed
-        /// "log.2.txt", and so on, rotating through log files. Once the file count limit is reached, the oldest file is deleted.
+        /// <param name="writeMode">The <see cref="WriteMode"/> to use.</param>
+        /// <param name="rotateFileSizeLimit">
+        /// The maximum file size in bytes before the file is rotated. Default is 10MB.
+        /// If set, the file will be rotated when the next log would exceed the limit. When a file is rotated, an index is appended to it,
+        /// ex. "log.txt" is renamed "log.1.txt", and a new "log.txt" is opened. If "log.1.txt" already exists, it is first renamed
+        /// "log.2.txt", and so on, rotating through log files.
         /// </param>
-        public FileLogHandler(string path, LogType logType = LogType.Append, bool shouldRotate = true)
+        /// <param name="rotateFileCountLimit">
+        /// The maximum number of rotated files to keep before deleting the oldest. Default is 5.
+        /// Ex. If the limit is 5, up to 5 rotated files in addition to the original log file, will be kept. After reaching this limit,
+        /// the next time the log file is rotated, the oldest file will be deleted. If the limit is 0, no rotated files are kept,
+        /// i.e. when the log file is rotated, it is simply erased and started over.
+        /// </summary>
+        public FileLogHandler(
+            string path,
+            WriteMode writeMode = WriteMode.Append,
+            long? rotateFileSizeLimit = 10L * 1024 * 1024,
+            int? rotateFileCountLimit = 5
+        )
         {
             m_Path = path;
-            m_LogType = logType;
-            m_ShouldRotate = shouldRotate;
+            m_WriteMode = writeMode;
+            m_RotateFileSizeLimit = rotateFileSizeLimit;
+            m_RotateFileCountLimit = rotateFileCountLimit;
+
+            if (m_RotateFileSizeLimit < 0)
+            {
+                throw new Exception($"Expected a positive integer for file size limit: {m_RotateFileSizeLimit}");
+            }
+            if (m_RotateFileCountLimit < 0)
+            {
+                throw new Exception($"Expected a positive integer for file count limit: {m_RotateFileCountLimit}");
+            }
 
             m_Directory = Path.GetDirectoryName(m_Path);
             m_FileName = Path.GetFileNameWithoutExtension(m_Path);
@@ -118,21 +132,18 @@ namespace Anvil.CSharp.Logging
 
             CreateWriter();
 
-            if (logType == LogType.Replace && shouldRotate)
+            if (m_WriteMode == WriteMode.Replace && m_RotateFileSizeLimit.HasValue)
             {
-                int index = 1;
-                string rotatedFilePath = GetRotatedFilePath(index);
-                while (File.Exists(rotatedFilePath))
+                foreach ((_, string filePath) in GetRotatedFiles())
                 {
-                    File.Delete(rotatedFilePath);
-                    rotatedFilePath = GetRotatedFilePath(++index);
+                    File.Delete(filePath);
                 }
             }
         }
 
         private void CreateWriter()
         {
-            m_Writer = new StreamWriter(m_Path, append: (m_LogType == LogType.Append))
+            m_Writer = new StreamWriter(m_Path, append: (m_WriteMode == WriteMode.Append))
             {
                 AutoFlush = true
             };
@@ -165,52 +176,107 @@ namespace Anvil.CSharp.Logging
                 callerDerivedTypeName, filename, callerName, callerLine
             );
 
-            m_Writer.WriteLine($"{timestamp}{logLevel}{context}{message}");
+            string log = $"{timestamp}{logLevel}{context}{message}";
 
-            if (m_ShouldRotate && m_Writer.BaseStream.Length > RotateFileSizeLimit)
+            if (m_RotateFileSizeLimit != null)
             {
-                this.RotateFiles();
+                int logLength = Encoding.Unicode.GetByteCount(log);
+                long fileLength = m_Writer.BaseStream.Length;
+
+                if ((fileLength + logLength) > m_RotateFileSizeLimit)
+                {
+                    if (logLength > m_RotateFileSizeLimit)
+                    {
+                        throw new Exception("Message size exceeds file size limit, logging failed " +
+                            $"({logLength} > {m_RotateFileSizeLimit})");
+                    }
+
+                    this.RotateFiles();
+                }
             }
+
+            m_Writer.WriteLine(log);
         }
 
         private void RotateFiles()
         {
-            Debug.Assert(RotateFileSizeLimit >= 0, $"Expected positive integer for file size limit, but got {RotateFileSizeLimit}");
-            Debug.Assert(RotateFileCountLimit >= 0, $"Expected positive integer for file count limit, but got {RotateFileCountLimit}");
-
-            m_Writer.Close();
+            m_Writer.Dispose();
             m_Writer = null;
 
-            // Determine how many rotated log files already exist
-            int index = 1;
-            string rotatedFilePath = GetRotatedFilePath(index);
-            while (File.Exists(rotatedFilePath))
+            Dictionary<int, string> fileMap = new Dictionary<int, string>{ [0] = m_Path };
+            foreach ((int index, string path) in GetRotatedFiles())
             {
-                rotatedFilePath = GetRotatedFilePath(++index);
+                if (index < 0 || index > m_RotateFileCountLimit)
+                {
+                    File.Delete(path);
+                }
+                else if (fileMap.ContainsKey(index))
+                {
+                    // In case of duplicate indices (ex. "log.1.txt" vs "log.001.txt") keep the shortest
+                    if (fileMap[index].Length < path.Length)
+                    {
+                        File.Delete(path);
+                    }
+                    else
+                    {
+                        File.Delete(fileMap[index]);
+                        fileMap[index] = path;
+                    }
+                }
+                else
+                {
+                    fileMap[index] = path;
+                }
             }
-            --index;
 
-            // Delete any files in excess of the file count limit
-            while (index >= RotateFileCountLimit)
-            {
-                File.Delete(GetRotatedFilePath(index));
-                --index;
-            }
-
-            // Rotate remaining files
-            while (index >= 0)
-            {
-                File.Move(GetRotatedFilePath(index), GetRotatedFilePath(index + 1));
-                --index;
-            }
+            RotateRecursive(0);
 
             CreateWriter();
+
+            void RotateRecursive(int index)
+            {
+                if (index >= m_RotateFileCountLimit)
+                {
+                    File.Delete(fileMap[index]);
+                }
+                else
+                {
+                    if (fileMap.ContainsKey(index + 1))
+                    {
+                        RotateRecursive(index + 1);
+                    }
+
+                    File.Move(fileMap[index], GetRotatedFilePath(index + 1));
+                }
+            }
         }
 
         private string GetRotatedFilePath(int index)
         {
-            Debug.Assert(index >= 0, $"Failed to get rotated file path, invalid index {index}");
+            if (index < 0)
+            {
+                throw new IndexOutOfRangeException($"Invalid file index: {index}");
+            }
+
             return (index == 0 ? m_Path : Path.Combine(m_Directory, $"{m_FileName}.{index}{m_Extension}"));
+        }
+
+        private IEnumerable<(int index, string path)> GetRotatedFiles()
+        {
+            string pattern = @$"{m_FileName}\.(\d+){(m_Extension.Length == 0 ? "" : @$"\{m_Extension}")}";
+
+            return Directory.GetFiles(m_Directory, $"{m_FileName}.*")
+                .Select(path => (path, match: Regex.Match(path, pattern)))
+                .Where(data => data.match.Success)
+                .Select(data => (index: ParseIndex(data.match.Groups[1].Value), data.path));
+
+            // Interpret index digits as an int, falling back on default
+            int ParseIndex(string indexStr)
+            {
+                int index;
+                int.TryParse(indexStr, out index);
+                return index;
+            }
         }
     }
 }
