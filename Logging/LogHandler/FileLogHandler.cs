@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Anvil.CSharp.Core;
 
@@ -33,6 +33,8 @@ namespace Anvil.CSharp.Logging
         public const string LOG_CONTEXT_CALLER_METHOD = "{2}";
         public const string LOG_CONTEXT_CALLER_LINE = "{3}";
 
+        private const string TRUNCATED_LOG_MESSAGE = "...(message exceeds file size limit and was truncated)";
+
         private StreamWriter m_Writer;
         private readonly string m_Path;
         private readonly string m_Directory;
@@ -43,6 +45,9 @@ namespace Anvil.CSharp.Logging
         
         private readonly long? m_RotateFileSizeLimit;
         private readonly int? m_RotateFileCountLimit;
+
+        private readonly int m_TruncatedLogMessageByteCount;
+        private readonly int m_NewlineByteCount;
 
         /// <summary>
         /// Indicates whether to prefix logs with a timestamp.
@@ -112,15 +117,6 @@ namespace Anvil.CSharp.Logging
             m_RotateFileSizeLimit = rotateFileSizeLimit;
             m_RotateFileCountLimit = rotateFileCountLimit;
 
-            if (m_RotateFileSizeLimit < 0)
-            {
-                throw new Exception($"Expected a positive integer for file size limit: {m_RotateFileSizeLimit}");
-            }
-            if (m_RotateFileCountLimit < 0)
-            {
-                throw new Exception($"Expected a positive integer for file count limit: {m_RotateFileCountLimit}");
-            }
-
             m_Directory = Path.GetDirectoryName(m_Path);
             m_FileName = Path.GetFileNameWithoutExtension(m_Path);
             m_Extension = Path.GetExtension(m_Path);
@@ -132,9 +128,17 @@ namespace Anvil.CSharp.Logging
 
             CreateWriter();
 
+            m_TruncatedLogMessageByteCount = m_Writer.Encoding.GetByteCount(TRUNCATED_LOG_MESSAGE);
+            m_NewlineByteCount = m_Writer.Encoding.GetByteCount(m_Writer.NewLine);
+
+            // Assert that the file size limit is reasonable value, at least longer than the truncation message
+            Debug.Assert(m_RotateFileSizeLimit >= m_TruncatedLogMessageByteCount);
+            // Assert that the file count limit is non-negative
+            Debug.Assert(m_RotateFileCountLimit >= 0);
+
             if (m_WriteMode == WriteMode.Replace && m_RotateFileSizeLimit.HasValue)
             {
-                foreach ((_, string filePath) in GetRotatedFiles())
+                foreach (string filePath in GetExistingRotatedFilePaths())
                 {
                     File.Delete(filePath);
                 }
@@ -180,18 +184,36 @@ namespace Anvil.CSharp.Logging
 
             if (m_RotateFileSizeLimit != null)
             {
-                int logLength = Encoding.Unicode.GetByteCount(log);
-                long fileLength = m_Writer.BaseStream.Length;
+                // Check GetMaxByteCount() first as it's much cheaper to run on every log
+                int logMaxByteCount = m_Writer.Encoding.GetMaxByteCount(log.Length) + m_NewlineByteCount;
+                long fileByteCount = m_Writer.BaseStream.Length;
 
-                if ((fileLength + logLength) > m_RotateFileSizeLimit)
+                if ((fileByteCount + logMaxByteCount) > m_RotateFileSizeLimit)
                 {
-                    if (logLength > m_RotateFileSizeLimit)
-                    {
-                        throw new Exception("Message size exceeds file size limit, logging failed " +
-                            $"({logLength} > {m_RotateFileSizeLimit})");
-                    }
+                    // If this log may push the file over the size limit, run the more expensive GetByteCount()
+                    int logByteCount = m_Writer.Encoding.GetByteCount(log) + m_NewlineByteCount;
 
-                    this.RotateFiles();
+                    if ((fileByteCount + logByteCount) > m_RotateFileSizeLimit)
+                    {
+                        // If the file is empty, and this log alone is exceeding the file size limit, don't rotate
+                        if (fileByteCount > 0)
+                        {
+                            this.RotateFiles();
+                        }
+
+                        if (logByteCount > m_RotateFileSizeLimit)
+                        {
+                            // This should be impossible, no single string can exceed `int.MaxValue` bytes
+                            Debug.Assert(m_RotateFileSizeLimit <= int.MaxValue);
+
+                            // Remove at least enough characters to meet the file size limit
+                            // This may remove more than strictly necessary, if any characters are multiple bytes
+                            int bytesToRemove = (logByteCount - (int)m_RotateFileSizeLimit) + m_TruncatedLogMessageByteCount;
+                            int targetLength = log.Length - bytesToRemove;
+
+                            log = log.Substring(0, Math.Max(0, targetLength)) + TRUNCATED_LOG_MESSAGE;
+                        }
+                    }
                 }
             }
 
@@ -203,55 +225,39 @@ namespace Anvil.CSharp.Logging
             m_Writer.Dispose();
             m_Writer = null;
 
-            Dictionary<int, string> fileMap = new Dictionary<int, string>{ [0] = m_Path };
-            foreach ((int index, string path) in GetRotatedFiles())
+            // Get all existing rotated log file paths, collecting valid paths to be rotated
+            List<string> existingFilePaths = GetExistingRotatedFilePaths().ToList();
+            List<string> validPaths = new List<string>{ m_Path };
+
+            for (int i = 1; i < m_RotateFileCountLimit && existingFilePaths.Any(); i++)
             {
-                if (index < 0 || index > m_RotateFileCountLimit)
+                string filePath = GetRotatedFilePathForIndex(i);
+                if (existingFilePaths.Remove(filePath))
                 {
-                    File.Delete(path);
-                }
-                else if (fileMap.ContainsKey(index))
-                {
-                    // In case of duplicate indices (ex. "log.1.txt" vs "log.001.txt") keep the shortest
-                    if (fileMap[index].Length < path.Length)
-                    {
-                        File.Delete(path);
-                    }
-                    else
-                    {
-                        File.Delete(fileMap[index]);
-                        fileMap[index] = path;
-                    }
+                    validPaths.Add(filePath);
                 }
                 else
                 {
-                    fileMap[index] = path;
+                    break;
                 }
             }
 
-            RotateRecursive(0);
+            // Delete any remaining out-of-range files
+            foreach (string path in existingFilePaths)
+            {
+                File.Delete(path);
+            }
+
+            // Rotate valid files
+            for (int i = validPaths.Count - 1; i >= 0; i--)
+            {
+                File.Move(validPaths[i], GetRotatedFilePathForIndex(i + 1));
+            }
 
             CreateWriter();
-
-            void RotateRecursive(int index)
-            {
-                if (index >= m_RotateFileCountLimit)
-                {
-                    File.Delete(fileMap[index]);
-                }
-                else
-                {
-                    if (fileMap.ContainsKey(index + 1))
-                    {
-                        RotateRecursive(index + 1);
-                    }
-
-                    File.Move(fileMap[index], GetRotatedFilePath(index + 1));
-                }
-            }
         }
 
-        private string GetRotatedFilePath(int index)
+        private string GetRotatedFilePathForIndex(int index)
         {
             if (index < 0)
             {
@@ -261,22 +267,11 @@ namespace Anvil.CSharp.Logging
             return (index == 0 ? m_Path : Path.Combine(m_Directory, $"{m_FileName}.{index}{m_Extension}"));
         }
 
-        private IEnumerable<(int index, string path)> GetRotatedFiles()
+        private IEnumerable<string> GetExistingRotatedFilePaths()
         {
             string pattern = @$"{m_FileName}\.(\d+){(m_Extension.Length == 0 ? "" : @$"\{m_Extension}")}";
 
-            return Directory.GetFiles(m_Directory, $"{m_FileName}.*")
-                .Select(path => (path, match: Regex.Match(path, pattern)))
-                .Where(data => data.match.Success)
-                .Select(data => (index: ParseIndex(data.match.Groups[1].Value), data.path));
-
-            // Interpret index digits as an int, falling back on default
-            int ParseIndex(string indexStr)
-            {
-                int index;
-                int.TryParse(indexStr, out index);
-                return index;
-            }
+            return Directory.GetFiles(m_Directory, $"{m_FileName}.*").Where(path => Regex.IsMatch(path, pattern));
         }
     }
 }
