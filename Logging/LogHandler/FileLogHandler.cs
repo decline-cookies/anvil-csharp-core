@@ -131,10 +131,8 @@ namespace Anvil.CSharp.Logging
             m_TruncatedLogMessageByteCount = m_Writer.Encoding.GetByteCount(TRUNCATED_LOG_MESSAGE);
             m_NewlineByteCount = m_Writer.Encoding.GetByteCount(m_Writer.NewLine);
 
-            // Assert that the file size limit is reasonable value, at least longer than the truncation message
-            Debug.Assert(m_RotateFileSizeLimit >= m_TruncatedLogMessageByteCount);
-            // Assert that the file count limit is non-negative
-            Debug.Assert(m_RotateFileCountLimit >= 0);
+            Trace.Assert(m_RotateFileSizeLimit >= m_TruncatedLogMessageByteCount, "Invalid rotated file size limit");
+            Trace.Assert(m_RotateFileCountLimit >= 0, "Invalid rotated file count limit");
 
             if (m_WriteMode == WriteMode.Replace && m_RotateFileSizeLimit.HasValue)
             {
