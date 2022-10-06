@@ -11,6 +11,8 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public static class Log
     {
+        private const string UNKNOWN_CONTEXT = "unknown";
+
         private static readonly HashSet<ILogHandler> s_AdditionalHandlerList = new HashSet<ILogHandler>();
 
         /// <summary>
@@ -163,6 +165,9 @@ namespace Anvil.CSharp.Logging
 
             Debug.Assert(!string.IsNullOrEmpty(callerDerivedTypeName));
             Debug.Assert(!IsHandlingLog);
+
+            callerPath ??= UNKNOWN_CONTEXT;
+            callerName ??= UNKNOWN_CONTEXT;
 
             IsHandlingLog = true;
             foreach (ILogHandler handler in s_AdditionalHandlerList)
