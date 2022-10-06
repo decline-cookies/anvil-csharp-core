@@ -78,8 +78,8 @@ namespace Anvil.CSharp.Logging
         /// Default: "({LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}|{LOG_CONTEXT_CALLER_METHOD}) "
         /// </summary>
         /// <example>
-        /// The default format produces "(MyFile|MyCallingMethod:12) " for a log issued in the
-        /// file "MyFile" from method "MyCallingMethod" on line "12".
+        /// The default format produces "(MyFile:12|MyCallingMethod) " for a log issued in the
+        /// file "MyFile" on line "12" from method "MyCallingMethod".
         /// </example>
         public string LogContextFormat { get; set; } = $"({LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}|{LOG_CONTEXT_CALLER_METHOD}) ";
 
