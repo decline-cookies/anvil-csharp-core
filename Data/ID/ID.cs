@@ -51,6 +51,17 @@ namespace Anvil.CSharp.Data
         public static event EventHandler<IDLimitWarningEventArgs> OnIDLimitGlobalWarning;
         
         internal static void DispatchOnIDLimitGlobalWarning(object sender, IDLimitWarningEventArgs args)
+        /// <summary>
+        /// Resets the static state.
+        /// </summary>
+        /// <remarks>
+        /// Used for runtimes where a domain reload doesn't occur between run sessions (Ex: Unity).
+        /// </remarks>
+        public static void ResetState()
+        {
+            OnIDLimitGlobalWarning = null;
+        }
+
         {
             OnIDLimitGlobalWarning?.Invoke(sender, args);
         }
