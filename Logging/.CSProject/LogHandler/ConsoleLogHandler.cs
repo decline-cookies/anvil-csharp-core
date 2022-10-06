@@ -19,7 +19,11 @@ namespace Anvil.CSharp.Logging
             string callerName,
             int callerLine)
         {
-            message = $"({Path.GetFileNameWithoutExtension(callerPath)}:{callerLine}|{callerName}) {message}";
+            string callerFile = Path.GetFileNameWithoutExtension(callerPath);
+
+            string context = (callerLine > 0 ? $"{callerFile}:{callerLine}|{callerName}" : $"{callerFile}|{callerName}");
+
+            message = $"({context}) {message}";
 
             switch (level)
             {
