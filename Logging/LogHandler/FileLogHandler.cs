@@ -75,13 +75,13 @@ namespace Anvil.CSharp.Logging
         ///  - <see cref="LOG_CONTEXT_CALLER_METHOD"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_LINE"/>
         ///
-        /// Default: "({LOG_CONTEXT_CALLER_FILE}|{LOG_CONTEXT_CALLER_METHOD}:{LOG_CONTEXT_CALLER_LINE}) "
+        /// Default: "({LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}|{LOG_CONTEXT_CALLER_METHOD}) "
         /// </summary>
         /// <example>
         /// The default format produces "(MyFile|MyCallingMethod:12) " for a log issued in the
         /// file "MyFile" from method "MyCallingMethod" on line "12".
         /// </example>
-        public string LogContextFormat { get; set; } = $"({LOG_CONTEXT_CALLER_FILE}|{LOG_CONTEXT_CALLER_METHOD}:{LOG_CONTEXT_CALLER_LINE}) ";
+        public string LogContextFormat { get; set; } = $"({LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}|{LOG_CONTEXT_CALLER_METHOD}) ";
 
         /// <summary>
         /// Indicates the minimum message severity to handle. Logs below this level are ignored.
