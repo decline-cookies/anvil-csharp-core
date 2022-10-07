@@ -23,11 +23,11 @@ namespace Anvil.CSharp.Logging
 
             if (callerLine > 0)
             {
-               message = $"({callerFile}:{callerLine}|{callerName}) {message}"
+               message = $"({callerFile}:{callerLine}|{callerName}) {message}";
             }
             else
             {
-               message = $"({callerFile}|{callerName}) {message}"
+               message = $"({callerFile}|{callerName}) {message}";
             }
 
             switch (level)
