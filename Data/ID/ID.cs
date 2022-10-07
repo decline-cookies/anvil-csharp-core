@@ -8,7 +8,7 @@ namespace Anvil.CSharp.Data
         /// <summary>
         /// Arguments that describe an ID limit warning.
         /// </summary>
-        public class IDLimitWarningEventArgs : EventArgs
+        public class LimitWarningEventArgs : EventArgs
         {
             /// <summary>
             /// Indicates whether the limit warning has been handled. If true, no further corrective action is required
@@ -19,7 +19,7 @@ namespace Anvil.CSharp.Data
             /// <summary>
             /// Creates a new instance.
             /// </summary>
-            internal IDLimitWarningEventArgs()
+            internal LimitWarningEventArgs()
             {
                 IsHandled = false;
             }
@@ -48,9 +48,20 @@ namespace Anvil.CSharp.Data
         /// SupplyWarningThreshold for the first time.
         /// This gives the application the opportunity to react before IDs are exhausted.
         /// </summary>
-        public static event EventHandler<IDLimitWarningEventArgs> OnIDLimitGlobalWarning;
-        
-        internal static void DispatchOnIDLimitGlobalWarning(object sender, IDLimitWarningEventArgs args)
+        public static event EventHandler<LimitWarningEventArgs> OnIDLimitGlobalWarning;
+
+        /// <summary>
+        /// Resets the static state.
+        /// </summary>
+        /// <remarks>
+        /// Used for runtimes where a domain reload doesn't occur between run sessions (Ex: Unity).
+        /// </remarks>
+        public static void ResetState()
+        {
+            OnIDLimitGlobalWarning = null;
+        }
+
+        internal static void DispatchOnIDLimitGlobalWarning(object sender, LimitWarningEventArgs args)
         {
             OnIDLimitGlobalWarning?.Invoke(sender, args);
         }
