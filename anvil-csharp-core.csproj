@@ -1,10 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>anvil_csharp_core</RootNamespace>
+    <RootNamespace>Anvil.CSharp</RootNamespace>
     <LangVersion>8</LangVersion>
     <TargetFrameworks>netcoreapp3.1;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Tests\**" />
+    <EmbeddedResource Remove="Tests\**" />
+    <None Remove="Tests\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Logging\anvil-csharp-logging.dll" />
