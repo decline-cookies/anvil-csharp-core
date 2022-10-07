@@ -21,9 +21,14 @@ namespace Anvil.CSharp.Logging
         {
             string callerFile = Path.GetFileNameWithoutExtension(callerPath);
 
-            string context = (callerLine > 0 ? $"{callerFile}:{callerLine}|{callerName}" : $"{callerFile}|{callerName}");
-
-            message = $"({context}) {message}";
+            if (callerLine > 0)
+            {
+               message = $"({callerFile}:{callerLine}|{callerName}) {message}"
+            }
+            else
+            {
+               message = $"({callerFile}|{callerName}) {message}"
+            }
 
             switch (level)
             {
