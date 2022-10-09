@@ -1,0 +1,29 @@
+name: .NET Build
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [ "Debug", "Release" ]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up .NET 6.0
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore
+      run: dotnet restore anvil-csharp-core.csproj
+
+    - name: Build anvil-csharp-logging
+      working-directory: Logging/.CSProject/
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} anvil-csharp-logging.csproj
+
+    - name: Build anvil-csharp-core
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} anvil-csharp-core.csproj
