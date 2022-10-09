@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Anvil.CSharp.Reflection
 {
@@ -7,6 +8,8 @@ namespace Anvil.CSharp.Reflection
     /// </summary>
     public static class TypeExtension
     {
+        private static readonly Type s_NullableType = typeof(Nullable<>);
+
         /// <summary>
         /// Resolves the default value of a provided runtime type.
         /// The runtime equivalent of `default(MyType)`
@@ -31,6 +34,35 @@ namespace Anvil.CSharp.Reflection
         public static bool isStatic(this Type type)
         {
             return type.IsAbstract && type.IsSealed;
+        }
+
+        /// <summary>
+        /// Gets a human-readble type name, similar to how the type appears in code. Primarily handles generic types.
+        /// </summary>
+        /// <param name="type">The type to get a readable name for.</param>
+        /// <returns>The readable type name.</returns>
+        public static string GetReadableName(this Type type)
+        {
+            if (!type.IsGenericType)
+            {
+                return type.Name;
+            }
+
+            if (type.GetGenericTypeDefinition() == s_NullableType)
+            {
+                return $"{type.GenericTypeArguments[0].GetReadableName()}?";
+            }
+
+            // Remove the generic type count indicator (`n) from the type name
+            // Avoid having to calculate the number of digits in the generic type count by assuming it's under 100
+            int removeCount = 1 + (type.GenericTypeArguments.Length < 10 ? 1 : 2);
+            string name = type.Name[..^removeCount];
+
+            string genericTypeNames = type.GenericTypeArguments
+                .Select(arg => arg.GetReadableName())
+                .Aggregate((a, b) => $"{a}, {b}");
+
+            return $"{name}<{genericTypeNames}>";
         }
     }
 }
