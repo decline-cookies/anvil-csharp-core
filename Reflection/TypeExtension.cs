@@ -37,7 +37,9 @@ namespace Anvil.CSharp.Reflection
         }
 
         /// <summary>
-        /// Gets a human-readble type name, similar to how the type appears in code. Primarily handles generic types.
+        /// Gets a human-readable type name, similar to how the type appears in code. Primarily handles generic types.
+        /// For example, instead of "List`1" or "System.Collections.Generic.List`1[System.Int32]", this helper will
+        /// return the name "List<Int32>"
         /// </summary>
         /// <param name="type">The type to get a readable name for.</param>
         /// <returns>The readable type name.</returns>
