@@ -35,9 +35,7 @@ namespace Anvil.CSharp.Logging
             int removeCount = 1 + (type.GenericTypeArguments.Length < 10 ? 1 : 2);
             string name = type.Name[..^removeCount];
 
-            string genericTypeNames = type.GenericTypeArguments
-                .Select(GetReadableName)
-                .Aggregate((a, b) => $"{a}, {b}");
+            string genericTypeNames = string.Join(", ", type.GenericTypeArguments.Select(GetReadableName));
 
             return $"{name}<{genericTypeNames}>";
         }

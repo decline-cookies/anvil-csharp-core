@@ -43,6 +43,9 @@ namespace Anvil.CSharp.Reflection
         /// </summary>
         /// <param name="type">The type to get a readable name for.</param>
         /// <returns>The readable type name.</returns>
+        /// <remarks>
+        /// This function is duplicated in <see cref="Logger" /> until the DLL can be merged back into the main Anvil library.
+        /// </remarks>
         public static string GetReadableName(this Type type)
         {
             if (!type.IsGenericType)
@@ -60,9 +63,7 @@ namespace Anvil.CSharp.Reflection
             int removeCount = 1 + (type.GenericTypeArguments.Length < 10 ? 1 : 2);
             string name = type.Name[..^removeCount];
 
-            string genericTypeNames = type.GenericTypeArguments
-                .Select(arg => arg.GetReadableName())
-                .Aggregate((a, b) => $"{a}, {b}");
+            string genericTypeNames = string.Join(", ", type.GenericTypeArguments.Select(GetReadableName));
 
             return $"{name}<{genericTypeNames}>";
         }
