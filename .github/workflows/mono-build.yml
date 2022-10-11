@@ -1,10 +1,10 @@
-name: MSBuild
+name: Mono Build
 on:
   push:
     branches: [ "main" ]
   pull_request:
 jobs:
-  build:
+  build-mono:
     runs-on: windows-latest
     strategy:
       matrix:

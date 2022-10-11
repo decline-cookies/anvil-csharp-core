@@ -1,6 +1,6 @@
 ![License](https://img.shields.io/github/license/decline-cookies/anvil-csharp-core?label=License)&nbsp;&nbsp;&nbsp;
 ![.NET Build Status](https://github.com/decline-cookies/anvil-csharp-core/actions/workflows/dotnet-build.yml/badge.svg)&nbsp;&nbsp;&nbsp;
-![MSBuild Status](https://github.com/decline-cookies/anvil-csharp-core/actions/workflows/msbuild.yml/badge.svg)&nbsp;&nbsp;&nbsp;
+![Mono Build Status](https://github.com/decline-cookies/anvil-csharp-core/actions/workflows/mono-build.yml/badge.svg)&nbsp;&nbsp;&nbsp;
 
 # anvil-csharp-core
 An opinionated collection of systems and utilities that help you build applications in C# quickly, coherently and ready to scale. While Anvil is designed with realtime interactive experiences in mind it's well suited as the foundation for any application or platform where flexibility is key.
