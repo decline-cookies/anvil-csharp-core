@@ -53,4 +53,4 @@ $RECYCLE.BIN/
 bin
 
 # anvil-csharp-core Specific
-Logging/anvil-csharp-logging.deps.json
+# None, so far...
