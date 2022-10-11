@@ -1,0 +1,31 @@
+name: Mono Build
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+jobs:
+  build-mono:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [ "Debug", "Release" ]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore anvil-csharp-core
+      run: nuget restore anvil-csharp-core.csproj
+
+    - name: Restore anvil-csharp-logging
+      working-directory: Logging/.CSProject/
+      run: nuget restore anvil-csharp-logging.csproj
+
+    - name: Build anvil-csharp-logging
+      working-directory: Logging/.CSProject/
+      run: msbuild /p:Configuration=${{ matrix.configuration }} anvil-csharp-logging.csproj
+
+    - name: Build anvil-csharp-core
+      run: msbuild /p:Configuration=${{ matrix.configuration }} anvil-csharp-core.csproj
