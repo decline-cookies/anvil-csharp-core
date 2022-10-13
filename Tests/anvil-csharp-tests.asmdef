@@ -1,7 +1,9 @@
 {
     "name": "anvil-csharp-tests",
     "rootNamespace": "Anvil.CSharp.Tests",
-    "references": [],
+    "references": [
+        "anvil-csharp-core"
+    ],
     "includePlatforms": [
         "Editor"
     ],
