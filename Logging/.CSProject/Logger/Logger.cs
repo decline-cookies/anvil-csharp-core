@@ -8,9 +8,10 @@ namespace Anvil.CSharp.Logging
     /// A context specific instance that provides a mechanism to emit logs through <see cref="Log"/>.
     /// Automatically provides contextual information to <see cref="Log"/> about caller context including:
     ///  - Optional, per instance, message prefix
-    ///  - Caller type name
+    ///  - Logger's owner's type name
+    ///  - Caller method name
     ///  - Caller file path
-    ///  - Caller name
+    ///  - Caller file name
     ///  - Caller line number
     /// </summary>
     public readonly struct Logger : ILogger
@@ -43,7 +44,7 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// The name of the type this <see cref="Logger"/> represents.
         /// </summary>
-        public readonly string DerivedTypeName;
+        public readonly string OwnerTypeName;
         /// <summary>
         /// The custom prefix to prepend to all messages sent through this <see cref="Logger"/>.
         /// </summary>
@@ -52,25 +53,25 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Creates an instance of <see cref="Logger"/> from a <see cref="Type"/>.
         /// </summary>
-        /// <param name="type">The <see cref="Type"/> to create the <see cref="Logger"/> instance for.</param>
+        /// <param name="type">The <see cref="Type"/> to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple types that share the same name which need to be differentiated.
         /// </param>
         public Logger(Type type, string messagePrefix = null) : this(GetReadableName(type), messagePrefix) { }
         /// <summary>
-        /// Creates an instance of <see cref="Logger"/> from another instance.
+        /// Creates an instance of <see cref="Logger"/> for an object instance.
         /// </summary>
-        /// <param name="instance">The instance to create the <see cref="Logger"/> instance for.</param>
+        /// <param name="owner">The owner to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple instances or types that share the same name which need to be differentiated.
         /// </param>
-        public Logger(in object instance, string messagePrefix = null) : this(instance.GetType(), messagePrefix) { }
+        public Logger(in object owner, string messagePrefix = null) : this(owner.GetType(), messagePrefix) { }
 
-        private Logger(string derivedTypeName, string messagePrefix)
+        private Logger(string ownerTypeName, string messagePrefix)
         {
-            DerivedTypeName = derivedTypeName;
+            OwnerTypeName = ownerTypeName;
             MessagePrefix = messagePrefix;
         }
 
@@ -83,7 +84,7 @@ namespace Anvil.CSharp.Logging
         ) => Log.DispatchLog(
             LogLevel.Debug,
             string.Concat(MessagePrefix, message),
-            DerivedTypeName,
+            OwnerTypeName,
             callerPath,
             callerName,
             callerLine);
@@ -97,7 +98,7 @@ namespace Anvil.CSharp.Logging
         ) => Log.DispatchLog(
             LogLevel.Warning,
             string.Concat(MessagePrefix, message),
-            DerivedTypeName,
+            OwnerTypeName,
             callerPath,
             callerName,
             callerLine
@@ -112,7 +113,7 @@ namespace Anvil.CSharp.Logging
         ) => Log.DispatchLog(
             LogLevel.Error,
             string.Concat(MessagePrefix, message),
-            DerivedTypeName,
+            OwnerTypeName,
             callerPath,
             callerName,
             callerLine
@@ -128,7 +129,7 @@ namespace Anvil.CSharp.Logging
         ) => Log.DispatchLog(
             level,
             string.Concat(MessagePrefix, message),
-            DerivedTypeName,
+            OwnerTypeName,
             callerPath,
             callerName,
             callerLine);

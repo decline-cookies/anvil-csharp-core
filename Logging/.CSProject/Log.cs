@@ -131,7 +131,7 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Creates a <see cref="Logger"/> instance for a given static <see cref="Type"/>.
         /// </summary>
-        /// <param name="type">The <see cref="Type"/> to create the <see cref="Logger"/> instance for.</param>
+        /// <param name="type">The <see cref="Type"/> to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple types that share the same name which need to be differentiated.
@@ -142,18 +142,18 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Creates a <see cref="Logger"/> instance for a given instance.
         /// </summary>
-        /// <param name="instance">The instance to create the <see cref="Logger"/> instance for.</param>
+        /// <param name="owner">The object to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple instances or types that share the same name which need to be differentiated.
         /// </param>
         /// <returns>The configured <see cref="Logger"/> instance</returns>
-        public static Logger GetLogger(in object instance, string messagePrefix = null) => new Logger(in instance, messagePrefix);
+        public static Logger GetLogger(in object owner, string messagePrefix = null) => new Logger(in owner, messagePrefix);
 
         internal static void DispatchLog(
             LogLevel level,
             string message,
-            string callerDerivedTypeName,
+            string loggerName,
             string callerPath,
             string callerName,
             int callerLine)
@@ -163,25 +163,24 @@ namespace Anvil.CSharp.Logging
                 return;
             }
 
-            Debug.Assert(!string.IsNullOrEmpty(callerDerivedTypeName));
+            Debug.Assert(!string.IsNullOrEmpty(loggerName));
 
             if (IsHandlingLog)
             {
                 throw new Exception("A log is already being handled");
             }
 
-            // Handle file paths in a platform-independant way (don't use System.IO.Path)
-            string callerFile = (callerPath != null ? callerPath.Split('/', '\\').Last().Split('.').First() : UNKNOWN_CONTEXT);
+            CallerInfo callerInfo = new CallerInfo(
+                loggerName,
+                callerName ?? UNKNOWN_CONTEXT,
+                callerPath ?? UNKNOWN_CONTEXT,
+                (!string.IsNullOrEmpty(callerPath) ? callerPath.Split('/', '\\').Last().Split('.').First() : UNKNOWN_CONTEXT),
+                callerLine);
 
             IsHandlingLog = true;
             foreach (ILogHandler handler in s_AdditionalHandlerList)
             {
-                handler.HandleLog(level,
-                message,
-                callerDerivedTypeName,
-                callerName ?? UNKNOWN_CONTEXT,
-                callerFile,
-                callerLine);
+                handler.HandleLog(level, message, callerInfo);
             }
             IsHandlingLog = false;
         }

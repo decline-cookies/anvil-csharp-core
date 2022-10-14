@@ -156,13 +156,7 @@ namespace Anvil.CSharp.Logging
             m_Writer.Dispose();
         }
 
-        public void HandleLog(
-            LogLevel level,
-            string message,
-            string callerDerivedTypeName,
-            string callerName,
-            string callerFile,
-            int callerLine)
+        public void HandleLog(LogLevel level, string message, in CallerInfo callerInfo)
         {
             if ((int)level < (int)MinimumLevel)
             {
@@ -174,7 +168,7 @@ namespace Anvil.CSharp.Logging
 
             string context = string.Format(
                 LogContextFormat,
-                callerDerivedTypeName, callerName, callerFile, callerLine
+                callerInfo.LoggerName, callerInfo.MethodName, callerInfo.FileName, callerInfo.LineNumber
             );
 
             string log = $"{timestamp}{logLevel}{context}{message}";

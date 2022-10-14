@@ -5,12 +5,6 @@
     /// </summary>
     public interface ILogHandler
     {
-        void HandleLog(
-            LogLevel level, 
-            string message,
-            string callerDerivedTypeName,
-            string callerName,
-            string callerFile,
-            int callerLine);
+        void HandleLog(LogLevel level, string message, in CallerInfo callerInfo);
     }
 }

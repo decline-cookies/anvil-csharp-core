@@ -10,21 +10,15 @@ namespace Anvil.CSharp.Logging
     {
         public const uint PRIORITY = 0;
 
-        public void HandleLog(
-            LogLevel level, 
-            string message,
-            string callerDerivedTypeName,
-            string callerName,
-            string callerFile,
-            int callerLine)
+        public void HandleLog(LogLevel level, string message, in CallerInfo callerInfo)
         {
-            if (callerLine > 0)
+            if (callerInfo.LineNumber > 0)
             {
-               message = $"({callerFile}:{callerLine}|{callerName}) {message}";
+               message = $"({callerInfo.FileName}:{callerInfo.LineNumber}|{callerInfo.MethodName}) {message}";
             }
             else
             {
-               message = $"({callerFile}|{callerName}) {message}";
+               message = $"({callerInfo.FileName}|{callerInfo.MethodName}) {message}";
             }
 
             switch (level)
