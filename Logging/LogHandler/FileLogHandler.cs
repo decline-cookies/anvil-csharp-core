@@ -29,8 +29,8 @@ namespace Anvil.CSharp.Logging
         }
 
         public const string LOG_CONTEXT_CALLER_DERIVED_TYPE = "{0}";
-        public const string LOG_CONTEXT_CALLER_FILE = "{1}";
-        public const string LOG_CONTEXT_CALLER_METHOD = "{2}";
+        public const string LOG_CONTEXT_CALLER_METHOD = "{1}";
+        public const string LOG_CONTEXT_CALLER_FILE = "{2}";
         public const string LOG_CONTEXT_CALLER_LINE = "{3}";
 
         private const string TRUNCATED_LOG_MESSAGE = "...(message exceeds file size limit and was truncated)";
@@ -160,8 +160,8 @@ namespace Anvil.CSharp.Logging
             LogLevel level,
             string message,
             string callerDerivedTypeName,
-            string callerPath,
             string callerName,
+            string callerFile,
             int callerLine)
         {
             if ((int)level < (int)MinimumLevel)
@@ -172,10 +172,9 @@ namespace Anvil.CSharp.Logging
             string timestamp = IncludeTimestamp ? $"{DateTime.Now.ToString(TimestampFormat)} " : string.Empty;
             string logLevel = IncludeLogLevel ? $"[{level.ToString()[0]}] " : string.Empty;
 
-            string filename = Path.GetFileNameWithoutExtension(callerPath);
             string context = string.Format(
                 LogContextFormat,
-                callerDerivedTypeName, filename, callerName, callerLine
+                callerDerivedTypeName, callerName, callerFile, callerLine
             );
 
             string log = $"{timestamp}{logLevel}{context}{message}";

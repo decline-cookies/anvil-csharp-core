@@ -11,7 +11,7 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public static class Log
     {
-        private const string UNKNOWN_CONTEXT = "unknown";
+        private const string UNKNOWN_CONTEXT = "<unknown>";
 
         private static readonly HashSet<ILogHandler> s_AdditionalHandlerList = new HashSet<ILogHandler>();
 
@@ -164,10 +164,14 @@ namespace Anvil.CSharp.Logging
             }
 
             Debug.Assert(!string.IsNullOrEmpty(callerDerivedTypeName));
-            Debug.Assert(!IsHandlingLog);
 
-            callerPath ??= UNKNOWN_CONTEXT;
-            callerName ??= UNKNOWN_CONTEXT;
+            if (IsHandlingLog)
+            {
+                throw new Exception("A log is already being handled");
+            }
+
+            // Handle file paths in a platform-independant way (don't use System.IO.Path)
+            string callerFile = (callerPath != null ? callerPath.Split('/', '\\').Last().Split('.').First() : UNKNOWN_CONTEXT);
 
             IsHandlingLog = true;
             foreach (ILogHandler handler in s_AdditionalHandlerList)
@@ -175,8 +179,8 @@ namespace Anvil.CSharp.Logging
                 handler.HandleLog(level,
                 message,
                 callerDerivedTypeName,
-                callerPath,
-                callerName,
+                callerName ?? UNKNOWN_CONTEXT,
+                callerFile,
                 callerLine);
             }
             IsHandlingLog = false;

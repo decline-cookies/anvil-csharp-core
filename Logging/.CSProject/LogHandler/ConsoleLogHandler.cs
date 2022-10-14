@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace Anvil.CSharp.Logging
 {
@@ -15,12 +14,10 @@ namespace Anvil.CSharp.Logging
             LogLevel level, 
             string message,
             string callerDerivedTypeName,
-            string callerPath,
             string callerName,
+            string callerFile,
             int callerLine)
         {
-            string callerFile = Path.GetFileNameWithoutExtension(callerPath);
-
             if (callerLine > 0)
             {
                message = $"({callerFile}:{callerLine}|{callerName}) {message}";

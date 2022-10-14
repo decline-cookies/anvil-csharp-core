@@ -9,8 +9,8 @@
             LogLevel level, 
             string message,
             string callerDerivedTypeName,
-            string callerPath,
             string callerName,
+            string callerFile,
             int callerLine);
     }
 }
