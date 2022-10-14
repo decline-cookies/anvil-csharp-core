@@ -4,7 +4,7 @@ using Anvil.CSharp.Core;
 namespace Anvil.CSharp.Command
 {
     /// <summary>
-    /// Extension of <see cref="AbstractCommand"> to allow for strong typing <see cref="ICommand"> events.
+    /// Extension of <see cref="AbstractCommand" /> to allow for strong typing <see cref="ICommand" /> events.
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICommand"/> to use.</typeparam>
     public abstract class AbstractCommand<T> : AbstractCommand

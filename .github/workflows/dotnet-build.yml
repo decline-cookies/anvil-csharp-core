@@ -19,11 +19,11 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Restore
-      run: dotnet restore anvil-csharp-core.csproj
+      run: dotnet restore
 
     - name: Build anvil-csharp-logging
       working-directory: Logging/.CSProject/
-      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} anvil-csharp-logging.csproj
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }}
 
     - name: Build anvil-csharp-core
-      run: dotnet build --no-restore --configuration ${{ matrix.configuration }} anvil-csharp-core.csproj
+      run: dotnet build --no-restore --configuration ${{ matrix.configuration }}
