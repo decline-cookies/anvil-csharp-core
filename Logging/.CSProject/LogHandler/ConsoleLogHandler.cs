@@ -6,29 +6,20 @@ namespace Anvil.CSharp.Logging
     /// Forwards logs to <see cref="Console"/>.
     /// </summary>
     [DefaultLogHandler(PRIORITY)]
-    public class ConsoleLogHandler : ILogHandler
+    public class ConsoleLogHandler : AbstractLogHandler
     {
         public const uint PRIORITY = 0;
 
-        public void HandleLog(LogLevel level, string message, in CallerInfo callerInfo)
+        protected override void HandleFormattedLog(LogLevel level, string formattedLog)
         {
-            if (callerInfo.LineNumber > 0)
-            {
-               message = $"({callerInfo.TypeName}.{callerInfo.MethodName}|{callerInfo.FileName}:{callerInfo.LineNumber}) {message}";
-            }
-            else
-            {
-               message = $"({callerInfo.TypeName}.{callerInfo.MethodName}|{callerInfo.FileName}) {message}";
-            }
-
             switch (level)
             {
                 case LogLevel.Debug:
                 case LogLevel.Warning:
-                    Console.WriteLine(message);
+                    Console.WriteLine(formattedLog);
                     break;
                 case LogLevel.Error:
-                    Console.Error.WriteLine(message);
+                    Console.Error.WriteLine(formattedLog);
                     break;
                 default:
                     throw new NotImplementedException($"Unhandled log level: {level}");

@@ -13,7 +13,7 @@ namespace Anvil.CSharp.Logging
     {
         private const string UNKNOWN_CONTEXT = "<unknown>";
 
-        private static readonly HashSet<ILogHandler> s_AdditionalHandlerList = new HashSet<ILogHandler>();
+        private static readonly HashSet<AbstractLogHandler> s_AdditionalHandlerList = new HashSet<AbstractLogHandler>();
 
         /// <summary>
         /// Returns true while a log is being evaluated by handlers.
@@ -55,12 +55,12 @@ namespace Anvil.CSharp.Logging
                 throw new Exception($"No types found with {nameof(DefaultLogHandlerAttribute)}, failed to initialize");
             }
 
-            if (!defaultLogHandlerType.GetInterfaces().Contains(typeof(ILogHandler)))
+            if (!defaultLogHandlerType.IsSubclassOf(typeof(AbstractLogHandler)))
             {
-                throw new Exception($"Default log handler {defaultLogHandlerType} does not implement {nameof(ILogHandler)}");
+                throw new Exception($"Default log handler {defaultLogHandlerType} is not a subclass of {nameof(AbstractLogHandler)}");
             }
 
-            AddHandler((ILogHandler)Activator.CreateInstance(defaultLogHandlerType));
+            AddHandler((AbstractLogHandler)Activator.CreateInstance(defaultLogHandlerType));
         }
 
         private static void InitLogListeners(IEnumerable<Type> candidateTypes)
@@ -114,14 +114,14 @@ namespace Anvil.CSharp.Logging
         /// Returns true if the <see cref="ILogHandler"/> is successfully added, or false if the handler is null or
         /// has already been added.
         /// </returns>
-        public static bool AddHandler(ILogHandler handler) => (handler != null && s_AdditionalHandlerList.Add(handler));
+        public static bool AddHandler(AbstractLogHandler handler) => (handler != null && s_AdditionalHandlerList.Add(handler));
 
         /// <summary>
         /// Remove a custom <see cref="ILogHandler"/>, which was previously added.
         /// </summary>
         /// <param name="handler">The <see cref="ILogHandler"/> to remove.</param>
         /// <returns>Returns true if the <see cref="ILogHandler"/> was successfully removed.</returns>
-        public static bool RemoveHandler(ILogHandler handler) => s_AdditionalHandlerList.Remove(handler);
+        public static bool RemoveHandler(AbstractLogHandler handler) => s_AdditionalHandlerList.Remove(handler);
 
         /// <summary>
         /// Removes all <see cref="ILogHandler"/>s including any default <see cref="ILogHandler"/>s.
@@ -202,7 +202,7 @@ namespace Anvil.CSharp.Logging
                 callerLineNumber);
 
             IsHandlingLog = true;
-            foreach (ILogHandler handler in s_AdditionalHandlerList)
+            foreach (AbstractLogHandler handler in s_AdditionalHandlerList)
             {
                 handler.HandleLog(level, message, in callerInfo);
             }

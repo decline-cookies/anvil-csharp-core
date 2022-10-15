@@ -11,7 +11,7 @@ namespace Anvil.CSharp.Logging
     /// <summary>
     /// Forwards logs to a given text file.
     /// </summary>
-    public class FileLogHandler : AbstractAnvilBase, ILogHandler
+    public class FileLogHandler : AbstractLogHandler, IDisposable
     {
         /// <summary>
         /// The type of log files the handler should generate.
@@ -28,11 +28,6 @@ namespace Anvil.CSharp.Logging
             Replace,
         }
 
-        public const string LOG_CONTEXT_CALLER_TYPE = "{0}";
-        public const string LOG_CONTEXT_CALLER_METHOD = "{1}";
-        public const string LOG_CONTEXT_CALLER_FILE = "{2}";
-        public const string LOG_CONTEXT_CALLER_LINE = "{3}";
-
         private const string TRUNCATED_LOG_MESSAGE = "...(message exceeds file size limit and was truncated)";
 
         private StreamWriter m_Writer;
@@ -48,41 +43,6 @@ namespace Anvil.CSharp.Logging
 
         private readonly int m_TruncatedLogMessageByteCount;
         private readonly int m_NewlineByteCount;
-
-        /// <summary>
-        /// Indicates whether to prefix logs with a timestamp.
-        /// The format is dictated by <see cref="TimestampFormat"/>
-        /// </summary>
-        public bool IncludeTimestamp { get; set; } = true;
-
-        /// <summary>
-        /// Defines the format of the timestamp written to the log
-        /// Default: HH:mm:ss(Ex: 12:34:56)
-        /// </summary>
-        public string TimestampFormat { get; set; } = "HH:mm:ss";
-
-        /// <summary>
-        /// Indicates whether to prefix logs with a symbol indicating their severity.
-        /// </summary>
-        /// <example>[D]</example>
-        public bool IncludeLogLevel { get; set; } = true;
-
-        /// <summary>
-        /// Defines the format of the context added to log messages.
-        /// The following wrapped in {} are substituted at runtime
-        ///  - <see cref="LOG_CONTEXT_CALLER_TYPE"/>
-        ///  - <see cref="LOG_CONTEXT_CALLER_FILE"/>
-        ///  - <see cref="LOG_CONTEXT_CALLER_METHOD"/>
-        ///  - <see cref="LOG_CONTEXT_CALLER_LINE"/>
-        ///
-        /// Default: "({LOG_CONTEXT_CALLER_TYPE}.{LOG_CONTEXT_CALLER_METHOD}|{LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}) "
-        /// </summary>
-        /// <example>
-        /// The default format produces "(MyType.MyMethod|MyFile:12) " for a log issued in the
-        /// file "MyFile" on line "12" from type "MyType" and method "MyCallingMethod".
-        /// </example>
-        public string LogContextFormat { get; set; } =
-            $"({LOG_CONTEXT_CALLER_TYPE}.{LOG_CONTEXT_CALLER_METHOD}|{LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}) ";
 
         /// <summary>
         /// Indicates the minimum message severity to handle. Logs below this level are ignored.
@@ -152,38 +112,28 @@ namespace Anvil.CSharp.Logging
             };
         }
 
-        protected override void DisposeSelf()
+        public void Dispose()
         {
             m_Writer.Dispose();
         }
 
-        public void HandleLog(LogLevel level, string message, in CallerInfo callerInfo)
+        protected override void HandleFormattedLog(LogLevel level, string formattedLog)
         {
             if ((int)level < (int)MinimumLevel)
             {
                 return;
             }
 
-            string timestamp = IncludeTimestamp ? $"{DateTime.Now.ToString(TimestampFormat)} " : string.Empty;
-            string logLevel = IncludeLogLevel ? $"[{level.ToString()[0]}] " : string.Empty;
-
-            string context = string.Format(
-                LogContextFormat,
-                callerInfo.TypeName, callerInfo.MethodName, callerInfo.FileName, callerInfo.LineNumber
-            );
-
-            string log = $"{timestamp}{logLevel}{context}{message}";
-
             if (m_RotateFileSizeLimit != null)
             {
                 // Check GetMaxByteCount() first as it's much cheaper to run on every log
-                int logMaxByteCount = m_Writer.Encoding.GetMaxByteCount(log.Length) + m_NewlineByteCount;
+                int logMaxByteCount = m_Writer.Encoding.GetMaxByteCount(formattedLog.Length) + m_NewlineByteCount;
                 long fileByteCount = m_Writer.BaseStream.Length;
 
                 if ((fileByteCount + logMaxByteCount) > m_RotateFileSizeLimit)
                 {
                     // If this log may push the file over the size limit, run the more expensive GetByteCount()
-                    int logByteCount = m_Writer.Encoding.GetByteCount(log) + m_NewlineByteCount;
+                    int logByteCount = m_Writer.Encoding.GetByteCount(formattedLog) + m_NewlineByteCount;
 
                     if ((fileByteCount + logByteCount) > m_RotateFileSizeLimit)
                     {
@@ -201,15 +151,15 @@ namespace Anvil.CSharp.Logging
                             // Remove at least enough characters to meet the file size limit
                             // This may remove more than strictly necessary, if any characters are multiple bytes
                             int bytesToRemove = (logByteCount - (int)m_RotateFileSizeLimit) + m_TruncatedLogMessageByteCount;
-                            int targetLength = log.Length - bytesToRemove;
+                            int targetLength = formattedLog.Length - bytesToRemove;
 
-                            log = log.Substring(0, Math.Max(0, targetLength)) + TRUNCATED_LOG_MESSAGE;
+                            formattedLog = formattedLog.Substring(0, Math.Max(0, targetLength)) + TRUNCATED_LOG_MESSAGE;
                         }
                     }
                 }
             }
 
-            m_Writer.WriteLine(log);
+            m_Writer.WriteLine(formattedLog);
         }
 
         private void RotateFiles()
