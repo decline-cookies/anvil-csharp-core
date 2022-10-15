@@ -16,8 +16,10 @@ namespace Anvil.CSharp.Logging
         public const string LOG_PART_TIMESTAMP = "{6}";
         public const string LOG_PART_LOG_LEVEL = "{7}";
 
-        private string m_LogFormat =
+        protected virtual string DefaultLogFormat =>
             $"({LOG_PART_CALLER_TYPE}.{LOG_PART_CALLER_METHOD}|{LOG_PART_CALLER_FILE}:{LOG_PART_CALLER_LINE}) {LOG_PART_MESSAGE}";
+
+        private string m_LogFormat;
 
         private bool m_IncludeTimestamp = false;
         private bool m_IncludeLogLevel = false;
@@ -57,6 +59,11 @@ namespace Anvil.CSharp.Logging
         /// Default: HH:mm:ss(Ex: 12:34:56)
         /// </summary>
         public string TimestampFormat { get; set; } = "HH:mm:ss";
+
+        public AbstractLogHandler()
+        {
+            LogFormat = DefaultLogFormat;
+        }
 
         public void HandleLog(LogLevel level, string message, in CallerInfo callerInfo)
         {

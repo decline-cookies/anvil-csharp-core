@@ -28,6 +28,8 @@ namespace Anvil.CSharp.Logging
             Replace,
         }
 
+        protected override string DefaultLogFormat => $"{LOG_PART_TIMESTAMP} {LOG_PART_LOG_LEVEL} " + base.DefaultLogFormat;
+
         private const string TRUNCATED_LOG_MESSAGE = "...(message exceeds file size limit and was truncated)";
 
         private StreamWriter m_Writer;
