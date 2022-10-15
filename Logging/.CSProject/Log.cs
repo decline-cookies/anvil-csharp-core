@@ -107,24 +107,24 @@ namespace Anvil.CSharp.Logging
         }
 
         /// <summary>
-        /// Add a custom <see cref="ILogHandler"/>, which will receive all logs that pass through <see cref="Log"/>.
+        /// Add a custom <see cref="AbstractLogHandler"/>, which will receive all logs that pass through <see cref="Log"/>.
         /// </summary>
-        /// <param name="handler">The <see cref="ILogHandler"/> instance to add.</param>
+        /// <param name="handler">The <see cref="AbstractLogHandler"/> instance to add.</param>
         /// <returns>
-        /// Returns true if the <see cref="ILogHandler"/> is successfully added, or false if the handler is null or
+        /// Returns true if the <see cref="AbstractLogHandler"/> is successfully added, or false if the handler is null or
         /// has already been added.
         /// </returns>
         public static bool AddHandler(AbstractLogHandler handler) => (handler != null && s_AdditionalHandlerList.Add(handler));
 
         /// <summary>
-        /// Remove a custom <see cref="ILogHandler"/>, which was previously added.
+        /// Remove a custom <see cref="AbstractLogHandler"/>, which was previously added.
         /// </summary>
-        /// <param name="handler">The <see cref="ILogHandler"/> to remove.</param>
-        /// <returns>Returns true if the <see cref="ILogHandler"/> was successfully removed.</returns>
+        /// <param name="handler">The <see cref="AbstractLogHandler"/> to remove.</param>
+        /// <returns>Returns true if the <see cref="AbstractLogHandler"/> was successfully removed.</returns>
         public static bool RemoveHandler(AbstractLogHandler handler) => s_AdditionalHandlerList.Remove(handler);
 
         /// <summary>
-        /// Removes all <see cref="ILogHandler"/>s including any default <see cref="ILogHandler"/>s.
+        /// Removes all <see cref="AbstractLogHandler"/>s including any default <see cref="AbstractLogHandler"/>s.
         /// </summary>
         public static void RemoveAllHandlers() => s_AdditionalHandlerList.Clear();
 

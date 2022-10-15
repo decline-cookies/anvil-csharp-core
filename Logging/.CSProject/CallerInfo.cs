@@ -1,6 +1,6 @@
 ﻿namespace Anvil.CSharp.Logging
 {
-    public readonly struct CallerInfo
+    internal readonly struct CallerInfo
     {
         public readonly string TypeName;
         public readonly string MethodName;
