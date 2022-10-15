@@ -142,7 +142,7 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Creates a <see cref="Logger"/> instance for a given instance.
         /// </summary>
-        /// <param name="owner">The object to create a <see cref="Logger"/> instance for.</param>
+        /// <param name="owner">The instance to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple instances or types that share the same name which need to be differentiated.
@@ -153,34 +153,58 @@ namespace Anvil.CSharp.Logging
         internal static void DispatchLog(
             LogLevel level,
             string message,
-            string loggerName,
-            string callerPath,
-            string callerName,
-            int callerLine)
+            string callerTypeName,
+            string callerMethodName,
+            string callerFilePath,
+            int callerLineNumber)
         {
             if (SuppressLogging)
             {
                 return;
             }
 
-            Debug.Assert(!string.IsNullOrEmpty(loggerName));
+            Debug.Assert(!string.IsNullOrEmpty(callerTypeName));
 
             if (IsHandlingLog)
             {
                 throw new Exception("A log is already being handled");
             }
 
+            string callerFileName;
+            if (!string.IsNullOrEmpty(callerFilePath))
+            {
+                int lastPathSeparatorIndex = callerFilePath.LastIndexOf('/');
+                if (lastPathSeparatorIndex == -1)
+                {
+                    lastPathSeparatorIndex = callerFilePath.LastIndexOf('\\');
+                }
+
+                if (lastPathSeparatorIndex != -1)
+                {
+                    callerFileName = callerFilePath.Substring(lastPathSeparatorIndex + 1);
+                }
+                else
+                {
+                    callerFileName = callerFilePath;
+                }
+            }
+            else
+            {
+                callerFilePath = UNKNOWN_CONTEXT;
+                callerFileName = UNKNOWN_CONTEXT;
+            }
+
             CallerInfo callerInfo = new CallerInfo(
-                loggerName,
-                callerName ?? UNKNOWN_CONTEXT,
-                callerPath ?? UNKNOWN_CONTEXT,
-                (!string.IsNullOrEmpty(callerPath) ? callerPath.Split('/', '\\').Last().Split('.').First() : UNKNOWN_CONTEXT),
-                callerLine);
+                callerTypeName,
+                callerMethodName ?? UNKNOWN_CONTEXT,
+                callerFilePath,
+                callerFileName,
+                callerLineNumber);
 
             IsHandlingLog = true;
             foreach (ILogHandler handler in s_AdditionalHandlerList)
             {
-                handler.HandleLog(level, message, callerInfo);
+                handler.HandleLog(level, message, in callerInfo);
             }
             IsHandlingLog = false;
         }

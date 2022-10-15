@@ -14,11 +14,11 @@ namespace Anvil.CSharp.Logging
         {
             if (callerInfo.LineNumber > 0)
             {
-               message = $"({callerInfo.FileName}:{callerInfo.LineNumber}|{callerInfo.MethodName}) {message}";
+               message = $"({callerInfo.TypeName}.{callerInfo.MethodName}|{callerInfo.FileName}:{callerInfo.LineNumber}) {message}";
             }
             else
             {
-               message = $"({callerInfo.FileName}|{callerInfo.MethodName}) {message}";
+               message = $"({callerInfo.TypeName}.{callerInfo.MethodName}|{callerInfo.FileName}) {message}";
             }
 
             switch (level)

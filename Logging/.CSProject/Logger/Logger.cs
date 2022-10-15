@@ -8,10 +8,9 @@ namespace Anvil.CSharp.Logging
     /// A context specific instance that provides a mechanism to emit logs through <see cref="Log"/>.
     /// Automatically provides contextual information to <see cref="Log"/> about caller context including:
     ///  - Optional, per instance, message prefix
-    ///  - Logger's owner's type name
+    ///  - Caller type name
     ///  - Caller method name
     ///  - Caller file path
-    ///  - Caller file name
     ///  - Caller line number
     /// </summary>
     public readonly struct Logger : ILogger
@@ -53,16 +52,16 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Creates an instance of <see cref="Logger"/> from a <see cref="Type"/>.
         /// </summary>
-        /// <param name="type">The <see cref="Type"/> to create a <see cref="Logger"/> instance for.</param>
+        /// <param name="ownerType">The <see cref="Type"/> to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple types that share the same name which need to be differentiated.
         /// </param>
-        public Logger(Type type, string messagePrefix = null) : this(GetReadableName(type), messagePrefix) { }
+        public Logger(Type ownerType, string messagePrefix = null) : this(GetReadableName(ownerType), messagePrefix) { }
         /// <summary>
         /// Creates an instance of <see cref="Logger"/> for an object instance.
         /// </summary>
-        /// <param name="owner">The owner to create a <see cref="Logger"/> instance for.</param>
+        /// <param name="owner">The instance to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple instances or types that share the same name which need to be differentiated.
@@ -78,61 +77,61 @@ namespace Anvil.CSharp.Logging
         /// <inheritdoc cref="ILogger.Debug"/>
         public void Debug(
             object message,
-            [CallerFilePath] string callerPath = "",
-            [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
+            [CallerMemberName] string callerMethodName = "",
+            [CallerFilePath] string callerFilePath = "",
+            [CallerLineNumber] int callerLineNumber = 0
         ) => Log.DispatchLog(
             LogLevel.Debug,
             string.Concat(MessagePrefix, message),
             OwnerTypeName,
-            callerPath,
-            callerName,
-            callerLine);
+            callerMethodName,
+            callerFilePath,
+            callerLineNumber);
 
         /// <inheritdoc cref="ILogger.Warning"/>
         public void Warning(
             object message,
-            [CallerFilePath] string callerPath = "",
-            [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
+            [CallerMemberName] string callerMethodName = "",
+            [CallerFilePath] string callerFilePath = "",
+            [CallerLineNumber] int callerLineNumber = 0
         ) => Log.DispatchLog(
             LogLevel.Warning,
             string.Concat(MessagePrefix, message),
             OwnerTypeName,
-            callerPath,
-            callerName,
-            callerLine
+            callerMethodName,
+            callerFilePath,
+            callerLineNumber
         );
 
         /// <inheritdoc cref="ILogger.Error"/>
         public void Error(
             object message,
-            [CallerFilePath] string callerPath = "",
-            [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
+            [CallerMemberName] string callerMethodName = "",
+            [CallerFilePath] string callerFilePath = "",
+            [CallerLineNumber] int callerLineNumber = 0
         ) => Log.DispatchLog(
             LogLevel.Error,
             string.Concat(MessagePrefix, message),
             OwnerTypeName,
-            callerPath,
-            callerName,
-            callerLine
+            callerMethodName,
+            callerFilePath,
+            callerLineNumber
         );
 
         /// <inheritdoc cref="ILogger.AtLevel"/>
         public void AtLevel(
             LogLevel level,
             object message,
-            [CallerFilePath] string callerPath = "",
-            [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
+            [CallerMemberName] string callerMethodName = "",
+            [CallerFilePath] string callerFilePath = "",
+            [CallerLineNumber] int callerLineNumber = 0
         ) => Log.DispatchLog(
             level,
             string.Concat(MessagePrefix, message),
             OwnerTypeName,
-            callerPath,
-            callerName,
-            callerLine);
+            callerMethodName,
+            callerFilePath,
+            callerLineNumber);
 
         public OneTimeLogger OneTime() => new OneTimeLogger(this);
     }

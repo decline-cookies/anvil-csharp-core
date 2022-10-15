@@ -28,7 +28,7 @@ namespace Anvil.CSharp.Logging
             Replace,
         }
 
-        public const string LOG_CONTEXT_CALLER_DERIVED_TYPE = "{0}";
+        public const string LOG_CONTEXT_CALLER_TYPE = "{0}";
         public const string LOG_CONTEXT_CALLER_METHOD = "{1}";
         public const string LOG_CONTEXT_CALLER_FILE = "{2}";
         public const string LOG_CONTEXT_CALLER_LINE = "{3}";
@@ -70,18 +70,19 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Defines the format of the context added to log messages.
         /// The following wrapped in {} are substituted at runtime
-        ///  - <see cref="LOG_CONTEXT_CALLER_DERIVED_TYPE"/>
+        ///  - <see cref="LOG_CONTEXT_CALLER_TYPE"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_FILE"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_METHOD"/>
         ///  - <see cref="LOG_CONTEXT_CALLER_LINE"/>
         ///
-        /// Default: "({LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}|{LOG_CONTEXT_CALLER_METHOD}) "
+        /// Default: "({LOG_CONTEXT_CALLER_TYPE}.{LOG_CONTEXT_CALLER_METHOD}|{LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}) "
         /// </summary>
         /// <example>
-        /// The default format produces "(MyFile:12|MyCallingMethod) " for a log issued in the
-        /// file "MyFile" on line "12" from method "MyCallingMethod".
+        /// The default format produces "(MyType.MyMethod|MyFile:12) " for a log issued in the
+        /// file "MyFile" on line "12" from type "MyType" and method "MyCallingMethod".
         /// </example>
-        public string LogContextFormat { get; set; } = $"({LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}|{LOG_CONTEXT_CALLER_METHOD}) ";
+        public string LogContextFormat { get; set; } =
+            $"({LOG_CONTEXT_CALLER_TYPE}.{LOG_CONTEXT_CALLER_METHOD}|{LOG_CONTEXT_CALLER_FILE}:{LOG_CONTEXT_CALLER_LINE}) ";
 
         /// <summary>
         /// Indicates the minimum message severity to handle. Logs below this level are ignored.
@@ -168,7 +169,7 @@ namespace Anvil.CSharp.Logging
 
             string context = string.Format(
                 LogContextFormat,
-                callerInfo.LoggerName, callerInfo.MethodName, callerInfo.FileName, callerInfo.LineNumber
+                callerInfo.TypeName, callerInfo.MethodName, callerInfo.FileName, callerInfo.LineNumber
             );
 
             string log = $"{timestamp}{logLevel}{context}{message}";

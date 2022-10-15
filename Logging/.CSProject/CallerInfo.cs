@@ -2,23 +2,23 @@
 {
     public readonly struct CallerInfo
     {
-        public readonly string LoggerName;
+        public readonly string TypeName;
         public readonly string MethodName;
-        public readonly string FullPath;
+        public readonly string FilePath;
         public readonly string FileName;
         public readonly int LineNumber;
 
         public CallerInfo(
-            string loggerName,
+            string typeName,
             string methodName,
-            string fullPath,
+            string filePath,
             string fileName,
             int lineNumber
         )
         {
-            LoggerName = loggerName;
+            TypeName = typeName;
             MethodName = methodName;
-            FullPath = fullPath;
+            FilePath = filePath;
             FileName = fileName;
             LineNumber = lineNumber;
         }
