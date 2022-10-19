@@ -47,11 +47,6 @@ namespace Anvil.CSharp.Logging
         private readonly int m_NewlineByteCount;
 
         /// <summary>
-        /// Indicates the minimum message severity to handle. Logs below this level are ignored.
-        /// </summary>
-        public LogLevel MinimumLevel { get; set; } = LogLevel.Debug;
-
-        /// <summary>
         /// Creates a `FileLogHandler` that can write to the given file path.
         /// </summary>
         /// <param name="path">The text file to output messages to.</param>
@@ -121,11 +116,6 @@ namespace Anvil.CSharp.Logging
 
         protected override void HandleFormattedLog(LogLevel level, string formattedLog)
         {
-            if ((int)level < (int)MinimumLevel)
-            {
-                return;
-            }
-
             if (m_RotateFileSizeLimit != null)
             {
                 // Check GetMaxByteCount() first as it's much cheaper to run on every log

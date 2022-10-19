@@ -72,6 +72,11 @@ namespace Anvil.CSharp.Logging
         /// </summary>
         public string TimestampFormat { get; set; } = "HH:mm:ss";
 
+        /// <summary>
+        /// Indicates the minimum message severity to handle. Logs below this level are ignored.
+        /// </summary>
+        public LogLevel MinimumLevel { get; set; } = LogLevel.Debug;
+
         protected AbstractLogHandler()
         {
             LogFormat = DefaultLogFormat;
@@ -79,6 +84,11 @@ namespace Anvil.CSharp.Logging
 
         internal void HandleLog(LogLevel level, string message, in CallerInfo callerInfo)
         {
+            if ((int)level < (int)MinimumLevel)
+            {
+                return;
+            }
+
             HandleFormattedLog(level, string.Format(
                 m_LogFormat,
                 message,
