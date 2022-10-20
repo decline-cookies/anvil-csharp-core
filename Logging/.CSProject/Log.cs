@@ -11,9 +11,9 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public static class Log
     {
-        private const string UNKNOWN_CONTEXT = "unknown";
+        private const string UNKNOWN_CONTEXT = "<unknown>";
 
-        private static readonly HashSet<ILogHandler> s_AdditionalHandlerList = new HashSet<ILogHandler>();
+        private static readonly HashSet<AbstractLogHandler> s_AdditionalHandlerList = new HashSet<AbstractLogHandler>();
 
         /// <summary>
         /// Returns true while a log is being evaluated by handlers.
@@ -55,12 +55,12 @@ namespace Anvil.CSharp.Logging
                 throw new Exception($"No types found with {nameof(DefaultLogHandlerAttribute)}, failed to initialize");
             }
 
-            if (!defaultLogHandlerType.GetInterfaces().Contains(typeof(ILogHandler)))
+            if (!defaultLogHandlerType.IsSubclassOf(typeof(AbstractLogHandler)))
             {
-                throw new Exception($"Default log handler {defaultLogHandlerType} does not implement {nameof(ILogHandler)}");
+                throw new Exception($"Default log handler {defaultLogHandlerType} is not a subclass of {nameof(AbstractLogHandler)}");
             }
 
-            AddHandler((ILogHandler)Activator.CreateInstance(defaultLogHandlerType));
+            AddHandler((AbstractLogHandler)Activator.CreateInstance(defaultLogHandlerType));
         }
 
         private static void InitLogListeners(IEnumerable<Type> candidateTypes)
@@ -107,31 +107,31 @@ namespace Anvil.CSharp.Logging
         }
 
         /// <summary>
-        /// Add a custom <see cref="ILogHandler"/>, which will receive all logs that pass through <see cref="Log"/>.
+        /// Add a custom <see cref="AbstractLogHandler"/>, which will receive all logs that pass through <see cref="Log"/>.
         /// </summary>
-        /// <param name="handler">The <see cref="ILogHandler"/> instance to add.</param>
+        /// <param name="handler">The <see cref="AbstractLogHandler"/> instance to add.</param>
         /// <returns>
-        /// Returns true if the <see cref="ILogHandler"/> is successfully added, or false if the handler is null or
+        /// Returns true if the <see cref="AbstractLogHandler"/> is successfully added, or false if the handler is null or
         /// has already been added.
         /// </returns>
-        public static bool AddHandler(ILogHandler handler) => (handler != null && s_AdditionalHandlerList.Add(handler));
+        public static bool AddHandler(AbstractLogHandler handler) => (handler != null && s_AdditionalHandlerList.Add(handler));
 
         /// <summary>
-        /// Remove a custom <see cref="ILogHandler"/>, which was previously added.
+        /// Remove a custom <see cref="AbstractLogHandler"/>, which was previously added.
         /// </summary>
-        /// <param name="handler">The <see cref="ILogHandler"/> to remove.</param>
-        /// <returns>Returns true if the <see cref="ILogHandler"/> was successfully removed.</returns>
-        public static bool RemoveHandler(ILogHandler handler) => s_AdditionalHandlerList.Remove(handler);
+        /// <param name="handler">The <see cref="AbstractLogHandler"/> to remove.</param>
+        /// <returns>Returns true if the <see cref="AbstractLogHandler"/> was successfully removed.</returns>
+        public static bool RemoveHandler(AbstractLogHandler handler) => s_AdditionalHandlerList.Remove(handler);
 
         /// <summary>
-        /// Removes all <see cref="ILogHandler"/>s including any default <see cref="ILogHandler"/>s.
+        /// Removes all <see cref="AbstractLogHandler"/>s including any default <see cref="AbstractLogHandler"/>s.
         /// </summary>
         public static void RemoveAllHandlers() => s_AdditionalHandlerList.Clear();
 
         /// <summary>
         /// Creates a <see cref="Logger"/> instance for a given static <see cref="Type"/>.
         /// </summary>
-        /// <param name="type">The <see cref="Type"/> to create the <see cref="Logger"/> instance for.</param>
+        /// <param name="type">The <see cref="Type"/> to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple types that share the same name which need to be differentiated.
@@ -142,42 +142,69 @@ namespace Anvil.CSharp.Logging
         /// <summary>
         /// Creates a <see cref="Logger"/> instance for a given instance.
         /// </summary>
-        /// <param name="instance">The instance to create the <see cref="Logger"/> instance for.</param>
+        /// <param name="owner">The instance to create a <see cref="Logger"/> instance for.</param>
         /// <param name="messagePrefix">
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple instances or types that share the same name which need to be differentiated.
         /// </param>
         /// <returns>The configured <see cref="Logger"/> instance</returns>
-        public static Logger GetLogger(in object instance, string messagePrefix = null) => new Logger(in instance, messagePrefix);
+        public static Logger GetLogger(in object owner, string messagePrefix = null) => new Logger(in owner, messagePrefix);
 
         internal static void DispatchLog(
             LogLevel level,
             string message,
-            string callerDerivedTypeName,
-            string callerPath,
-            string callerName,
-            int callerLine)
+            string callerTypeName,
+            string callerMethodName,
+            string callerFilePath,
+            int callerLineNumber)
         {
             if (SuppressLogging)
             {
                 return;
             }
 
-            Debug.Assert(!string.IsNullOrEmpty(callerDerivedTypeName));
-            Debug.Assert(!IsHandlingLog);
+            Debug.Assert(!string.IsNullOrEmpty(callerTypeName));
 
-            callerPath ??= UNKNOWN_CONTEXT;
-            callerName ??= UNKNOWN_CONTEXT;
+            if (IsHandlingLog)
+            {
+                throw new Exception("A log is already being handled");
+            }
+
+            string callerFileName;
+            if (!string.IsNullOrEmpty(callerFilePath))
+            {
+                int lastPathSeparatorIndex = callerFilePath.LastIndexOf('/');
+                if (lastPathSeparatorIndex == -1)
+                {
+                    lastPathSeparatorIndex = callerFilePath.LastIndexOf('\\');
+                }
+
+                if (lastPathSeparatorIndex != -1)
+                {
+                    callerFileName = callerFilePath.Substring(lastPathSeparatorIndex + 1);
+                }
+                else
+                {
+                    callerFileName = callerFilePath;
+                }
+            }
+            else
+            {
+                callerFilePath = UNKNOWN_CONTEXT;
+                callerFileName = UNKNOWN_CONTEXT;
+            }
+
+            CallerInfo callerInfo = new CallerInfo(
+                callerTypeName,
+                callerMethodName ?? UNKNOWN_CONTEXT,
+                callerFilePath,
+                callerFileName,
+                callerLineNumber);
 
             IsHandlingLog = true;
-            foreach (ILogHandler handler in s_AdditionalHandlerList)
+            foreach (AbstractLogHandler handler in s_AdditionalHandlerList)
             {
-                handler.HandleLog(level,
-                message,
-                callerDerivedTypeName,
-                callerPath,
-                callerName,
-                callerLine);
+                handler.HandleLog(level, message, in callerInfo);
             }
             IsHandlingLog = false;
         }
