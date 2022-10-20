@@ -29,44 +29,44 @@ namespace Anvil.CSharp.Logging
         }
 
         /// <inheritdoc cref="ILogger.Debug"/>
-        public void Debug(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int callerLine = 0)
+        public void Debug(object message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
         {
             if (!ShouldEmitLog(callerPath, callerLine))
             {
                 return;
             }
 
-            m_Logger.Debug(message, callerPath, callerName, callerLine);
+            m_Logger.Debug(message, callerName, callerPath, callerLine);
         }
 
         /// <inheritdoc cref="ILogger.Warning"/>
-        public void Warning(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int callerLine = 0)
+        public void Warning(object message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
         {
             if (!ShouldEmitLog(callerPath, callerLine))
             {
                 return;
             }
 
-            m_Logger.Warning(message, callerPath, callerName, callerLine);
+            m_Logger.Warning(message, callerName, callerPath, callerLine);
         }
 
         /// <inheritdoc cref="ILogger.Error"/>
-        public void Error(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int callerLine = 0)
+        public void Error(object message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
         {
             if (!ShouldEmitLog(callerPath, callerLine))
             {
                 return;
             }
 
-            m_Logger.Error(message, callerPath, callerName, callerLine);
+            m_Logger.Error(message, callerName, callerPath, callerLine);
         }
 
         /// <inheritdoc cref="ILogger.AtLevel"/>
         public void AtLevel(
             LogLevel level,
             object message,
-            [CallerFilePath] string callerPath = "",
             [CallerMemberName] string callerName = "",
+            [CallerFilePath] string callerPath = "",
             [CallerLineNumber] int callerLine = 0)
         {
             if (!ShouldEmitLog(callerPath, callerLine))
@@ -74,7 +74,7 @@ namespace Anvil.CSharp.Logging
                 return;
             }
 
-            m_Logger.AtLevel(level, message, callerPath, callerName, callerLine);
+            m_Logger.AtLevel(level, message, callerName, callerPath, callerLine);
         }
 
         private bool ShouldEmitLog(string callerPath, int callerLine)
