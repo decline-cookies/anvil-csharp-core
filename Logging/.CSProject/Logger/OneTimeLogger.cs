@@ -7,6 +7,11 @@ namespace Anvil.CSharp.Logging
     /// A wrapper for <see cref="Logger"/> that only allows a message to be emitted from a given call site once per session.
     /// A call site is determined to be unique by a combination of its file path and line number.
     /// </summary>
+    /// <remarks>
+    /// This type's methods are not thread-safe.
+    /// It's assumed all calls into this type are coming from a single thread.
+    /// TODO: #126 - Make logging thread safe
+    /// </remarks>
     public readonly struct OneTimeLogger : ILogger
     {
         private static readonly HashSet<int> s_CalledLogSites = new HashSet<int>();
