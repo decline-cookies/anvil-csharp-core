@@ -19,7 +19,7 @@ namespace Anvil.CSharp.Reflection
         /// </summary>
         /// <param name="type">The type to resolve the default value for</param>
         /// <returns>The default value for the given type</returns>
-        /// <remarks>Stolen from: https://stackoverflow.com/a/2490274 </remarks>
+        /// <remarks>Source: https://stackoverflow.com/a/2490274</remarks>
         public static object CreateDefaultValue(this Type type)
         {
             return type.IsValueType ? Activator.CreateInstance(type) : null;
@@ -47,7 +47,8 @@ namespace Anvil.CSharp.Reflection
         /// <param name="type">The type to get a readable name for.</param>
         /// <returns>The readable type name.</returns>
         /// <remarks>
-        /// This function is duplicated in <see cref="Logger" /> until the DLL can be merged back into the main Anvil library.
+        /// This function is duplicated in <see cref="Logger" /> until the DLL can be merged back into the main Anvil
+        /// library.
         /// </remarks>
         public static string GetReadableName(this Type type)
         {
@@ -79,7 +80,7 @@ namespace Anvil.CSharp.Reflection
         /// <param name="genericArgsUpperBound">
         /// The upper bounds (exclusive) of the <see cref="genericArgs"/> array to evaluate
         /// </param>
-        /// <returns></returns>
+        /// <returns>The readable type name.</returns>
         /// <remarks>
         /// For closed generic types the initial type is the only one with the concrete type args. This is why we pass
         /// <see cref="genericArgs"/> through each recursion up through the outer types.
@@ -113,7 +114,6 @@ namespace Anvil.CSharp.Reflection
             }
 
             // Remove the generic type count indicator (`n) from the type name
-            // Avoid having to calculate the number of digits in the generic type count by assuming it's under 100
             int removeCount = 1 + MathUtil.GetDigitCount(shallowGenericArgCount);
             string name = type.Name[..^removeCount];
             IEnumerable<string> genericTypeArgNames = genericArgs
