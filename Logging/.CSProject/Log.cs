@@ -9,6 +9,11 @@ namespace Anvil.CSharp.Logging
     /// <summary>
     /// Contains functions for logging messages through various systems, to aid in project development.
     /// </summary>
+    /// <remarks>
+    /// This type and its handlers are NOT thread safe.
+    /// It's assumed all calls into this class are coming from a single thread.
+    /// TODO: #126 - Make logging thread safe
+    /// </remarks>
     public static class Log
     {
         private const string UNKNOWN_CONTEXT = "<unknown>";

@@ -13,6 +13,11 @@ namespace Anvil.CSharp.Logging
     ///  - Caller file path
     ///  - Caller line number
     /// </summary>
+    /// <remarks>
+    /// This type's methods are not thread-safe.
+    /// It's assumed all calls into this type are coming from a single thread.
+    /// TODO: #126 - Make logging thread safe 
+    /// </remarks>
     public readonly struct Logger : ILogger
     {
         // NOTE: This is a duplicate of Anvil.CSharp.Reflection.TypeExtension.GetReadableName
