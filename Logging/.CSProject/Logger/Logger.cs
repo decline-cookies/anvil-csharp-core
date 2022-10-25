@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Anvil.CSharp.Logging
@@ -15,31 +14,6 @@ namespace Anvil.CSharp.Logging
     /// </summary>
     public readonly struct Logger : ILogger
     {
-        // NOTE: This is a duplicate of Anvil.CSharp.Reflection.TypeExtension.GetReadableName
-        // because the logging namespace is isolated from the rest of Anvil, and thus cannot access that extension
-        private static readonly Type s_NullableType = typeof(Nullable<>);
-        private static string GetReadableName(Type type)
-        {
-            if (!type.IsGenericType)
-            {
-                return type.Name;
-            }
-
-            if (type.GetGenericTypeDefinition() == s_NullableType)
-            {
-                return $"{GetReadableName(type.GenericTypeArguments[0])}?";
-            }
-
-            // Remove the generic type count indicator (`n) from the type name
-            // Avoid having to calculate the number of digits in the generic type count by assuming it's under 100
-            int removeCount = 1 + (type.GenericTypeArguments.Length < 10 ? 1 : 2);
-            string name = type.Name[..^removeCount];
-
-            string genericTypeNames = string.Join(", ", type.GenericTypeArguments.Select(GetReadableName));
-
-            return $"{name}<{genericTypeNames}>";
-        }
-
         /// <summary>
         /// The name of the type this <see cref="Logger"/> represents.
         /// </summary>
@@ -57,7 +31,7 @@ namespace Anvil.CSharp.Logging
         /// An optional <see cref="string"/> to prefix to all messages through this logger.
         /// Useful when there are multiple types that share the same name which need to be differentiated.
         /// </param>
-        public Logger(Type ownerType, string messagePrefix = null) : this(GetReadableName(ownerType), messagePrefix) { }
+        public Logger(Type ownerType, string messagePrefix = null) : this(ownerType.GetReadableName(), messagePrefix) { }
         /// <summary>
         /// Creates an instance of <see cref="Logger"/> for an object instance.
         /// </summary>

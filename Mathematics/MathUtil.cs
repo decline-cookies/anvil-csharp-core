@@ -43,44 +43,5 @@ namespace Anvil.CSharp.Mathematics
 
             return (--a);
         }
-
-        /// <summary>
-        /// Returns the number of digits in an integer.
-        /// Optionally, includes the negative sign in the count.
-        /// </summary>
-        /// <param name="value">The value to evaluate</param>
-        /// <param name="countSign">(default:false) If true, will increase the count by one for all numbers less than 0</param>
-        /// <returns>The number of digits in an integer</returns>
-        /// <remarks>Taken from: https://stackoverflow.com/a/51099524/640196</remarks>
-        public static int GetDigitCount(int value, bool countSign = false)
-        {
-            if (value >= 0)
-            {
-                if (value < 10) return 1;
-                if (value < 100) return 2;
-                if (value < 1_000) return 3;
-                if (value < 10_000) return 4;
-                if (value < 100_000) return 5;
-                if (value < 1_000_000) return 6;
-                if (value < 10_000_000) return 7;
-                if (value < 100_000_000) return 8;
-                if (value < 1_000_000_000) return 9;
-                return 10;
-            }
-            else
-            {
-                int signCount = countSign ? 1 : 0;
-                if (value > -10) return signCount + 1;
-                if (value > -100) return signCount + 2;
-                if (value > -1_000) return signCount + 3;
-                if (value > -10_000) return signCount + 4;
-                if (value > -100_000) return signCount + 5;
-                if (value > -1_000_000) return signCount + 6;
-                if (value > -10_000_000) return signCount + 7;
-                if (value > -100_000_000) return signCount + 8;
-                if (value > -1_000_000_000) return signCount + 9;
-                return signCount + 10;
-            }
-        }
     }
 }
