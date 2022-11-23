@@ -2,17 +2,21 @@
     "name": "anvil-csharp-tests",
     "rootNamespace": "Anvil.CSharp.Tests",
     "references": [
-        "anvil-csharp-core"
+        "anvil-csharp-core",
+        ""
     ],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "anvil-csharp-logging.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": true
 }
