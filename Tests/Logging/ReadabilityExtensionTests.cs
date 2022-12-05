@@ -21,6 +21,8 @@ namespace Anvil.CSharp.Tests.Logging
         [Order(1)]
         public static void GetShallowGenericTypeCount()
         {
+            Assert.That(nameof(GetShallowGenericTypeCount), Does.StartWith(nameof(ReadabilityExtension.GetShallowGenericTypeCount)));
+
             Assert.That(typeof(int).GetShallowGenericTypeCount(), Is.EqualTo(0));
 
             Assert.That(typeof(int?).GetShallowGenericTypeCount(), Is.EqualTo(1));
@@ -43,6 +45,8 @@ namespace Anvil.CSharp.Tests.Logging
         [Test]
         public static void GetReadableNameTest()
         {
+            Assert.That(nameof(GetReadableNameTest), Does.StartWith(nameof(ReadabilityExtension.GetReadableName)));
+
             Assert.That(typeof(int).GetReadableName(), Is.EqualTo("Int32"));
 
             Assert.That(typeof(int?).GetReadableName(), Is.EqualTo("Int32?"));
@@ -76,8 +80,10 @@ namespace Anvil.CSharp.Tests.Logging
         }
 
         [Test]
-        public static void GetDigitCount()
+        public static void GetDigitCountTest()
         {
+            Assert.That(nameof(GetDigitCountTest), Does.StartWith(nameof(ReadabilityExtension.GetDigitCount)));
+
             Assert.That(0.GetDigitCount(), Is.EqualTo(1));
             Assert.That(0.GetDigitCount(true), Is.EqualTo(1));
 
