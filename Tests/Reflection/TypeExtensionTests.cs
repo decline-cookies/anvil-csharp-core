@@ -23,13 +23,13 @@ namespace Anvil.CSharp.Tests
         }
 
         [Test]
-        public static void IsStatic()
+        public static void IsStaticTest()
         {
-            Assert.That(typeof(TestClass).isStatic(), Is.EqualTo(false));
-            Assert.That(typeof(TestSealedClass).isStatic(), Is.EqualTo(false));
-            Assert.That(typeof(TestStaticClass).isStatic(), Is.EqualTo(true));
-            Assert.That(typeof(TestAbstractClass).isStatic(), Is.EqualTo(false));
-            Assert.That(typeof(TestStruct).isStatic(), Is.EqualTo(false));
+            Assert.That(typeof(TestClass).IsStatic(), Is.EqualTo(false));
+            Assert.That(typeof(TestSealedClass).IsStatic(), Is.EqualTo(false));
+            Assert.That(typeof(TestStaticClass).IsStatic(), Is.EqualTo(true));
+            Assert.That(typeof(TestAbstractClass).IsStatic(), Is.EqualTo(false));
+            Assert.That(typeof(TestStruct).IsStatic(), Is.EqualTo(false));
         }
 
 

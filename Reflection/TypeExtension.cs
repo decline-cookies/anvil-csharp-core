@@ -32,7 +32,7 @@ namespace Anvil.CSharp.Reflection
         /// This works because a static class is defined as abstract, sealed at the IL level
         /// Source: https://stackoverflow.com/a/1175901/640196
         /// </remarks>
-        public static bool isStatic(this Type type)
+        public static bool IsStatic(this Type type)
         {
             return type.IsAbstract && type.IsSealed;
         }
