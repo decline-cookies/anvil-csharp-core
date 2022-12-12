@@ -22,6 +22,7 @@ namespace Anvil.CSharp.Logging
         public static void Reset()
         {
             s_CalledLogSites.Clear();
+            Log.GetStaticLogger(typeof(OneTimeLogger)).Debug("One time log filter reset.");
         }
 
 
