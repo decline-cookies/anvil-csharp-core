@@ -1,10 +1,12 @@
 namespace Anvil.CSharp.Mathematics
 {
     /// <summary>
-    /// Useful helpers to aid in debugging
+    /// Useful math utilities
     /// </summary>
     public static class MathUtil
     {
+        public const float FLOATING_POINT_EQUALITY_TOLERANCE = 0.00001f;
+
         /// <summary>
         /// Calculates the Nth prime number that is passed in
         /// </summary>
