@@ -15,7 +15,7 @@ namespace Anvil.CSharp.Tests
         [Test]
         public static void CreateDefaultValueTest()
         {
-            Assert.That(nameof(CreateDefaultValueTest), Does.StartWith(nameof(TypeExtension.CreateDefaultValue)));
+            Assert.That(nameof(CreateDefaultValueTest), Is.EqualTo(nameof(TypeExtension.CreateDefaultValue) + "Test"));
 
             Assert.That(typeof(TestClass).CreateDefaultValue(), Is.EqualTo(null));
             Assert.That(typeof(TestSealedClass).CreateDefaultValue(), Is.EqualTo(null));
@@ -27,7 +27,7 @@ namespace Anvil.CSharp.Tests
         [Test]
         public static void IsStaticTest()
         {
-            Assert.That(nameof(IsStaticTest), Does.StartWith(nameof(TypeExtension.IsStatic)));
+            Assert.That(nameof(IsStaticTest), Is.EqualTo(nameof(TypeExtension.IsStatic) + "Test"));
 
             Assert.That(typeof(TestClass).IsStatic(), Is.EqualTo(false));
             Assert.That(typeof(TestSealedClass).IsStatic(), Is.EqualTo(false));

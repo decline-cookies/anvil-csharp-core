@@ -9,7 +9,7 @@ namespace Anvil.CSharp.Tests
         [Test, Order(0)]
         public static void PopulateTest()
         {
-            Assert.That(nameof(PopulateTest), Does.StartWith(nameof(Array2DExtension.Populate)));
+            Assert.That(nameof(PopulateTest), Is.EqualTo(nameof(Array2DExtension.Populate) + "Test"));
 
             const int SIZE = 5;
 
@@ -28,7 +28,7 @@ namespace Anvil.CSharp.Tests
         [Test]
         public static void GetLengthTest()
         {
-            Assert.That(nameof(GetLengthTest), Does.StartWith(nameof(Array2DExtension.GetLength)));
+            Assert.That(nameof(GetLengthTest), Is.EqualTo(nameof(Array2DExtension.GetLength) + "Test"));
 
             Assert.That(new int[1, 1].GetLength(), Is.EqualTo((1, 1)));
             Assert.That(new int[2, 3].GetLength(), Is.EqualTo((2, 3)));
@@ -38,7 +38,7 @@ namespace Anvil.CSharp.Tests
         [Test]
         public static void AnyAllTest()
         {
-            Assert.That(nameof(AnyAllTest), Does.Contain(nameof(Array2DExtension.All)).And.Contain(nameof(Array2DExtension.Any)));
+            Assert.That(nameof(AnyAllTest), Is.EqualTo($"{nameof(Array2DExtension.Any)}{nameof(Array2DExtension.All)}Test"));
 
             bool[,] array = new bool[5, 5];
             array.Populate((x, y) => true);
@@ -59,7 +59,7 @@ namespace Anvil.CSharp.Tests
         [Test]
         public static void ForEachTest()
         {
-            Assert.That(nameof(ForEachTest), Does.StartWith(nameof(Array2DExtension.ForEach)));
+            Assert.That(nameof(ForEachTest), Is.EqualTo(nameof(Array2DExtension.ForEach) + "Test"));
 
             const int SIZE = 5;
 
@@ -75,7 +75,7 @@ namespace Anvil.CSharp.Tests
         [Test]
         public static void FindIndexTest()
         {
-            Assert.That(nameof(FindIndexTest), Does.StartWith(nameof(Array2DExtension.FindIndex)));
+            Assert.That(nameof(FindIndexTest), Is.EqualTo(nameof(Array2DExtension.FindIndex) + "Test"));
 
             const int SIZE = 5;
 
@@ -90,7 +90,7 @@ namespace Anvil.CSharp.Tests
         [Test]
         public static void GetElementOrDefaultAtTest()
         {
-            Assert.That(nameof(GetElementOrDefaultAtTest), Does.StartWith(nameof(Array2DExtension.GetElementOrDefaultAt)));
+            Assert.That(nameof(GetElementOrDefaultAtTest), Is.EqualTo(nameof(Array2DExtension.GetElementOrDefaultAt) + "Test"));
 
             const int SIZE = 5;
 
