@@ -13,8 +13,10 @@ namespace Anvil.CSharp.Tests
 
 
         [Test]
-        public static void CreateDefaultValue()
+        public static void CreateDefaultValueTest()
         {
+            Assert.That(nameof(CreateDefaultValueTest), Is.EqualTo(nameof(TypeExtension.CreateDefaultValue) + "Test"));
+
             Assert.That(typeof(TestClass).CreateDefaultValue(), Is.EqualTo(null));
             Assert.That(typeof(TestSealedClass).CreateDefaultValue(), Is.EqualTo(null));
             Assert.That(typeof(TestStaticClass).CreateDefaultValue(), Is.EqualTo(null));
@@ -23,13 +25,15 @@ namespace Anvil.CSharp.Tests
         }
 
         [Test]
-        public static void IsStatic()
+        public static void IsStaticTest()
         {
-            Assert.That(typeof(TestClass).isStatic(), Is.EqualTo(false));
-            Assert.That(typeof(TestSealedClass).isStatic(), Is.EqualTo(false));
-            Assert.That(typeof(TestStaticClass).isStatic(), Is.EqualTo(true));
-            Assert.That(typeof(TestAbstractClass).isStatic(), Is.EqualTo(false));
-            Assert.That(typeof(TestStruct).isStatic(), Is.EqualTo(false));
+            Assert.That(nameof(IsStaticTest), Is.EqualTo(nameof(TypeExtension.IsStatic) + "Test"));
+
+            Assert.That(typeof(TestClass).IsStatic(), Is.EqualTo(false));
+            Assert.That(typeof(TestSealedClass).IsStatic(), Is.EqualTo(false));
+            Assert.That(typeof(TestStaticClass).IsStatic(), Is.EqualTo(true));
+            Assert.That(typeof(TestAbstractClass).IsStatic(), Is.EqualTo(false));
+            Assert.That(typeof(TestStruct).IsStatic(), Is.EqualTo(false));
         }
 
 
