@@ -18,7 +18,15 @@ namespace Anvil.CSharp.Logging
     {
         private const string UNKNOWN_CONTEXT = "<unknown>";
 
-        private static readonly HashSet<AbstractLogHandler> s_AdditionalHandlerList = new HashSet<AbstractLogHandler>();
+        private static readonly HashSet<AbstractLogHandler> s_Handlers = new HashSet<AbstractLogHandler>();
+
+        /// <summary>
+        /// Returns a read only collection of handlers currently registered.
+        /// </summary>
+        public static IReadOnlyCollection<AbstractLogHandler> Handlers
+        {
+            get => s_Handlers;
+        }
 
         /// <summary>
         /// Returns true while a log is being evaluated by handlers.
@@ -119,19 +127,19 @@ namespace Anvil.CSharp.Logging
         /// Returns true if the <see cref="AbstractLogHandler"/> is successfully added, or false if the handler is null or
         /// has already been added.
         /// </returns>
-        public static bool AddHandler(AbstractLogHandler handler) => (handler != null && s_AdditionalHandlerList.Add(handler));
+        public static bool AddHandler(AbstractLogHandler handler) => (handler != null && s_Handlers.Add(handler));
 
         /// <summary>
         /// Remove a custom <see cref="AbstractLogHandler"/>, which was previously added.
         /// </summary>
         /// <param name="handler">The <see cref="AbstractLogHandler"/> to remove.</param>
         /// <returns>Returns true if the <see cref="AbstractLogHandler"/> was successfully removed.</returns>
-        public static bool RemoveHandler(AbstractLogHandler handler) => s_AdditionalHandlerList.Remove(handler);
+        public static bool RemoveHandler(AbstractLogHandler handler) => s_Handlers.Remove(handler);
 
         /// <summary>
         /// Removes all <see cref="AbstractLogHandler"/>s including any default <see cref="AbstractLogHandler"/>s.
         /// </summary>
-        public static void RemoveAllHandlers() => s_AdditionalHandlerList.Clear();
+        public static void RemoveAllHandlers() => s_Handlers.Clear();
 
         /// <summary>
         /// Creates a <see cref="Logger"/> instance for a given static <see cref="Type"/>.
@@ -199,7 +207,7 @@ namespace Anvil.CSharp.Logging
                 callerFileName = UNKNOWN_CONTEXT;
             }
 
-            CallerInfo callerInfo = new CallerInfo(
+            AbstractLogHandler.CallerInfo callerInfo = new AbstractLogHandler.CallerInfo(
                 callerTypeName,
                 callerMethodName ?? UNKNOWN_CONTEXT,
                 callerFilePath,
@@ -207,7 +215,7 @@ namespace Anvil.CSharp.Logging
                 callerLineNumber);
 
             IsHandlingLog = true;
-            foreach (AbstractLogHandler handler in s_AdditionalHandlerList)
+            foreach (AbstractLogHandler handler in s_Handlers)
             {
                 handler.HandleLog(level, message, in callerInfo);
             }
