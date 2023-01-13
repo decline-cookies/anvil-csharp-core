@@ -79,12 +79,16 @@ namespace Anvil.CSharp.DelayedExecution
         }
 
         /// <summary>
-        /// Indicates whether the handle is currently executing its OnUpdate phase.
+        /// Indicates whether the handle's <see cref="UpdateSource"/> is currently executing its OnUpdate phase.
         /// </summary>
         public bool IsSourceUpdating
         {
             get => m_UpdateSource != null && m_UpdateSource.IsUpdating;
         }
+        /// <summary>
+        /// Indicates whether the handle is currently executing its OnUpdate phase.
+        /// </summary>
+        public bool IsUpdating { get; private set; }
 
         private UpdateHandle(Type updateSourceType)
         {
@@ -128,6 +132,9 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void UpdateSource_OnUpdate()
         {
+            Debug.Assert(!IsUpdating);
+            IsUpdating = true;
+
             if (m_CallAfterHandles.Count > 0)
             {
                 //Take a snapshot of CallAfterHandles valid for this frame to iterate through since m_CallAfterHandles
@@ -141,6 +148,9 @@ namespace Anvil.CSharp.DelayedExecution
             }
 
             m_OnUpdate?.Invoke();
+
+            Debug.Assert(IsUpdating);
+            IsUpdating = false;
         }
 
         /// <summary>
