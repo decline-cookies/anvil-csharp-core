@@ -33,7 +33,7 @@ namespace Anvil.CSharp.DelayedExecution
         /// </param>
         public DeferredWorkPump(bool willEagerExecuteWork = false)
         {
-            m_ExecutePendingWorkStrategy = willEagerExecuteWork ? ExecutePendingWork_Eager : ExecutePendingWork;
+            m_ExecutePendingWorkStrategy = willEagerExecuteWork ? (Action)ExecutePendingWork_Eager : ExecutePendingWork;
 
             m_Update = UpdateHandle.Create<T>();
             m_PendingWork = new Queue<Action>();
