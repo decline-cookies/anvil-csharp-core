@@ -1,0 +1,195 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Anvil.CSharp.Core;
+
+namespace Anvil.CSharp.DelayedExecution
+{
+    public class DeferredDataPump<TUpdateSource, TDataType> : AbstractAnvilBase where TUpdateSource : AbstractUpdateSource
+    {
+        private readonly Action<IEnumerator<TDataType>> m_ProcessPendingData;
+        private readonly bool m_WillEagerExecuteDeferredData;
+        private readonly UpdateHandle m_Update;
+        private readonly Queue<TDataType> m_PendingData;
+
+        private CallAfterHandle m_PendingDataRequestHandle;
+
+
+        /// <summary>
+        /// Returns true if the pending data is currently being processed.
+        /// </summary>
+        public bool IsExecuting
+        {
+            get => m_Update.IsUpdating;
+        }
+
+        /// <summary>
+        /// Creates an instance of the data pump.
+        /// </summary>
+        /// <param name="processPendingData">A callback that will process the data that was deferred.</param>
+        /// <param name="willEagerExecuteWork">
+        /// (optional) If true, the data scheduled while processing accumulated data will get processed during the same
+        /// update. Otherwise, the data is deferred to the next update.
+        /// </param>
+        public DeferredDataPump(Action<IEnumerator<TDataType>> processPendingData, bool willEagerExecuteDeferredData = false)
+        {
+            m_ProcessPendingData = processPendingData;
+            m_WillEagerExecuteDeferredData = willEagerExecuteDeferredData;
+
+            m_Update = UpdateHandle.Create<TUpdateSource>();
+            m_PendingData = new Queue<TDataType>();
+        }
+
+        protected override void DisposeSelf()
+        {
+            m_Update.Dispose();
+
+            base.DisposeSelf();
+        }
+
+        /// <summary>
+        /// Schedules data to to be processed during the next update phase.
+        /// </summary>
+        /// <param name="work"></param>
+        public void Schedule(TDataType data)
+        {
+            m_PendingData.Enqueue(data);
+            m_PendingDataRequestHandle ??= m_Update.CallAfterUpdates(0, ProcessPendingData);
+        }
+
+        private void ProcessPendingData()
+        {
+            using IEnumerator<TDataType> enumerator = m_WillEagerExecuteDeferredData
+                ? new EagerDestructiveQueueEnumerator(m_PendingData)
+                : new SnapshotDestructiveQueueEnumerator(m_PendingData);
+            m_ProcessPendingData(enumerator);
+        }
+
+        // ----- Inner Types ----- //
+        /// <summary>
+        /// An enumerator that will dequeue elements in a <see cref="Queue{T}"/> as iterated.
+        /// The enumerator allows the underlying queue to be modified while iterating but will only deliver the number
+        /// of elements that existed when the enumerator was created.
+        /// </summary>
+        /// <remarks>
+        /// It's assumed that any modifications to the <see cref="Queue{T}"/> are additive. dequeue the elements that
+        /// exist when the enumerator was created. Reducing the number of elements elements during iteration will throw
+        /// an exception.
+        /// </remarks>
+        private struct SnapshotDestructiveQueueEnumerator : IEnumerator<TDataType>
+        {
+            private readonly Queue<TDataType> m_Queue;
+            private TDataType m_Current;
+            private int m_ElementsRemaining;
+            private bool m_HasStarted;
+
+            public TDataType Current
+            {
+                get
+                {
+                    if (m_ElementsRemaining < 0)
+                    {
+                        // Either it's passed the end of the collection, disposed, or MoveNext hasn't been called at least once
+                        throw new InvalidOperationException("Enumerator is not in a valid state.");
+                    }
+
+                    return m_Current;
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get => Current;
+            }
+
+            public SnapshotDestructiveQueueEnumerator(Queue<TDataType> queue)
+            {
+                m_Queue = queue;
+                m_ElementsRemaining = m_Queue.Count;
+                m_HasStarted = false;
+                m_Current = default;
+            }
+
+            public void Dispose()
+            {
+                m_ElementsRemaining = -2;
+                m_Current = default;
+            }
+
+            public bool MoveNext()
+            {
+                if (m_ElementsRemaining > 0)
+                {
+                    m_HasStarted = true;
+                    m_Current = m_Queue.Dequeue();
+                    m_ElementsRemaining--;
+                    Debug.Assert(m_ElementsRemaining <= m_Queue.Count);
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void Reset()
+            {
+                throw new NotSupportedException("Enumeration is a destructive action. Enumerator cannot be reset.");
+            }
+        }
+
+        /// <summary>
+        /// An enumerator that will dequeue elements in a <see cref="Queue{T}"/> as iterated.
+        /// The enumerator allows the underlying queue to be modified while iterating and will deliver all elements in
+        /// the collection. Even elements that are added after the enumerator was created.
+        /// </summary>
+        private struct EagerDestructiveQueueEnumerator : IEnumerator<TDataType>
+        {
+            private readonly Queue<TDataType> m_Queue;
+            private TDataType m_Current;
+            private bool m_IsValid;
+
+            public TDataType Current
+            {
+                get
+                {
+                    if (!m_IsValid)
+                    {
+                        // Either it's passed the end of the collection, disposed, or MoveNext hasn't been called at least once
+                        throw new InvalidOperationException("Enumerator is not in a valid state.");
+                    }
+
+                    return m_Current;
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get => Current;
+            }
+
+            public EagerDestructiveQueueEnumerator(Queue<TDataType> queue)
+            {
+                m_Queue = queue;
+                m_IsValid = false;
+                m_Current = default;
+            }
+
+            public void Dispose()
+            {
+                m_IsValid = false;
+                m_Current = default;
+            }
+
+            public bool MoveNext()
+            {
+                m_IsValid = m_Queue.TryDequeue(out m_Current);
+                return m_IsValid;
+            }
+
+            public void Reset()
+            {
+                throw new NotSupportedException("Enumeration is a destructive action. Enumerator cannot be reset.");
+            }
+        }
+    }
+}
