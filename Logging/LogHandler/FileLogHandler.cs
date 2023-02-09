@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Logging
 {
@@ -22,6 +21,7 @@ namespace Anvil.CSharp.Logging
             /// New logs are appended to the existing log file.
             /// </summary>
             Append,
+
             /// <summary>
             /// A new log file is created, overwriting the previous one if it exists.
             /// </summary>
@@ -39,7 +39,7 @@ namespace Anvil.CSharp.Logging
         private readonly string m_Extension;
 
         private readonly WriteMode m_WriteMode;
-        
+
         private readonly long? m_RotateFileSizeLimit;
         private readonly int? m_RotateFileCountLimit;
 
@@ -67,8 +67,7 @@ namespace Anvil.CSharp.Logging
             string path,
             WriteMode writeMode = WriteMode.Append,
             long? rotateFileSizeLimit = 10L * 1024 * 1024,
-            int? rotateFileCountLimit = 5
-        )
+            int? rotateFileCountLimit = 5)
         {
             m_Path = path;
             m_WriteMode = writeMode;
@@ -161,7 +160,7 @@ namespace Anvil.CSharp.Logging
 
             // Get all existing rotated log file paths, collecting valid paths to be rotated
             List<string> existingFilePaths = GetExistingRotatedFilePaths().ToList();
-            List<string> validPaths = new List<string>{ m_Path };
+            List<string> validPaths = new List<string> { m_Path };
 
             for (int i = 1; i < m_RotateFileCountLimit && existingFilePaths.Any(); i++)
             {

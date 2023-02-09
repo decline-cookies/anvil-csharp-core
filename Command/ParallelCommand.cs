@@ -6,16 +6,14 @@ namespace Anvil.CSharp.Command
     /// Default <see cref="ParallelCommand{T}"/> that uses <see cref="ICommand"/> as the restriction on
     /// children types.
     /// </summary>
-    public class ParallelCommand : ParallelCommand<ICommand>
-    {
-    }
+    public class ParallelCommand : ParallelCommand<ICommand> { }
 
     /// <summary>
     /// A <see cref="AbstractCollectionCommand"/> that will execute all children in parallel.
     /// <see cref="OnComplete"/> will be dispatched once all children have completed.
     /// </summary>
     public class ParallelCommand<T> : AbstractCollectionCommand<ParallelCommand<T>, T>
-        where T:class, ICommand
+        where T : class, ICommand
     {
         private int m_ChildCommandsLeftToComplete;
 
@@ -28,17 +26,13 @@ namespace Anvil.CSharp.Command
         /// Constructs a <see cref="ParallelCommand"/> using params for <see cref="{T}"/>.
         /// </summary>
         /// <param name="childCommands">The <see cref="{T}"/>s to pass in.</param>
-        public ParallelCommand(params T[] childCommands) : base (childCommands)
-        {
-        }
+        public ParallelCommand(params T[] childCommands) : base(childCommands) { }
 
         /// <summary>
         /// Constructs a <see cref="ParallelCommand"/> using an <see cref="IEnumerable{T}"/>.
         /// </summary>
         /// <param name="childCommands">The <see cref="IEnumerable{T}"/> to pass in.</param>
-        public ParallelCommand(IEnumerable<T> childCommands) : base(childCommands)
-        {
-        }
+        public ParallelCommand(IEnumerable<T> childCommands) : base(childCommands) { }
 
         protected override void DisposeSelf()
         {
@@ -76,4 +70,3 @@ namespace Anvil.CSharp.Command
         }
     }
 }
-

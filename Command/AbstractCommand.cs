@@ -73,9 +73,7 @@ namespace Anvil.CSharp.Command
         /// </summary>
         public CommandState State { get; private protected set; } = CommandState.Initialized;
 
-        protected AbstractCommand()
-        {
-        }
+        protected AbstractCommand() { }
 
         protected override void DisposeSelf()
         {
@@ -138,4 +136,3 @@ namespace Anvil.CSharp.Command
         }
     }
 }
-

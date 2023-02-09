@@ -8,28 +8,33 @@ namespace Anvil.CSharp.Content
     /// A logical group of <see cref="AbstractContentController"/>/<see cref="IContent"/> pairs to be shown.
     /// Many <see cref="AbstractContentGroup"/> can be added to the controlling <see cref="AbstractContentManager"/>.
     /// </summary>
-    public abstract class AbstractContentGroup: AbstractAnvilBase
+    public abstract class AbstractContentGroup : AbstractAnvilBase
     {
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnLoadStart"/>
         /// </summary>
         public event Action<AbstractContentController> OnLoadStart;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnLoadComplete"/>
         /// </summary>
         public event Action<AbstractContentController> OnLoadComplete;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayInStart"/>
         /// </summary>
         public event Action<AbstractContentController> OnPlayInStart;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayInComplete"/>
         /// </summary>
         public event Action<AbstractContentController> OnPlayInComplete;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayOutStart"/>
         /// </summary>
         public event Action<AbstractContentController> OnPlayOutStart;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayOutComplete"/>
         /// </summary>
@@ -129,7 +134,8 @@ namespace Anvil.CSharp.Content
 
         private void ContentController_OnLoadStart(AbstractContentController contentController)
         {
-            Debug.Assert(contentController == ActiveContentController,
+            Debug.Assert(
+                contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnLoadStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
             OnLoadStart?.Invoke(ActiveContentController);
@@ -137,7 +143,8 @@ namespace Anvil.CSharp.Content
 
         private void ContentController_OnLoadComplete(AbstractContentController contentController)
         {
-            Debug.Assert(contentController == ActiveContentController,
+            Debug.Assert(
+                contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnLoadComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
 
@@ -149,7 +156,8 @@ namespace Anvil.CSharp.Content
 
         private void ContentController_OnPlayInStart(AbstractContentController contentController)
         {
-            Debug.Assert(contentController == ActiveContentController,
+            Debug.Assert(
+                contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayInStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
 
@@ -158,7 +166,8 @@ namespace Anvil.CSharp.Content
 
         private void ContentController_OnPlayInComplete(AbstractContentController contentController)
         {
-            Debug.Assert(contentController == ActiveContentController,
+            Debug.Assert(
+                contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayInComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
 
@@ -169,7 +178,8 @@ namespace Anvil.CSharp.Content
 
         private void ContentController_OnPlayOutStart(AbstractContentController contentController)
         {
-            Debug.Assert(contentController == ActiveContentController,
+            Debug.Assert(
+                contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayOutStart but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
 
@@ -178,7 +188,8 @@ namespace Anvil.CSharp.Content
 
         private void ContentController_OnPlayOutComplete(AbstractContentController contentController)
         {
-            Debug.Assert(contentController == ActiveContentController,
+            Debug.Assert(
+                contentController == ActiveContentController,
                 $"Controller {contentController} dispatched OnPlayOutComplete but it is not the same as the {nameof(ActiveContentController)} which is {ActiveContentController}!");
 
             OnPlayOutComplete?.Invoke(ActiveContentController);
@@ -220,4 +231,3 @@ namespace Anvil.CSharp.Content
         }
     }
 }
-

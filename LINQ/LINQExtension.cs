@@ -77,4 +77,3 @@ namespace Anvil.CSharp.Linq
         }
     }
 }
-

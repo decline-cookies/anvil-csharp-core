@@ -32,7 +32,7 @@ namespace Anvil.CSharp.Command
         /// </param>
         public JITCommand(ConstructCommandJIT<T> constructCommandJITFunction)
         {
-            if(constructCommandJITFunction == null)
+            if (constructCommandJITFunction == null)
             {
                 throw new ArgumentException($"{nameof(constructCommandJITFunction)} cannot be null!");
             }
@@ -63,4 +63,3 @@ namespace Anvil.CSharp.Command
         }
     }
 }
-

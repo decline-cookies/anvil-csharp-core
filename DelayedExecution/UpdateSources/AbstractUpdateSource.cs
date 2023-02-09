@@ -19,9 +19,7 @@ namespace Anvil.CSharp.DelayedExecution
         /// </summary>
         public bool IsUpdating { get; private set; }
 
-        protected AbstractUpdateSource()
-        {
-        }
+        protected AbstractUpdateSource() { }
 
         protected override void DisposeSelf()
         {
@@ -43,4 +41,3 @@ namespace Anvil.CSharp.DelayedExecution
         }
     }
 }
-

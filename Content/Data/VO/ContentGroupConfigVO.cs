@@ -23,4 +23,3 @@ namespace Anvil.CSharp.Content
         }
     }
 }
-

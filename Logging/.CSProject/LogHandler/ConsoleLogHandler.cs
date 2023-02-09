@@ -18,9 +18,11 @@ namespace Anvil.CSharp.Logging
                 case LogLevel.Warning:
                     Console.WriteLine(formattedLog);
                     break;
+
                 case LogLevel.Error:
                     Console.Error.WriteLine(formattedLog);
                     break;
+
                 default:
                     throw new NotImplementedException($"Unhandled log level: {level}");
             }

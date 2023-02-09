@@ -15,7 +15,7 @@ namespace Anvil.CSharp.Core
         /// chain have been called.
         /// </summary>
         bool IsDisposed { get; }
-        
+
         /// <summary>
         /// Allows an instance to be queried to know if <see cref="Dispose"/> has been called yet or not and if
         /// the instance is currently disposing.
@@ -23,4 +23,3 @@ namespace Anvil.CSharp.Core
         bool IsDisposing { get; }
     }
 }
-

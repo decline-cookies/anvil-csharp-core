@@ -33,7 +33,7 @@ namespace Anvil.CSharp.Iteration
         /// Execution does not start until <see cref="RunToYield"/> is called.
         /// </summary>
         /// <param name="method">The yielded method to run</param>
-        public YieldedMethodRunner(Func<IEnumerator> method):this(method()) { }
+        public YieldedMethodRunner(Func<IEnumerator> method) : this(method()) { }
 
         private YieldedMethodRunner(IEnumerator methodContext)
         {
@@ -48,7 +48,7 @@ namespace Anvil.CSharp.Iteration
         public void RunToYield()
         {
             bool keepRunning = true;
-            while(!IsComplete && keepRunning)
+            while (!IsComplete && keepRunning)
             {
                 // Keep going until a non-scope changing yield is hit or we're complete
                 keepRunning = false;

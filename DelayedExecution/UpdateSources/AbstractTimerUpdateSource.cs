@@ -1,12 +1,11 @@
-﻿using Anvil.CSharp.Logging;
-using System;
+﻿using System;
 using System.Threading;
 
 namespace Anvil.CSharp.DelayedExecution
 {
     //TODO: Explore code gen to avoid having the developer subclass. (Related: AbstractOffThreadUpdateSource)
     //Subclass and create a constructorless implementation that locks in the interval and thread marshalling
-    
+
     /// <summary>
     /// Provides a time constrained update source.
     /// This <see cref="Timer"/> based implementation trades off accuracy for performance.

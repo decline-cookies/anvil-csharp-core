@@ -7,9 +7,7 @@ namespace Anvil.CSharp.Data
     public class ByteIDProvider : AbstractIDProvider<byte>
     {
         /// <inheritdoc cref="AbstractIDProvider{T}"/>
-        public ByteIDProvider(byte supplyWarningThreshold = byte.MaxValue - 32) : base(supplyWarningThreshold)
-        {
-        }
+        public ByteIDProvider(byte supplyWarningThreshold = byte.MaxValue - 32) : base(supplyWarningThreshold) { }
 
         protected override byte IncrementID(byte currentID)
         {

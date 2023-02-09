@@ -10,7 +10,7 @@ namespace Anvil.CSharp.DelayedExecution
     public static class UpdateHandleSourcesManager
     {
         private static readonly Dictionary<Type, AbstractUpdateSource> s_UpdateSources = new Dictionary<Type, AbstractUpdateSource>();
-        
+
         /// <summary>
         /// Allows for the retrieval of/or the creation of a singular app wide <see cref="AbstractUpdateSource"/>
         /// </summary>
@@ -26,7 +26,7 @@ namespace Anvil.CSharp.DelayedExecution
 
             return s_UpdateSources[sourceType];
         }
-        
+
         /// <summary>
         /// Removes an <see cref="AbstractUpdateSource"/> from the lookup. This should only happen if an Update Source
         /// is disposed. See <see cref="AbstractUpdateSource.Dispose"/>
@@ -40,4 +40,3 @@ namespace Anvil.CSharp.DelayedExecution
         }
     }
 }
-

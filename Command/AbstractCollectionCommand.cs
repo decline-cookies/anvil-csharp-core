@@ -4,14 +4,12 @@ using System.Collections.Generic;
 namespace Anvil.CSharp.Command
 {
     public abstract class AbstractCollectionCommand<T, TChild> : AbstractCommand<T>
-        where T:AbstractCollectionCommand<T, TChild>
-        where TChild:class, ICommand
+        where T : AbstractCollectionCommand<T, TChild>
+        where TChild : class, ICommand
     {
         protected readonly List<TChild> m_ChildCommands = new List<TChild>();
 
-        protected AbstractCollectionCommand(params TChild[] childCommands):this((IEnumerable<TChild>)childCommands)
-        {
-        }
+        protected AbstractCollectionCommand(params TChild[] childCommands) : this((IEnumerable<TChild>)childCommands) { }
 
         protected AbstractCollectionCommand(IEnumerable<TChild> childCommands)
         {
@@ -63,4 +61,3 @@ namespace Anvil.CSharp.Command
         }
     }
 }
-

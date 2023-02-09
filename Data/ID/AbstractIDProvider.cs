@@ -9,22 +9,22 @@ namespace Anvil.CSharp.Data
     /// <typeparam name="T">The underlying type of the id</typeparam>
     public abstract class AbstractIDProvider<T> : AbstractIDProvider
         //Constraints get as close as possible to only numeric types
-        where T : struct, IComparable, IComparable<T>, IConvertible, IEquatable<T>, IFormattable 
+        where T : struct, IComparable, IComparable<T>, IConvertible, IEquatable<T>, IFormattable
     {
         /// <summary>
         /// A reserved ID to represent "No ID".
         /// <see cref="GetNextID"/> will never return this value even when IDs roll over and are no longer unique.
         /// </summary>
         public static readonly T UNSET_ID = default;
-        
+
         /// <summary>
         /// The threshold which, when passed, triggers <seealso cref="AbstractIDProvider.OnIDLimitWarning"/>.
         /// </summary>
         public readonly T SupplyWarningThreshold;
-        
+
         private T m_LastNewID = default;
         private bool m_HasIDWarningTriggered = false;
-        
+
         /// <summary>
         /// Creates a new ID provider optionally allowing a supply warning threshold to be set.
         /// </summary>
@@ -36,7 +36,7 @@ namespace Anvil.CSharp.Data
         {
             SupplyWarningThreshold = supplyWarningThreshold;
         }
-        
+
         /// <summary>
         /// Provide an unused ID.
         /// </summary>
@@ -62,10 +62,10 @@ namespace Anvil.CSharp.Data
 
         protected abstract T IncrementID(T currentID);
         protected abstract bool HasIDExceededSupplyWarningThreshold(T currentID);
-        
+
         private void CheckIfIDThresholdCrossed()
         {
-            if (!HasIDExceededSupplyWarningThreshold(m_LastNewID)|| m_HasIDWarningTriggered)
+            if (!HasIDExceededSupplyWarningThreshold(m_LastNewID) || m_HasIDWarningTriggered)
             {
                 return;
             }
@@ -94,7 +94,7 @@ namespace Anvil.CSharp.Data
         protected override void DisposeSelf()
         {
             OnIDLimitWarning = null;
-            
+
             base.DisposeSelf();
         }
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Anvil.CSharp.Mathematics;
-using System.Diagnostics;
 
 namespace Anvil.CSharp.Reflection
 {

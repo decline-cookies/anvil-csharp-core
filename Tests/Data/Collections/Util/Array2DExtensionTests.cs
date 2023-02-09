@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using System;
 using Anvil.CSharp.Data;
 
 namespace Anvil.CSharp.Tests

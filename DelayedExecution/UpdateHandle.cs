@@ -17,6 +17,7 @@ namespace Anvil.CSharp.DelayedExecution
         /// Use with <see cref="UpdateHandle.CallAfter"/> to allow a CallAfterHandle to repeat indefinitely.
         /// </summary>
         public const uint CALL_AFTER_INFINITE_CALL_LIMIT = 0;
+
         /// <summary>
         /// Use with <see cref="UpdateHandle.CallAfter"/> to have a CallAfterHandle fire it's callback just once.
         /// </summary>
@@ -85,6 +86,7 @@ namespace Anvil.CSharp.DelayedExecution
         {
             get => m_UpdateSource != null && m_UpdateSource.IsUpdating;
         }
+
         /// <summary>
         /// Indicates whether the handle is currently executing its OnUpdate phase.
         /// </summary>
@@ -178,8 +180,7 @@ namespace Anvil.CSharp.DelayedExecution
                 callback,
                 targetDelta,
                 deltaProvider,
-                callLimit
-                );
+                callLimit);
 
             FinalizeHandle(callAfterHandle);
 
@@ -215,6 +216,5 @@ namespace Anvil.CSharp.DelayedExecution
             m_CallAfterHandles.Remove(callAfterHandle.ID);
             ValidateUpdateSourceHook();
         }
-
     }
 }
