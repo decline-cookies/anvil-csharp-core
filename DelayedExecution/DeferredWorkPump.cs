@@ -19,6 +19,12 @@ namespace Anvil.CSharp.DelayedExecution
         /// </param>
         public DeferredWorkPump(bool willEagerExecuteWork = false) : base(ExecutePendingWork, willEagerExecuteWork) { }
 
+        /// <inheritdoc cref="DeferredDataPump{TUpdateSource,TDataType}.Schedule"/>
+        public new void Schedule(Action work)
+        {
+            base.Schedule(work);
+        }
+
         private static void ExecutePendingWork(IEnumerator<Action> pendingWork)
         {
             while (pendingWork.MoveNext())
