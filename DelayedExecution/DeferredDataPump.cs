@@ -13,7 +13,7 @@ namespace Anvil.CSharp.DelayedExecution
         private readonly UpdateHandle m_Update;
         private readonly Queue<TDataType> m_PendingData;
 
-        private CallAfterHandle m_PendingDataRequestHandle;
+        private CallAfterHandle m_PendingDataScheduleHandle;
 
 
         /// <summary>
@@ -51,11 +51,16 @@ namespace Anvil.CSharp.DelayedExecution
         /// <summary>
         /// Schedules data to to be processed during the next update phase.
         /// </summary>
-        /// <param name="work"></param>
+        /// <param name="data">The data to process.</param>
         public void Schedule(TDataType data)
         {
             m_PendingData.Enqueue(data);
-            m_PendingDataRequestHandle ??= m_Update.CallAfterUpdates(0, ProcessPendingData);
+            m_PendingDataScheduleHandle ??= ScheduleProcessPendingData();
+        }
+
+        private CallAfterHandle ScheduleProcessPendingData()
+        {
+            return m_Update.CallAfterUpdates(0, ProcessPendingData);
         }
 
         private void ProcessPendingData()
@@ -63,7 +68,12 @@ namespace Anvil.CSharp.DelayedExecution
             using IEnumerator<TDataType> enumerator = m_WillEagerExecuteDeferredData
                 ? new EagerDestructiveQueueEnumerator(m_PendingData)
                 : new SnapshotDestructiveQueueEnumerator(m_PendingData);
+
             m_ProcessPendingData(enumerator);
+
+            m_PendingDataScheduleHandle = !m_WillEagerExecuteDeferredData && m_PendingData.Count > 0
+                ? ScheduleProcessPendingData()
+                : null;
         }
 
         // ----- Inner Types ----- //
@@ -82,13 +92,13 @@ namespace Anvil.CSharp.DelayedExecution
             private readonly Queue<TDataType> m_Queue;
             private TDataType m_Current;
             private int m_ElementsRemaining;
-            private bool m_HasStarted;
+            private bool m_IsValid;
 
             public TDataType Current
             {
                 get
                 {
-                    if (m_ElementsRemaining < 0)
+                    if (!m_IsValid)
                     {
                         // Either it's passed the end of the collection, disposed, or MoveNext hasn't been called at least once
                         throw new InvalidOperationException("Enumerator is not in a valid state.");
@@ -107,7 +117,7 @@ namespace Anvil.CSharp.DelayedExecution
             {
                 m_Queue = queue;
                 m_ElementsRemaining = m_Queue.Count;
-                m_HasStarted = false;
+                m_IsValid = false;
                 m_Current = default;
             }
 
@@ -121,14 +131,17 @@ namespace Anvil.CSharp.DelayedExecution
             {
                 if (m_ElementsRemaining > 0)
                 {
-                    m_HasStarted = true;
+                    m_IsValid = true;
                     m_Current = m_Queue.Dequeue();
-                    m_ElementsRemaining--;
+                    --m_ElementsRemaining;
                     Debug.Assert(m_ElementsRemaining <= m_Queue.Count);
-                    return true;
+                }
+                else
+                {
+                    m_IsValid = false;
                 }
 
-                return false;
+                return m_IsValid;
             }
 
             public void Reset()
