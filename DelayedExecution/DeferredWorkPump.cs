@@ -17,7 +17,7 @@ namespace Anvil.CSharp.DelayedExecution
         /// (optional) If true, the work scheduled while executing accumulated work will get executed during the same
         /// update.Otherwise, the work is deferred to the next update.
         /// </param>
-        public DeferredWorkPump(bool willEagerExecuteWork = false) : base(ExecutePendingWork, willEagerExecuteWork) {}
+        public DeferredWorkPump(bool willEagerExecuteWork = false) : base(ExecutePendingWork, willEagerExecuteWork) { }
 
         private static void ExecutePendingWork(IEnumerator<Action> pendingWork)
         {
