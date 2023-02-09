@@ -3,7 +3,6 @@ using System;
 
 namespace Anvil.CSharp.Command
 {
-
     /// <summary>
     /// Interface for the concept of a Command in the Anvil Framework.
     /// A Command provides the flow for executing a discrete piece of logic and will dispose itself once complete.
@@ -33,4 +32,3 @@ namespace Anvil.CSharp.Command
         void Execute();
     }
 }
-

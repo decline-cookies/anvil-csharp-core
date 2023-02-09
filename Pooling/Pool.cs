@@ -34,7 +34,8 @@ namespace Anvil.CSharp.Pooling
         /// is called while the pool is empty and the maximum has already been reached, an exception is thrown.</param>
         /// <param name="growthOperator">The operator used when the pool increases in size; ex.
         /// <see cref="AdditiveGrowth"/> or <see cref="MultiplicativeGrowth"/>.</param>
-        public Pool(InstanceCreator<T> instanceCreator,
+        public Pool(
+            InstanceCreator<T> instanceCreator,
             InstanceDisposer<T> instanceDisposer = null,
             int initialCount = 0,
             int? maxCount = null,
@@ -124,7 +125,7 @@ namespace Anvil.CSharp.Pooling
         /// <exception cref="Exception">Thrown if the instance given is already in the pool.</exception>
         public void Release(IEnumerable<T> instances)
         {
-            foreach(T instance in instances)
+            foreach (T instance in instances)
             {
                 Release(instance);
             }
@@ -136,7 +137,8 @@ namespace Anvil.CSharp.Pooling
             return m_InstanceCreator.Invoke();
         }
 
-        private void AddInstance(T instance) {
+        private void AddInstance(T instance)
+        {
             if (instance == null)
             {
                 throw new Exception("Cannot add a null instance to the pool.");

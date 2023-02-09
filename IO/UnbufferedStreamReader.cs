@@ -20,6 +20,7 @@ namespace Anvil.CSharp.IO
         /// The stream being read.
         /// </summary>
         public Stream BaseStream { get; }
+
         /// <summary>
         /// The character encoding used to interpret the bytes of the stream.
         /// </summary>
@@ -148,7 +149,7 @@ namespace Anvil.CSharp.IO
             for (int i = 0; i < preamble.Length; i++)
             {
                 byte readByte = (byte)BaseStream.ReadByte();
-                if ( readByte != preamble[i] )
+                if (readByte != preamble[i])
                 {
                     throw new InvalidDataException($"Preamble does not match encoding. Invalid byte index: {i}, value: {readByte}, expected: {preamble[i]}");
                 }

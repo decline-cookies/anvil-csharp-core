@@ -21,4 +21,3 @@ namespace Anvil.CSharp.Command
         void Cancel();
     }
 }
-

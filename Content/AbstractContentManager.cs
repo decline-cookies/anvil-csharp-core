@@ -14,22 +14,27 @@ namespace Anvil.CSharp.Content
         /// <inheritdoc cref="AbstractContentController.OnLoadStart"/>
         /// </summary>
         public event Action<AbstractContentController> OnLoadStart;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnLoadComplete"/>
         /// </summary>
         public event Action<AbstractContentController> OnLoadComplete;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayInStart"/>
         /// </summary>
         public event Action<AbstractContentController> OnPlayInStart;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayInComplete"/>
         /// </summary>
         public event Action<AbstractContentController> OnPlayInComplete;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayOutStart"/>
         /// </summary>
         public event Action<AbstractContentController> OnPlayOutStart;
+
         /// <summary>
         /// <inheritdoc cref="AbstractContentController.OnPlayOutComplete"/>
         /// </summary>
@@ -37,9 +42,7 @@ namespace Anvil.CSharp.Content
 
         private readonly Dictionary<string, AbstractContentGroup> m_ContentGroups = new Dictionary<string, AbstractContentGroup>();
 
-        protected AbstractContentManager()
-        {
-        }
+        protected AbstractContentManager() { }
 
         protected override void DisposeSelf()
         {

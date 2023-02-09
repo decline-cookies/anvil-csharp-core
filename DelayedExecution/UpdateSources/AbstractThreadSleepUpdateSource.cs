@@ -46,7 +46,7 @@ namespace Anvil.CSharp.DelayedExecution
         private void Start()
         {
             Task result = Task.Run(
-                () => RunUpdateLoop(m_UpdateIntervalMS, m_OnIntervalAction, m_CancellationTokenSource.Token), 
+                () => RunUpdateLoop(m_UpdateIntervalMS, m_OnIntervalAction, m_CancellationTokenSource.Token),
                 m_CancellationTokenSource.Token);
         }
 
@@ -67,7 +67,5 @@ namespace Anvil.CSharp.DelayedExecution
                 Thread.Sleep(updateInterval);
             }
         }
-
-
     }
 }

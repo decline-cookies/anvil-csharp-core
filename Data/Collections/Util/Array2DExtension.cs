@@ -40,7 +40,7 @@ namespace Anvil.CSharp.Data
         /// </param>
         /// <typeparam name="T">The type of the array.</typeparam>
         /// <returns>The first index that satisfied the predicate.</returns>
-        public static (int,int) FindIndex<T>(this T[,] array, Predicate<T> predicate)
+        public static (int, int) FindIndex<T>(this T[,] array, Predicate<T> predicate)
         {
             for (int y = 0; y < array.GetLength(1); y++)
             {
@@ -122,7 +122,7 @@ namespace Anvil.CSharp.Data
             {
                 for (int x = 0; x < array.GetLength(0); x++)
                 {
-                    if(condition(array[x, y], x, y))
+                    if (condition(array[x, y], x, y))
                     {
                         return true;
                     }
@@ -154,7 +154,7 @@ namespace Anvil.CSharp.Data
         /// <param name="array">The array to evaluate.</param>
         /// <typeparam name="T">The type of the array.</typeparam>
         /// <returns>The first and second order lengths of the array.</returns>
-        public static (int,int) GetLength<T>(this T[,] array)
+        public static (int, int) GetLength<T>(this T[,] array)
         {
             return (array.GetLength(0), array.GetLength(1));
         }

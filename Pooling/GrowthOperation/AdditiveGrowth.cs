@@ -1,5 +1,4 @@
-﻿using System;
-using Anvil.CSharp.Logging;
+﻿using Anvil.CSharp.Logging;
 
 namespace Anvil.CSharp.Pooling
 {

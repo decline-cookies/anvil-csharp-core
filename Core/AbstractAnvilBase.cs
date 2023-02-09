@@ -20,6 +20,7 @@ namespace Anvil.CSharp.Core
         public bool IsDisposing { get; private set; }
 
         private Logger? m_Logger;
+
         /// <summary>
         /// Returns a <see cref="Logger"/> for this instance to emit log messages with.
         /// Lazy instantiated.

@@ -71,6 +71,5 @@ namespace Anvil.CSharp.Collections
         {
             m_Items.Clear();
         }
-
     }
 }

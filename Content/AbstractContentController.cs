@@ -24,9 +24,7 @@ namespace Anvil.CSharp.Content
 
         //TODO: Look at replacing the contentGroupID with Enums - https://github.com/scratch-games/anvil-csharp-core/issues/19
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
-            : base(contentGroupID, contentLoadingID)
-        {
-        }
+            : base(contentGroupID, contentLoadingID) { }
     }
 
     /// <summary>
@@ -39,22 +37,27 @@ namespace Anvil.CSharp.Content
         /// Dispatched before loading of the Content and any required assets starts.
         /// </summary>
         public event Action<AbstractContentController> OnLoadStart;
+
         /// <summary>
         /// Dispatched when loading of the Content and any required assets is complete.
         /// </summary>
         public event Action<AbstractContentController> OnLoadComplete;
+
         /// <summary>
         /// Dispatched when animation of the Content in starts.
         /// </summary>
         public event Action<AbstractContentController> OnPlayInStart;
+
         /// <summary>
         /// Dispatched when animation of the Content in completes.
         /// </summary>
         public event Action<AbstractContentController> OnPlayInComplete;
+
         /// <summary>
         /// Dispatched when animation of the Content out starts.
         /// </summary>
         public event Action<AbstractContentController> OnPlayOutStart;
+
         /// <summary>
         /// Dispatched when animation of the Content out completes.
         /// </summary>
@@ -202,11 +205,11 @@ namespace Anvil.CSharp.Content
         /// </summary>
         public void Clear()
         {
-            Debug.Assert(ContentGroup != null,
+            Debug.Assert(
+                ContentGroup != null,
                 $"ContentGroup is null!");
 
             ContentGroup.Clear();
         }
     }
 }
-

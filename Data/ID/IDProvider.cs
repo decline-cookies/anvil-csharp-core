@@ -7,9 +7,7 @@ namespace Anvil.CSharp.Data
     public class IDProvider : AbstractIDProvider<uint>
     {
         /// <inheritdoc cref="AbstractIDProvider{T}"/>
-        public IDProvider(uint supplyWarningThreshold = uint.MaxValue - 1_000_000) : base(supplyWarningThreshold)
-        {
-        }
+        public IDProvider(uint supplyWarningThreshold = uint.MaxValue - 1_000_000) : base(supplyWarningThreshold) { }
 
         protected override uint IncrementID(uint currentID)
         {

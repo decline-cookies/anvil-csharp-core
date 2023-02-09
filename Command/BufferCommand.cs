@@ -8,9 +8,7 @@ namespace Anvil.CSharp.Command
     /// Default <see cref="BufferCommand{T}"/> that uses <see cref="ICommand"/> as the restriction on
     /// children types.
     /// </summary>
-    public class BufferCommand : BufferCommand<ICommand>
-    {
-    }
+    public class BufferCommand : BufferCommand<ICommand> { }
 
     /// <summary>
     /// The Buffer Command is an <see cref="ICommand"/> that is not intended to ever complete.
@@ -19,7 +17,7 @@ namespace Anvil.CSharp.Command
     /// there are none left and then it will wait until more commands are added.
     /// </summary>
     public class BufferCommand<T> : AbstractCommand<BufferCommand<T>>
-        where T:class, ICommand
+        where T : class, ICommand
     {
         /// <summary>
         /// Dispatches when the <see cref="BufferCommand"/> is idle, not executing any commands and has none left in
@@ -40,6 +38,7 @@ namespace Anvil.CSharp.Command
         }
 
         protected readonly Queue<T> m_ChildCommands = new Queue<T>();
+
         /// <summary>
         /// The currently executing child command
         /// </summary>
@@ -66,18 +65,14 @@ namespace Anvil.CSharp.Command
         /// <summary>
         /// Creates a new instance of a <see cref="BufferCommand"/> that is initially empty.
         /// </summary>
-        public BufferCommand()
-        {
-        }
+        public BufferCommand() { }
 
         /// <summary>
         /// Creates a new instance of a <see cref="BufferCommand"/> that takes in a set of
         /// <see cref="{T}"/>s.
         /// </summary>
         /// <param name="childCommands">A set of <see cref="{T}"/>s to populate with.</param>
-        public BufferCommand(params T[] childCommands):this((IEnumerable<T>)childCommands)
-        {
-        }
+        public BufferCommand(params T[] childCommands) : this((IEnumerable<T>)childCommands) { }
 
         /// <summary>
         /// Creates a new instance of a <see cref="BufferCommand"/> that takes in a <see cref="IEnumerable{T}"/>

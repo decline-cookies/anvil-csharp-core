@@ -14,4 +14,3 @@ namespace Anvil.CSharp.Content
         AbstractContentController Controller { get; }
     }
 }
-

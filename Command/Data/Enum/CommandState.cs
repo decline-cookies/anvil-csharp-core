@@ -9,10 +9,12 @@
         /// Indicates the <see cref="ICommand"/> has been constructed but not yet executed.
         /// </summary>
         Initialized,
+
         /// <summary>
         /// Indicates the <see cref="ICommand"/> has been executed and is still in progress.
         /// </summary>
         Executing,
+
         /// <summary>
         /// Indicates the <see cref="ICommand"/> has been completed.
         /// </summary>
