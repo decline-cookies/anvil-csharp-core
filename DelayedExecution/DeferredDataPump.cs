@@ -71,9 +71,10 @@ namespace Anvil.CSharp.DelayedExecution
 
         private void ProcessPendingData()
         {
+            // (IEnumerator<TDataType>) cast is required for <C# 9.0 compatibility. (CS8957)
             using IEnumerator<TDataType> enumerator = m_WillEagerExecuteDeferredData
-                ? new EagerDestructiveQueueEnumerator(m_PendingData)
-                : new SnapshotDestructiveQueueEnumerator(m_PendingData);
+                ? (IEnumerator<TDataType>) new EagerDestructiveQueueEnumerator(m_PendingData)
+                : (IEnumerator<TDataType>) new SnapshotDestructiveQueueEnumerator(m_PendingData);
 
             m_ProcessPendingData(enumerator);
 
