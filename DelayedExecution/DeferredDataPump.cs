@@ -6,6 +6,12 @@ using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.DelayedExecution
 {
+    /// <summary>
+    /// Facilitates accumulating and deferring data to be processed at a specific, periodic, moment dictated by an
+    /// <see cref="AbstractUpdateSource"/>.
+    /// </summary>
+    /// <typeparam name="TUpdateSource">The update source to schedule data against.</typeparam>
+    /// <typeparam name="TDataType">The type of data to accumulate.</typeparam>
     public class DeferredDataPump<TUpdateSource, TDataType> : AbstractAnvilBase where TUpdateSource : AbstractUpdateSource
     {
         private readonly Action<IEnumerator<TDataType>> m_ProcessPendingData;

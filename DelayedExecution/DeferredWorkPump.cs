@@ -7,7 +7,7 @@ namespace Anvil.CSharp.DelayedExecution
     /// Facilitates accumulating and deferring work to be executed at a specific, periodic, moment dictated by an
     /// <see cref="AbstractUpdateSource"/>
     /// </summary>
-    /// <typeparam name="T">The update source to schedule work against.</typeparam>
+    /// <typeparam name="TUpdateSource">The update source to schedule work against.</typeparam>
     public class DeferredWorkPump<TUpdateSource> : DeferredDataPump<TUpdateSource, Action> where TUpdateSource : AbstractUpdateSource
     {
         /// <summary>
