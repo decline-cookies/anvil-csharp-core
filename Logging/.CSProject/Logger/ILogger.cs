@@ -19,8 +19,7 @@ namespace Anvil.CSharp.Logging
             object message,
             [CallerFilePath] string callerPath = "",
             [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
-        );
+            [CallerLineNumber] int callerLine = 0);
 
         /// <summary>
         /// Logs a warning message.
@@ -32,8 +31,7 @@ namespace Anvil.CSharp.Logging
             object message,
             [CallerFilePath] string callerPath = "",
             [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
-        );
+            [CallerLineNumber] int callerLine = 0);
 
         /// <summary>
         /// Logs an error message.
@@ -45,8 +43,7 @@ namespace Anvil.CSharp.Logging
             object message,
             [CallerFilePath] string callerPath = "",
             [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
-        );
+            [CallerLineNumber] int callerLine = 0);
 
         /// <summary>
         /// Logs a message to the level provided.
@@ -60,7 +57,6 @@ namespace Anvil.CSharp.Logging
             object message,
             [CallerFilePath] string callerPath = "",
             [CallerMemberName] string callerName = "",
-            [CallerLineNumber] int callerLine = 0
-        );
+            [CallerLineNumber] int callerLine = 0);
     }
 }
