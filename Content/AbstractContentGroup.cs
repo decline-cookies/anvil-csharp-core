@@ -88,6 +88,7 @@ namespace Anvil.CSharp.Content
         public void Show(AbstractContentController contentController)
         {
             //TODO: Validate the passed in controller to ensure we avoid weird cases - https://github.com/scratch-games/anvil-unity-core/issues/3
+            m_PendingContentController?.Dispose();
 
             m_PendingContentController = contentController;
 
