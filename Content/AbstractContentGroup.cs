@@ -88,11 +88,9 @@ namespace Anvil.CSharp.Content
         public void Show(AbstractContentController contentController)
         {
             //TODO: Validate the passed in controller to ensure we avoid weird cases - https://github.com/scratch-games/anvil-unity-core/issues/3
+            m_PendingContentController?.Dispose();
 
-            RemoveLifeCycleListeners(m_PendingContentController);
             m_PendingContentController = contentController;
-            m_PendingContentController.ContentGroup = this;
-            AttachLifeCycleListeners(m_PendingContentController);
 
             //If there's an Active Controller currently being shown, we need to clear it.
             if (ActiveContentController != null)
@@ -128,6 +126,9 @@ namespace Anvil.CSharp.Content
 
             ActiveContentController = m_PendingContentController;
             m_PendingContentController = null;
+
+            ActiveContentController.ContentGroup = this;
+            AttachLifeCycleListeners(ActiveContentController);
 
             ActiveContentController.InternalLoad();
         }
@@ -202,11 +203,6 @@ namespace Anvil.CSharp.Content
 
         private void AttachLifeCycleListeners(AbstractContentController contentController)
         {
-            if (contentController == null)
-            {
-                return;
-            }
-
             contentController.OnLoadStart += ContentController_OnLoadStart;
             contentController.OnLoadComplete += ContentController_OnLoadComplete;
             contentController.OnPlayInStart += ContentController_OnPlayInStart;
@@ -217,11 +213,6 @@ namespace Anvil.CSharp.Content
 
         private void RemoveLifeCycleListeners(AbstractContentController contentController)
         {
-            if (contentController == null)
-            {
-                return;
-            }
-
             contentController.OnLoadStart -= ContentController_OnLoadStart;
             contentController.OnLoadComplete -= ContentController_OnLoadComplete;
             contentController.OnPlayInStart -= ContentController_OnPlayInStart;
