@@ -144,6 +144,20 @@ namespace Anvil.CSharp.DelayedExecution
                 m_UpdateIterator.AddRange(m_CallAfterHandles.Values);
                 foreach (CallAfterHandle callAfterHandle in m_UpdateIterator)
                 {
+                    //TODO: #148 - Move to a two phase Update then Dispatch pass to avoid branching in the loops.
+                    // If the previous call handle updating caused the UpdateHandle to be disposed then stop updating
+                    // call handles. They'll all be disposed.
+                    if (IsDisposed)
+                    {
+                        break;
+                    }
+
+                    // If one of the previous call handles caused this call handle to be disposed then skip it.
+                    if (callAfterHandle.IsDisposed)
+                    {
+                        continue;
+                    }
+
                     callAfterHandle.Update();
                 }
                 m_UpdateIterator.Clear();
