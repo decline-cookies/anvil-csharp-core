@@ -74,6 +74,15 @@ namespace Anvil.CSharp.Content
         public AbstractContentGroup ContentGroup { get; internal set; }
 
         /// <summary>
+        /// Gets the <see cref="AbstractContentManager"/> that is at the root of the control for this content and the
+        /// group it resides in.
+        /// </summary>
+        public AbstractContentManager ContentManager
+        {
+            get => ContentGroup.ContentManager;
+        }
+
+        /// <summary>
         /// The ID for the <see cref="AbstractContentGroup"/> that this Controller should be shown on.
         /// </summary>
         public readonly string ContentGroupID;
