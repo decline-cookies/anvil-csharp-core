@@ -19,5 +19,22 @@ namespace Anvil.CSharp.Tests
 
             Assert.That(MathUtil.FindPrimeNumber(100), Is.EqualTo(541));
         }
+
+        [Test]
+        public static void ClosestDeltaTest()
+        {
+            Assert.That(nameof(ClosestDeltaTest), Is.EqualTo(nameof(MathUtil.ClosestDelta) + "Test"));
+
+            //TODO: #129 - There's probably a more NUnit way to do this
+
+            Assert.That(MathUtil.ClosestDelta(5, 10), Is.EqualTo(5));
+            Assert.That(MathUtil.ClosestDelta(10, 5), Is.EqualTo(-5));
+
+            Assert.That(MathUtil.ClosestDelta(-5, -10), Is.EqualTo(-5));
+            Assert.That(MathUtil.ClosestDelta(-10, -5), Is.EqualTo(5));
+
+            Assert.That(MathUtil.ClosestDelta(int.MaxValue - 1, int.MinValue + 1), Is.EqualTo(3));
+            Assert.That(MathUtil.ClosestDelta(int.MinValue + 1, int.MaxValue - 1), Is.EqualTo(-3));
+        }
     }
 }

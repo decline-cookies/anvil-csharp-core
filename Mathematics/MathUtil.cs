@@ -45,5 +45,23 @@ namespace Anvil.CSharp.Mathematics
 
             return (--a);
         }
+
+        /// <summary>
+        /// Calculate the closest delta between two integers wrapping through the value's limits if required.
+        /// </summary>
+        /// <example>
+        /// ClosestDelta(int.MaxValue - 1, int.MinValue + 1) == 3;
+        /// </example>
+        /// /// <example>
+        /// ClosestDelta(int.MinValue + 1, int.MaxValue - 1) == -3;
+        /// </example>
+        public static int ClosestDelta(int val1, int val2)
+        {
+            uint uVal2 = unchecked((uint)val2);
+            uint uVal1 = unchecked((uint)val1);
+            uint uDelta = uVal2 - uVal1;
+
+            return unchecked((int)uDelta);
+        }
     }
 }
