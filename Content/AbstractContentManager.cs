@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Anvil.CSharp.Core;
 
 namespace Anvil.CSharp.Content
@@ -41,6 +42,14 @@ namespace Anvil.CSharp.Content
         public event Action<AbstractContentController> OnPlayOutComplete;
 
         private readonly Dictionary<string, AbstractContentGroup> m_ContentGroups = new Dictionary<string, AbstractContentGroup>();
+
+        /// <summary>
+        /// A collection of all <see cref="AbstractContentGroup"/>s that are currently managed by this content manager.
+        /// </summary>
+        public IReadOnlyCollection<AbstractContentGroup> Groups
+        {
+            get => m_ContentGroups.Values;
+        }
 
         protected AbstractContentManager() { }
 
@@ -137,6 +146,60 @@ namespace Anvil.CSharp.Content
             return m_ContentGroups.ContainsKey(contentGroupID);
         }
 
+        /// <summary>
+        /// Get all instances of the provided content controller type that are currently showing in a group.
+        /// </summary>
+        /// <param name="includeSubtypes">
+        /// (default true) If true will include instances that derive from the provided type.
+        /// </param>
+        /// <typeparam name="T">The type of content to gather.</typeparam>
+        /// <returns>A collection of instances that match the given type.</returns>
+        public IEnumerable<T> GetAllShowingOfType<T>(bool includeSubtypes = true)
+            where T : AbstractContentController
+        {
+            Type type = typeof(T);
+
+            return Groups
+                .Where(group => includeSubtypes
+                    ? type.IsInstanceOfType(group.ActiveContentController)
+                    : type == group.ActiveContentController?.GetType())
+                .Select(group => group.ActiveContentController as T);
+        }
+
+        /// <summary>
+        /// Returns true if at least one instance of the content controller type is currently showing in any group.
+        /// </summary>
+        /// <param name="contentController">
+        /// The first content controller instance found that matches the provided type.
+        /// </param>
+        /// <param name="includeSubtypes">
+        /// (default true) If true will include instances that derive from the provided type.
+        /// </param>
+        /// <typeparam name="T">The type of content to search for.</typeparam>
+        /// <returns>true if at least one instance of the provided type is currently showing.</returns>
+        public bool IsShowing<T>(out T contentController, bool includeSubtypes = true)
+            where T : AbstractContentController
+        {
+            contentController = GetAllShowingOfType<T>(includeSubtypes).FirstOrDefault();
+            return contentController != null;
+        }
+
+        /// <inheritdoc cref="IsShowing{T}(out T,bool)"/>
+        public bool IsShowing<T>(bool includeSubtypes = true)
+            where T : AbstractContentController
+        {
+            return GetAllShowingOfType<T>(includeSubtypes).Any();
+        }
+
+        /// <summary>
+        /// Returns true if the provided instance of the content controller  is currently showing in any group.
+        /// </summary>
+        /// <param name="targetContentController">The content controller instance to search for.</param>
+        /// <returns>True if the provided instance is showing in any group.</returns>
+        public bool IsShowing(AbstractContentController targetContentController)
+        {
+            return Groups.Any(group => group.ActiveContentController == targetContentController);
+        }
 
         /// <summary>
         /// Shows an instance of <see cref="AbstractContentController"/>.
