@@ -100,12 +100,11 @@ namespace Anvil.CSharp.Content
         /// <exception cref="ArgumentException">Occurs when the passed in ID is not found. <see cref="HasGroup"/> to check beforehand.</exception>
         public AbstractContentManager RemoveGroup(string contentGroupID)
         {
-            if (!m_ContentGroups.ContainsKey(contentGroupID))
+            if (!m_ContentGroups.TryGetValue(contentGroupID, out AbstractContentGroup contentGroup))
             {
                 throw new ArgumentException($"Tried to remove Content Group with ID {contentGroupID} but none exists!");
             }
 
-            AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             m_ContentGroups.Remove(contentGroupID);
             contentGroup.Dispose();
 
@@ -120,12 +119,12 @@ namespace Anvil.CSharp.Content
         /// <exception cref="ArgumentException">Occurs when the passed in ID is not found. <see cref="HasGroup"/> to check beforehand.</exception>
         public AbstractContentGroup GetGroup(string contentGroupID)
         {
-            if (!m_ContentGroups.ContainsKey(contentGroupID))
+            if (!m_ContentGroups.TryGetValue(contentGroupID, out AbstractContentGroup group))
             {
                 throw new ArgumentException($"Tried to get Content Group with ID {contentGroupID} but none exists!");
             }
 
-            return m_ContentGroups[contentGroupID];
+            return group;
         }
 
         /// <summary>
@@ -148,12 +147,11 @@ namespace Anvil.CSharp.Content
         {
             string contentGroupID = contentController.ContentGroupID;
 
-            if (!m_ContentGroups.ContainsKey(contentGroupID))
+            if (!m_ContentGroups.TryGetValue(contentGroupID, out AbstractContentGroup contentGroup))
             {
                 throw new ArgumentException($"ContentGroupID of {contentGroupID} does not exist in the Content Manager. Did you add the Content Group?");
             }
 
-            AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             contentGroup.Show(contentController);
         }
 
@@ -164,13 +162,12 @@ namespace Anvil.CSharp.Content
         /// <returns>true if found and cleared, false if not found. A warning will be logged</returns>
         public bool ClearGroup(string contentGroupID)
         {
-            if (!m_ContentGroups.ContainsKey(contentGroupID))
+            if (!m_ContentGroups.TryGetValue(contentGroupID, out AbstractContentGroup contentGroup))
             {
                 Logger.Warning($"ContentGroupID of {contentGroupID} does not exist in the Content Manager. Did you add the Content Group?");
                 return false;
             }
 
-            AbstractContentGroup contentGroup = m_ContentGroups[contentGroupID];
             contentGroup.Clear();
 
             return true;
