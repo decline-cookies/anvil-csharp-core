@@ -19,12 +19,21 @@ namespace Anvil.CSharp.Content
         public new TContent Content
         {
             get => (TContent)base.Content;
-            protected set => base.Content = value;
         }
 
         //TODO: Look at replacing the contentGroupID with Enums - https://github.com/scratch-games/anvil-csharp-core/issues/19
+        protected AbstractContentController(string contentGroupID)
+            :base(contentGroupID) { }
+
+        [Obsolete]
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
             : base(contentGroupID, contentLoadingID) { }
+
+
+        protected void LoadComplete(TContent content)
+        {
+            base.LoadComplete(content);
+        }
     }
 
     /// <summary>
@@ -64,12 +73,12 @@ namespace Anvil.CSharp.Content
         public event Action<AbstractContentController> OnPlayOutComplete;
 
         /// <summary>
-        /// Gets/Sets the <see cref="IContent"/> to correspond to this controller.
+        /// Gets the <see cref="IContent"/> that corresponds to this controller.
         /// </summary>
-        public IContent Content { get; protected set; }
+        public IContent Content { get; private set; }
 
         /// <summary>
-        /// Gets/Sets the <see cref="AbstractContentGroup"/> that controls the lifecycle of this Controller.
+        /// Gets the <see cref="AbstractContentGroup"/> that controls the lifecycle of this Controller.
         /// </summary>
         public AbstractContentGroup ContentGroup { get; internal set; }
 
@@ -87,13 +96,16 @@ namespace Anvil.CSharp.Content
         /// </summary>
         public readonly string ContentGroupID;
 
-        protected readonly string m_ContentLoadingID;
 
+        protected AbstractContentController(string contentGroupID)
+        {
+            ContentGroupID = contentGroupID;
+        }
+
+        [Obsolete]
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
         {
             ContentGroupID = contentGroupID;
-            m_ContentLoadingID = contentLoadingID;
-            //TODO: Handle overrides for additional loading dependency settings - https://github.com/scratch-games/anvil-unity-core/issues/2
         }
 
         protected override void DisposeSelf()
@@ -121,18 +133,17 @@ namespace Anvil.CSharp.Content
         /// Override to customize loading logic for the <see cref="IContent"/> and related assets.
         /// Call <see cref="LoadComplete"/> when loading is complete.
         /// </summary>
-        protected virtual void Load()
-        {
-            LoadComplete();
-        }
+        protected abstract void Load();
 
         /// <summary>
         /// Call this function when loading is complete and the <see cref="AbstractContentGroup"/> should move onto the
         /// next step.
-        /// <remarks>By default, the <see cref="Load"/> function calls this if no loading is necessary.</remarks>
         /// </summary>
-        protected virtual void LoadComplete()
+        private protected void LoadComplete(IContent content)
         {
+            Content = content;
+            Content.BindTo(this);
+
             OnLoadComplete?.Invoke(this);
         }
 

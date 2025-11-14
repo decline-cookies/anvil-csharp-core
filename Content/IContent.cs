@@ -9,8 +9,18 @@ namespace Anvil.CSharp.Content
     public interface IContent : IDisposable
     {
         /// <summary>
-        /// Gets/Sets the <see cref="AbstractContentController"/> to correspond to this content. 
+        /// Gets the <see cref="AbstractContentController"/> bound to this content.
         /// </summary>
         AbstractContentController Controller { get; }
+
+        /// <summary>
+        /// Binds the content to a <see cref="AbstractContentController"/>.
+        /// </summary>
+        /// <param name="controller">The controller to bind to this content</param>
+        /// <remarks>
+        /// The controller will only be set once. Implementations should assert this.
+        /// <see cref="AbstractContentController"/> calls this immediately after receiving reference to this content.
+        /// </remarks>
+        protected internal void BindTo(AbstractContentController controller);
     }
 }
