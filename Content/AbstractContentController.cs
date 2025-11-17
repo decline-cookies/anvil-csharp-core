@@ -25,7 +25,7 @@ namespace Anvil.CSharp.Content
         protected AbstractContentController(string contentGroupID)
             :base(contentGroupID) { }
 
-        [Obsolete]
+        [Obsolete("Implementations should handle their own loading in `Load()`; Calling LoadComplete(contentInstance) when ready.")]
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
             : base(contentGroupID, contentLoadingID) { }
 
@@ -102,7 +102,7 @@ namespace Anvil.CSharp.Content
             ContentGroupID = contentGroupID;
         }
 
-        [Obsolete]
+        [Obsolete("Implementations should handle their own loading in `Load()`; Calling LoadComplete(contentInstance) when ready.")]
         protected AbstractContentController(string contentGroupID, string contentLoadingID)
         {
             ContentGroupID = contentGroupID;
