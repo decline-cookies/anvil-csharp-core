@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Anvil.CSharp.Collections
 {
@@ -21,6 +22,21 @@ namespace Anvil.CSharp.Collections
                 {
                     list.Add(item);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Shuffle the elements in a list using the Fisher-Yates algorithm.
+        /// </summary>
+        /// <param name="collection">The collection to shuffle the elements of</param>
+        /// <param name="randomProvider">Produces a random integer between arg1 (inclusive) and arg2 (exclusive)</param>
+        public static void Shuffle<T>(this IList<T> collection, Func<int, int, int> randomProvider)
+        {
+            int length = collection.Count;
+            for (int i = 0; i < length; i++)
+            {
+                int randomIndex =  randomProvider(0, length);
+                (collection[i], collection[randomIndex]) = (collection[randomIndex], collection[i]);
             }
         }
     }
