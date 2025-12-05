@@ -33,9 +33,9 @@ namespace Anvil.CSharp.Collections
         public static void Shuffle<T>(this IList<T> collection, Func<int, int, int> randomProvider)
         {
             int length = collection.Count;
-            for (int i = 0; i < length; i++)
+            for (int i = length-1; i > 0; i--)
             {
-                int randomIndex =  randomProvider(0, length);
+                int randomIndex =  randomProvider(0, i+1);
                 (collection[i], collection[randomIndex]) = (collection[randomIndex], collection[i]);
             }
         }
