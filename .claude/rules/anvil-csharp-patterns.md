@@ -1,4 +1,9 @@
-# Anvil C# Core — Claude Code Rules
+---
+paths:
+  - "**/*.cs"
+---
+
+# Anvil C# Core Patterns
 
 These rules apply when working with code that uses the `anvil-csharp-core` framework.
 
