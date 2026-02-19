@@ -83,6 +83,10 @@ public class MyDataVO : AbstractAnvilVO
 }
 ```
 
+### JSON Serialization
+- `AbstractAnvilVO.ToJSON()` defaults to `PrettyPrint | NoTypeHints` — always call with no arguments unless you explicitly need different options
+- If you do need custom `EncodeOptions`, add `using TinyJSON;`
+
 ## Logging
 
 Use the `Logger` property (lazy-initialized on `AbstractAnvilBase`):
